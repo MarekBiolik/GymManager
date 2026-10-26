@@ -13,8 +13,10 @@ export const pl = {
   app: {
     today: 'Dziś',
     daySummaryAria: 'Podsumowanie dnia',
+    kcal: 'kcal',
     kcalCaption: (goals: string | number, eaten: string | number) =>
-      `pozostało z ${goals} · zjedzono ${eaten}`,
+      `cel ${goals} · zjedzono ${eaten}`,
+    kcalRemaining: (left: string | number) => `pozostało ${left}`,
     protein: 'Białko',
     carbs: 'Węgle',
     fat: 'Tłuszcz',
@@ -22,16 +24,37 @@ export const pl = {
     delete: 'Usuń',
     deleteEntryAria: (name: string) => `Usuń: ${name}`,
     diary: 'Dziennik',
-    more: 'Więcej',
+    settings: 'Ustawienia',
     addToMealAria: (meal: string) => `Dodaj do: ${meal}`,
     editEntryAria: (name: string) => `Edytuj: ${name}`,
-    mealMacros: (kcal: string | number, protein: string | number, carbs: string | number, fat: string | number) =>
-      `${kcal} kcal · B ${protein} · W ${carbs} · T ${fat}`,
+    mealMacros: (
+      kcal: string | number,
+      protein: string | number,
+      carbs: string | number,
+      fat: string | number,
+    ) => `${kcal} kcal · B ${protein} · W ${carbs} · T ${fat}`,
     loading: 'Ładowanie…',
     navAria: 'Nawigacja',
+    prevDay: 'Poprzedni dzień',
+    nextDay: 'Następny dzień',
+    jumpToToday: 'Wróć do dziś',
     loadDayFailed: 'Nie udało się wczytać dnia. Uruchom serwer API.',
     deleteFailed: 'Nie udało się usunąć',
     saveFailed: 'Nie udało się zapisać',
+  },
+
+  settings: {
+    title: 'Ustawienia',
+    close: 'Zamknij',
+    goalsHint: 'Dzienne cele kalorii i makroskładników.',
+    kcal: 'kcal / dzień',
+    protein: 'Białko (g)',
+    carbs: 'Węgle (g)',
+    fat: 'Tłuszcz (g)',
+    save: 'Zapisz cele',
+    saving: 'Zapisuję…',
+    invalidGoals: 'Podaj poprawne cele (kcal > 0, makro ≥ 0).',
+    saveFailed: 'Nie udało się zapisać celów',
   },
 
   addFood: {

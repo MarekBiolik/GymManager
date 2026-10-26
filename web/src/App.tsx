@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { AddFoodScreen } from './AddFoodScreen'
 import { deleteEntry, fetchDay, updateEntryGrams } from './api'
+import { formatDateLabel, isToday, shiftIsoDate, todayLocal } from './dates'
 import { t } from './i18n'
 import {
   mealMacros,
@@ -12,32 +13,17 @@ import {
   macrosForGrams,
 } from './nutrition'
 import { PortionScreen } from './PortionScreen'
+import { SettingsScreen } from './SettingsScreen'
 import type { DayData, DiaryEntry, MealId } from './types'
 import { MEAL_ORDER } from './types'
 import './App.css'
 
-function todayLocal(): string {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = String(now.getMonth() + 1).padStart(2, '0')
-  const d = String(now.getDate()).padStart(2, '0')
-  return `${y}-${m}-${d}`
-}
-
-function formatDateLabel(isoDate: string): string {
-  const [y, m, d] = isoDate.split('-').map(Number)
-  return new Intl.DateTimeFormat('pl-PL', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  }).format(new Date(y, m - 1, d))
-}
-
 function App() {
-  const date = todayLocal()
+  const [date, setDate] = useState(todayLocal)
   const [day, setDay] = useState<DayData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [adding, setAdding] = useState(false)
   const [addMeal, setAddMeal] = useState<MealId>('breakfast_1')
   const [editing, setEditing] = useState<DiaryEntry | null>(null)
@@ -49,9 +35,7 @@ function App() {
       const data = await fetchDay(date)
       setDay(data)
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : t.app.loadDayFailed,
-      )
+      setError(err instanceof Error ? err.message : t.app.loadDayFailed)
     } finally {
       setLoading(false)
     }
@@ -74,6 +58,8 @@ function App() {
     [day, totals],
   )
 
+  const viewingToday = isToday(date)
+
   function openAdd(meal: MealId) {
     setAddMeal(meal)
     setAdding(true)
@@ -92,9 +78,38 @@ function App() {
   return (
     <div className="app-shell">
       <div className="phone-frame">
-        <header className="top-bar">
-          <h1>{t.app.today}</h1>
-          <p className="date-label">{formatDateLabel(date)}</p>
+        <header className="top-bar top-bar--day">
+          <button
+            type="button"
+            className="day-nav-btn"
+            aria-label={t.app.prevDay}
+            onClick={() => setDate((d) => shiftIsoDate(d, -1))}
+          >
+            ‹
+          </button>
+          <div className="day-heading">
+            <h1>{viewingToday ? t.app.today : formatDateLabel(date)}</h1>
+            <p className="date-label">
+              {viewingToday ? formatDateLabel(date) : null}
+              {!viewingToday ? (
+                <button
+                  type="button"
+                  className="text-btn jump-today"
+                  onClick={() => setDate(todayLocal())}
+                >
+                  {t.app.jumpToToday}
+                </button>
+              ) : null}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="day-nav-btn"
+            aria-label={t.app.nextDay}
+            onClick={() => setDate((d) => shiftIsoDate(d, 1))}
+          >
+            ›
+          </button>
         </header>
 
         <main className="day-scroll day-scroll--no-fab">
@@ -104,13 +119,19 @@ function App() {
           {day ? (
             <>
               <section className="summary-card" aria-label={t.app.daySummaryAria}>
-                <div className="kcal-remaining">
-                  {round0(left.kcal)}
-                  <span>kcal</span>
+                <div className="macro macro--kcal summary-kcal">
+                  <span className="macro-label">{t.app.kcal}</span>
+                  <div className="kcal-remaining">
+                    {round0(left.kcal)}
+                    <span>kcal</span>
+                  </div>
+                  <p className="kcal-caption">
+                    {t.app.kcalCaption(round0(day.goals.kcal), round0(totals.kcal))}
+                  </p>
+                  <div className="macro-bar macro-bar--lg" aria-hidden="true">
+                    <i style={{ width: `${progress(totals.kcal, day.goals.kcal)}%` }} />
+                  </div>
                 </div>
-                <p className="kcal-caption">
-                  {t.app.kcalCaption(round0(day.goals.kcal), round0(totals.kcal))}
-                </p>
 
                 <div className="macro-row">
                   <div className="macro macro--protein">
@@ -119,7 +140,11 @@ function App() {
                       {round1(totals.protein)} / {round0(day.goals.protein)} g
                     </div>
                     <div className="macro-bar" aria-hidden="true">
-                      <i style={{ width: `${progress(totals.protein, day.goals.protein)}%` }} />
+                      <i
+                        style={{
+                          width: `${progress(totals.protein, day.goals.protein)}%`,
+                        }}
+                      />
                     </div>
                   </div>
                   <div className="macro macro--carbs">
@@ -128,7 +153,11 @@ function App() {
                       {round1(totals.carbs)} / {round0(day.goals.carbs)} g
                     </div>
                     <div className="macro-bar" aria-hidden="true">
-                      <i style={{ width: `${progress(totals.carbs, day.goals.carbs)}%` }} />
+                      <i
+                        style={{
+                          width: `${progress(totals.carbs, day.goals.carbs)}%`,
+                        }}
+                      />
                     </div>
                   </div>
                   <div className="macro macro--fat">
@@ -137,7 +166,11 @@ function App() {
                       {round1(totals.fat)} / {round0(day.goals.fat)} g
                     </div>
                     <div className="macro-bar" aria-hidden="true">
-                      <i style={{ width: `${progress(totals.fat, day.goals.fat)}%` }} />
+                      <i
+                        style={{
+                          width: `${progress(totals.fat, day.goals.fat)}%`,
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -219,11 +252,19 @@ function App() {
         </main>
 
         <nav className="bottom-nav bottom-nav--simple" aria-label={t.app.navAria}>
-          <button type="button" className="nav-btn is-active">
+          <button
+            type="button"
+            className={settingsOpen ? 'nav-btn' : 'nav-btn is-active'}
+            onClick={() => setSettingsOpen(false)}
+          >
             {t.app.diary}
           </button>
-          <button type="button" className="nav-btn" disabled>
-            {t.app.more}
+          <button
+            type="button"
+            className={settingsOpen ? 'nav-btn is-active' : 'nav-btn'}
+            onClick={() => setSettingsOpen(true)}
+          >
+            {t.app.settings}
           </button>
         </nav>
 
@@ -254,6 +295,17 @@ function App() {
               await deleteEntry(editing.id)
               setEditing(null)
               await load()
+            }}
+          />
+        ) : null}
+
+        {settingsOpen && day ? (
+          <SettingsScreen
+            goals={day.goals}
+            onClose={() => setSettingsOpen(false)}
+            onSaved={(goals) => {
+              setDay((prev) => (prev ? { ...prev, goals } : prev))
+              setSettingsOpen(false)
             }}
           />
         ) : null}
