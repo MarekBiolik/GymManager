@@ -1,0 +1,73 @@
+import type { MealId } from '../types'
+
+/** Polish UI strings. Add `en.ts` later and switch in `index.ts`. */
+export const pl = {
+  meals: {
+    breakfast: 'Śniadanie',
+    lunch: 'Obiad',
+    dinner: 'Kolacja',
+    snacks: 'Przekąski',
+  } satisfies Record<MealId, string>,
+
+  app: {
+    today: 'Dziś',
+    daySummaryAria: 'Podsumowanie dnia',
+    kcalCaption: (goals: string | number, eaten: string | number) =>
+      `pozostało z ${goals} · zjedzono ${eaten}`,
+    protein: 'Białko',
+    carbs: 'Węgle',
+    fat: 'Tłuszcz',
+    noProducts: 'Brak produktów',
+    delete: 'Usuń',
+    diary: 'Dziennik',
+    more: 'Więcej',
+    addFoodAria: 'Dodaj jedzenie',
+    addToMealAria: (meal: string) => `Dodaj do: ${meal}`,
+    loading: 'Ładowanie…',
+    navAria: 'Nawigacja',
+    loadDayFailed: 'Nie udało się wczytać dnia. Uruchom serwer API.',
+    deleteFailed: 'Nie udało się usunąć',
+  },
+
+  addFood: {
+    title: 'Dodaj jedzenie',
+    cancel: 'Anuluj',
+    meal: 'Posiłek',
+    tabSearch: 'Szukaj',
+    tabRecent: 'Ostatnie',
+    tabMine: 'Moje',
+    tabCustom: 'Własny',
+    searchPlaceholder: 'np. fruivita karmel',
+    search: 'Szukaj',
+    barcodePlaceholder: 'Kod EAN z opakowania',
+    barcode: 'Kod',
+    inApp: 'W aplikacji',
+    openFoodFacts: 'Open Food Facts',
+    recentEmpty: 'Tu pojawią się ostatnio dodane produkty.',
+    mineEmpty: 'Nie masz jeszcze własnych produktów.',
+    name: 'Nazwa',
+    namePlaceholder: 'np. Pierś z kurczaka',
+    brandOptional: 'Marka (opcjonalnie)',
+    brandPlaceholder: 'np. Biedronka',
+    barcodeOptional: 'Kod EAN (opcjonalnie)',
+    kcalPer100: 'kcal / 100 g',
+    protein: 'Białko',
+    carbs: 'Węgle',
+    fat: 'Tłuszcz',
+    portionGrams: 'Porcja (g)',
+    saving: 'Zapisuję…',
+    addToDiary: 'Dodaj do dziennika',
+    queryTooShort: 'Wpisz co najmniej 2 znaki',
+    noResults: 'Brak wyników — dodaj własny produkt albo wpisz kod EAN',
+    searchFailed: 'Szukanie nieudane',
+    barcodeTooShort: 'Kod EAN jest za krótki',
+    barcodeNotFound: 'Nie znaleziono w Open Food Facts — uzupełnij makro ręcznie',
+    barcodeFailed: 'Odczyt kodu nieudany',
+    invalidGrams: 'Podaj poprawną gramaturę',
+    saveFailed: 'Nie udało się zapisać',
+    nameRequired: 'Podaj nazwę produktu',
+    macrosRequired: 'Uzupełnij makro na 100 g i gramaturę',
+  },
+} as const
+
+export type PlStrings = typeof pl

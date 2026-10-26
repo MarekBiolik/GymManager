@@ -8,9 +8,10 @@ import {
   searchFoods,
   type FoodCandidate,
 } from './api'
+import { t } from './i18n'
 import { macrosForGrams, round0, round1 } from './nutrition'
 import type { MealId, Product } from './types'
-import { MEAL_LABELS, MEAL_ORDER } from './types'
+import { MEAL_ORDER } from './types'
 
 type Tab = 'search' | 'recent' | 'mine' | 'custom'
 
@@ -88,7 +89,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     event?.preventDefault()
     const q = query.trim()
     if (q.length < 2) {
-      setError('Wpisz co najmniej 2 znaki')
+      setError(t.addFood.queryTooShort)
       return
     }
     setSearching(true)
@@ -101,10 +102,10 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       if (result.warning) {
         setError(result.warning)
       } else if (result.local.length === 0 && result.remote.length === 0) {
-        setError('Brak wyników — dodaj własny produkt albo wpisz kod EAN')
+        setError(t.addFood.noResults)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Szukanie nieudane')
+      setError(err instanceof Error ? err.message : t.addFood.searchFailed)
     } finally {
       setSearching(false)
     }
@@ -114,7 +115,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     event?.preventDefault()
     const code = barcode.replace(/\D/g, '')
     if (code.length < 8) {
-      setError('Kod EAN jest za krótki')
+      setError(t.addFood.barcodeTooShort)
       return
     }
     setSearching(true)
@@ -124,7 +125,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       const result = await lookupBarcode(code)
       if (!result.found) {
         openCustomBlank(code)
-        setError('Nie znaleziono w Open Food Facts — uzupełnij makro ręcznie')
+        setError(t.addFood.barcodeNotFound)
         return
       }
       setTab('search')
@@ -132,7 +133,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       setRemoteHits(result.origin === 'openfoodfacts' ? [result.product] : [])
       setSelected(result.product)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Odczyt kodu nieudany')
+      setError(err instanceof Error ? err.message : t.addFood.barcodeFailed)
     } finally {
       setSearching(false)
     }
@@ -154,7 +155,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
 
   async function saveSelected() {
     if (!selected || !Number.isFinite(gramsNumber) || gramsNumber <= 0) {
-      setError('Podaj poprawną gramaturę')
+      setError(t.addFood.invalidGrams)
       return
     }
     setSaving(true)
@@ -169,7 +170,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       })
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nie udało się zapisać')
+      setError(err instanceof Error ? err.message : t.addFood.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -184,7 +185,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     const code = barcode.replace(/\D/g, '')
 
     if (!name.trim()) {
-      setError('Podaj nazwę produktu')
+      setError(t.addFood.nameRequired)
       return
     }
     if (
@@ -193,7 +194,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       ) ||
       gramsNumber <= 0
     ) {
-      setError('Uzupełnij makro na 100 g i gramaturę')
+      setError(t.addFood.macrosRequired)
       return
     }
 
@@ -218,7 +219,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       })
       onSaved()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nie udało się zapisać')
+      setError(err instanceof Error ? err.message : t.addFood.saveFailed)
     } finally {
       setSaving(false)
     }
@@ -275,19 +276,19 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     <div className="overlay-screen">
       <header className="overlay-header">
         <button type="button" className="text-btn" onClick={onClose}>
-          Anuluj
+          {t.addFood.cancel}
         </button>
-        <h1>Dodaj jedzenie</h1>
+        <h1>{t.addFood.title}</h1>
         <span className="header-spacer" />
       </header>
 
       <div className="overlay-body">
         <label className="field">
-          <span>Posiłek</span>
+          <span>{t.addFood.meal}</span>
           <select value={meal} onChange={(e) => setMeal(e.target.value as MealId)}>
             {MEAL_ORDER.map((id) => (
               <option key={id} value={id}>
-                {MEAL_LABELS[id]}
+                {t.meals[id]}
               </option>
             ))}
           </select>
@@ -299,28 +300,28 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
             className={tab === 'search' ? 'tab is-active' : 'tab'}
             onClick={() => setTab('search')}
           >
-            Szukaj
+            {t.addFood.tabSearch}
           </button>
           <button
             type="button"
             className={tab === 'recent' ? 'tab is-active' : 'tab'}
             onClick={() => setTab('recent')}
           >
-            Ostatnie
+            {t.addFood.tabRecent}
           </button>
           <button
             type="button"
             className={tab === 'mine' ? 'tab is-active' : 'tab'}
             onClick={() => setTab('mine')}
           >
-            Moje
+            {t.addFood.tabMine}
           </button>
           <button
             type="button"
             className={tab === 'custom' ? 'tab is-active' : 'tab'}
             onClick={() => openCustomBlank()}
           >
-            Własny
+            {t.addFood.tabCustom}
           </button>
         </div>
 
@@ -330,73 +331,65 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="np. fruivita karmel"
+                placeholder={t.addFood.searchPlaceholder}
                 enterKeyHint="search"
               />
               <button type="submit" className="primary-btn compact" disabled={searching}>
-                {searching ? '…' : 'Szukaj'}
+                {searching ? '…' : t.addFood.search}
               </button>
             </form>
             <form className="search-row" onSubmit={runBarcode}>
               <input
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
-                placeholder="Kod EAN z opakowania"
+                placeholder={t.addFood.barcodePlaceholder}
                 inputMode="numeric"
               />
               <button type="submit" className="primary-btn compact" disabled={searching}>
-                Kod
+                {t.addFood.barcode}
               </button>
             </form>
-            <p className="muted small off-note">
-              Dane produktów: Open Food Facts (ODbL)
-            </p>
             {localHits.length > 0 ? (
               <>
-                <h2 className="section-title">W aplikacji</h2>
+                <h2 className="section-title">{t.addFood.inApp}</h2>
                 {renderProductList(localHits, '')}
               </>
             ) : null}
             {remoteHits.length > 0 ? (
               <>
-                <h2 className="section-title">Open Food Facts</h2>
+                <h2 className="section-title">{t.addFood.openFoodFacts}</h2>
                 {renderProductList(remoteHits, '')}
               </>
-            ) : null}
-            {localHits.length === 0 && remoteHits.length === 0 ? (
-              <p className="empty-hint">
-                Szukaj po nazwie albo wpisz kod z Biedronki.
-              </p>
             ) : null}
           </div>
         )}
 
         {tab === 'recent' &&
-          renderProductList(recent, 'Tu pojawią się ostatnio dodane produkty.')}
+          renderProductList(recent, t.addFood.recentEmpty)}
         {tab === 'mine' &&
-          renderProductList(mine, 'Nie masz jeszcze własnych produktów.')}
+          renderProductList(mine, t.addFood.mineEmpty)}
 
         {tab === 'custom' && (
           <form className="custom-form" onSubmit={saveCustom}>
             <label className="field">
-              <span>Nazwa</span>
+              <span>{t.addFood.name}</span>
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="np. Pierś z kurczaka"
+                placeholder={t.addFood.namePlaceholder}
                 required
               />
             </label>
             <label className="field">
-              <span>Marka (opcjonalnie)</span>
+              <span>{t.addFood.brandOptional}</span>
               <input
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="np. Biedronka"
+                placeholder={t.addFood.brandPlaceholder}
               />
             </label>
             <label className="field">
-              <span>Kod EAN (opcjonalnie)</span>
+              <span>{t.addFood.barcodeOptional}</span>
               <input
                 value={barcode}
                 onChange={(e) => setBarcode(e.target.value)}
@@ -405,7 +398,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
             </label>
             <div className="macro-grid">
               <label className="field">
-                <span>kcal / 100 g</span>
+                <span>{t.addFood.kcalPer100}</span>
                 <input
                   inputMode="decimal"
                   value={kcal}
@@ -414,7 +407,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
                 />
               </label>
               <label className="field">
-                <span>Białko</span>
+                <span>{t.addFood.protein}</span>
                 <input
                   inputMode="decimal"
                   value={protein}
@@ -423,7 +416,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
                 />
               </label>
               <label className="field">
-                <span>Węgle</span>
+                <span>{t.addFood.carbs}</span>
                 <input
                   inputMode="decimal"
                   value={carbs}
@@ -432,7 +425,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
                 />
               </label>
               <label className="field">
-                <span>Tłuszcz</span>
+                <span>{t.addFood.fat}</span>
                 <input
                   inputMode="decimal"
                   value={fat}
@@ -442,7 +435,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
               </label>
             </div>
             <label className="field">
-              <span>Porcja (g)</span>
+              <span>{t.addFood.portionGrams}</span>
               <input
                 inputMode="decimal"
                 value={grams}
@@ -452,7 +445,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
             </label>
             {error ? <p className="error">{error}</p> : null}
             <button type="submit" className="primary-btn" disabled={saving}>
-              {saving ? 'Zapisuję…' : 'Dodaj do dziennika'}
+              {saving ? t.addFood.saving : t.addFood.addToDiary}
             </button>
           </form>
         )}
@@ -464,7 +457,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
               {selected.brand ? ` · ${selected.brand}` : ''}
             </div>
             <label className="field">
-              <span>Porcja (g)</span>
+              <span>{t.addFood.portionGrams}</span>
               <input
                 inputMode="decimal"
                 value={grams}
@@ -484,7 +477,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
               disabled={saving}
               onClick={() => void saveSelected()}
             >
-              {saving ? 'Zapisuję…' : 'Dodaj do dziennika'}
+              {saving ? t.addFood.saving : t.addFood.addToDiary}
             </button>
           </div>
         ) : null}

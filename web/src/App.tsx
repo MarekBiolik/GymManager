@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AddFoodScreen } from './AddFoodScreen'
 import { deleteEntry, fetchDay } from './api'
+import { t } from './i18n'
 import {
   mealMacros,
   progress,
@@ -11,7 +12,7 @@ import {
   macrosForGrams,
 } from './nutrition'
 import type { DayData, MealId } from './types'
-import { MEAL_LABELS, MEAL_ORDER } from './types'
+import { MEAL_ORDER } from './types'
 import './App.css'
 
 function todayLocal(): string {
@@ -47,9 +48,7 @@ function App() {
       setDay(data)
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : 'Nie udało się wczytać dnia. Uruchom serwer API.',
+        err instanceof Error ? err.message : t.app.loadDayFailed,
       )
     } finally {
       setLoading(false)
@@ -78,7 +77,7 @@ function App() {
       await deleteEntry(id)
       await load()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Nie udało się usunąć')
+      setError(err instanceof Error ? err.message : t.app.deleteFailed)
     }
   }
 
@@ -91,28 +90,28 @@ function App() {
     <div className="app-shell">
       <div className="phone-frame">
         <header className="top-bar">
-          <h1>Dziś</h1>
+          <h1>{t.app.today}</h1>
           <p className="date-label">{formatDateLabel(date)}</p>
         </header>
 
         <main className="day-scroll">
           {error ? <p className="error banner">{error}</p> : null}
-          {loading && !day ? <p className="muted">Ładowanie…</p> : null}
+          {loading && !day ? <p className="muted">{t.app.loading}</p> : null}
 
           {day ? (
             <>
-              <section className="summary-card" aria-label="Podsumowanie dnia">
+              <section className="summary-card" aria-label={t.app.daySummaryAria}>
                 <div className="kcal-remaining">
                   {round0(left.kcal)}
                   <span>kcal</span>
                 </div>
                 <p className="kcal-caption">
-                  pozostało z {round0(day.goals.kcal)} · zjedzono {round0(totals.kcal)}
+                  {t.app.kcalCaption(round0(day.goals.kcal), round0(totals.kcal))}
                 </p>
 
                 <div className="macro-row">
                   <div className="macro macro--protein">
-                    <span className="macro-label">Białko</span>
+                    <span className="macro-label">{t.app.protein}</span>
                     <div className="macro-value">
                       {round1(totals.protein)} / {round0(day.goals.protein)} g
                     </div>
@@ -121,7 +120,7 @@ function App() {
                     </div>
                   </div>
                   <div className="macro macro--carbs">
-                    <span className="macro-label">Węgle</span>
+                    <span className="macro-label">{t.app.carbs}</span>
                     <div className="macro-value">
                       {round1(totals.carbs)} / {round0(day.goals.carbs)} g
                     </div>
@@ -130,7 +129,7 @@ function App() {
                     </div>
                   </div>
                   <div className="macro macro--fat">
-                    <span className="macro-label">Tłuszcz</span>
+                    <span className="macro-label">{t.app.fat}</span>
                     <div className="macro-value">
                       {round1(totals.fat)} / {round0(day.goals.fat)} g
                     </div>
@@ -144,24 +143,27 @@ function App() {
               {MEAL_ORDER.map((meal) => {
                 const mealEntries = day.entries.filter((entry) => entry.meal === meal)
                 const mealTotal = mealMacros(day.entries, meal)
+                const mealLabel = t.meals[meal]
                 return (
                   <section key={meal} className="meal-section">
                     <div className="meal-header">
-                      <h2>{MEAL_LABELS[meal]}</h2>
+                      <h2>{mealLabel}</h2>
                       <div className="meal-header-right">
                         <span className="meal-kcal">{round0(mealTotal.kcal)} kcal</span>
                         <button
                           type="button"
                           className="icon-add"
-                          aria-label={`Dodaj do: ${MEAL_LABELS[meal]}`}
+                          aria-label={t.app.addToMealAria(mealLabel)}
                           onClick={() => openAdd(meal)}
                         >
-                          +
+                          <span className="icon-add-glyph" aria-hidden="true">
+                            +
+                          </span>
                         </button>
                       </div>
                     </div>
                     {mealEntries.length === 0 ? (
-                      <p className="meal-empty">Brak produktów</p>
+                      <p className="meal-empty">{t.app.noProducts}</p>
                     ) : (
                       <ul className="entry-list">
                         {mealEntries.map((entry) => {
@@ -184,7 +186,7 @@ function App() {
                                 className="text-btn danger"
                                 onClick={() => void handleDelete(entry.id)}
                               >
-                                Usuń
+                                {t.app.delete}
                               </button>
                             </li>
                           )
@@ -198,20 +200,22 @@ function App() {
           ) : null}
         </main>
 
-        <nav className="bottom-nav" aria-label="Nawigacja">
+        <nav className="bottom-nav" aria-label={t.app.navAria}>
           <button type="button" className="nav-btn is-active">
-            Dziennik
+            {t.app.diary}
           </button>
           <button
             type="button"
             className="add-fab"
-            aria-label="Dodaj jedzenie"
+            aria-label={t.app.addFoodAria}
             onClick={() => openAdd('breakfast')}
           >
-            +
+            <span className="add-fab-icon" aria-hidden="true">
+              +
+            </span>
           </button>
           <button type="button" className="nav-btn" disabled>
-            Więcej
+            {t.app.more}
           </button>
         </nav>
 

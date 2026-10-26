@@ -35,13 +35,6 @@ export type DayData = {
   entries: DiaryEntry[]
 }
 
-export const MEAL_LABELS: Record<MealId, string> = {
-  breakfast: 'Śniadanie',
-  lunch: 'Obiad',
-  dinner: 'Kolacja',
-  snacks: 'Przekąski',
-}
-
 export const MEAL_ORDER: MealId[] = [
   'breakfast',
   'lunch',
