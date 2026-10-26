@@ -1,4 +1,4 @@
-import type { DiaryEntry, Goals, MealId, Product } from './types'
+import type { DiaryEntry, Goals, MealId } from './types'
 
 export type Macros = {
   kcal: number
@@ -7,7 +7,14 @@ export type Macros = {
   fat: number
 }
 
-export function macrosForGrams(product: Product, grams: number): Macros {
+type NutritionPer100g = {
+  kcal_100g: number
+  protein_100g: number
+  carbs_100g: number
+  fat_100g: number
+}
+
+export function macrosForGrams(product: NutritionPer100g, grams: number): Macros {
   const factor = grams / 100
   return {
     kcal: product.kcal_100g * factor,

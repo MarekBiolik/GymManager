@@ -4,13 +4,16 @@ import {
   addDiaryEntry,
   createProduct,
   deleteDiaryEntry,
+  findByBarcode,
   getDay,
   getGoals,
   listCustomProducts,
   listRecentProducts,
+  searchLocalProducts,
   setGoals,
   type MealId,
 } from './db.ts'
+import { fetchByBarcode, searchOff } from './openFoodFacts.ts'
 
 const PORT = Number(process.env.PORT ?? 3001)
 const MEALS = new Set<MealId>(['breakfast', 'lunch', 'dinner', 'snacks'])
@@ -79,12 +82,67 @@ app.get('/api/products/mine', (_req, res) => {
   res.json(listCustomProducts())
 })
 
+app.get('/api/foods/search', async (req, res) => {
+  const q = typeof req.query.q === 'string' ? req.query.q.trim() : ''
+  if (q.length < 2) {
+    res.json({ local: [], remote: [] })
+    return
+  }
+
+  try {
+    const local = searchLocalProducts(q)
+    const remote = await searchOff(q)
+    const localKeys = new Set(
+      local
+        .map((p) => p.barcode)
+        .filter((code): code is string => Boolean(code)),
+    )
+    const remoteFiltered = remote.filter(
+      (item) => !item.barcode || !localKeys.has(item.barcode),
+    )
+    res.json({ local, remote: remoteFiltered })
+  } catch (err) {
+    res.status(502).json({
+      error: err instanceof Error ? err.message : 'Open Food Facts unavailable',
+    })
+  }
+})
+
+app.get('/api/foods/barcode/:code', async (req, res) => {
+  const code = String(req.params.code ?? '').replace(/\D/g, '')
+  if (code.length < 8) {
+    res.status(400).json({ error: 'Invalid barcode' })
+    return
+  }
+
+  const local = findByBarcode(code)
+  if (local) {
+    res.json({ found: true, origin: 'local', product: local })
+    return
+  }
+
+  try {
+    const remote = await fetchByBarcode(code)
+    if (!remote) {
+      res.json({ found: false, barcode: code })
+      return
+    }
+    res.json({ found: true, origin: 'openfoodfacts', product: remote })
+  } catch (err) {
+    res.status(502).json({
+      error: err instanceof Error ? err.message : 'Open Food Facts unavailable',
+    })
+  }
+})
+
 app.post('/api/products', (req, res) => {
   const name = String(req.body?.name ?? '').trim()
   const kcal_100g = asNumber(req.body?.kcal_100g)
   const protein_100g = asNumber(req.body?.protein_100g)
   const carbs_100g = asNumber(req.body?.carbs_100g)
   const fat_100g = asNumber(req.body?.fat_100g)
+  const source =
+    req.body?.source === 'openfoodfacts' ? 'openfoodfacts' : 'custom'
 
   if (
     !name ||
@@ -101,15 +159,25 @@ app.post('/api/products', (req, res) => {
     return
   }
 
+  const barcode =
+    typeof req.body?.barcode === 'string' ? req.body.barcode.trim() : null
+  if (barcode) {
+    const existing = findByBarcode(barcode)
+    if (existing) {
+      res.status(201).json(existing)
+      return
+    }
+  }
+
   const product = createProduct({
     name,
     brand: req.body?.brand ?? null,
-    barcode: req.body?.barcode ?? null,
+    barcode,
     kcal_100g,
     protein_100g,
     carbs_100g,
     fat_100g,
-    source: 'custom',
+    source,
   })
   res.status(201).json(product)
 })

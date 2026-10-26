@@ -201,6 +201,29 @@ export function getProduct(id: number): Product | null {
   return row ? rowToProduct(row) : null
 }
 
+export function findByBarcode(barcode: string): Product | null {
+  const code = barcode.replace(/\D/g, '')
+  if (!code) return null
+  const row = db
+    .prepare(`SELECT * FROM products WHERE barcode = ? ORDER BY id DESC LIMIT 1`)
+    .get(code) as Record<string, unknown> | undefined
+  return row ? rowToProduct(row) : null
+}
+
+export function searchLocalProducts(query: string, limit = 20): Product[] {
+  const q = query.trim()
+  if (q.length < 2) return []
+  const rows = db
+    .prepare(
+      `SELECT * FROM products
+       WHERE name LIKE ? OR IFNULL(brand, '') LIKE ? OR IFNULL(barcode, '') LIKE ?
+       ORDER BY id DESC
+       LIMIT ?`,
+    )
+    .all(`%${q}%`, `%${q}%`, `%${q}%`, limit) as Array<Record<string, unknown>>
+  return rows.map(rowToProduct)
+}
+
 export function addDiaryEntry(input: {
   entry_date: string
   meal: MealId

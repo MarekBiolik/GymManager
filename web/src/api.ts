@@ -40,6 +40,28 @@ export function fetchMyProducts(): Promise<Product[]> {
   return request<Product[]>('/api/products/mine')
 }
 
+export type FoodCandidate = {
+  name: string
+  brand: string | null
+  barcode: string | null
+  kcal_100g: number
+  protein_100g: number
+  carbs_100g: number
+  fat_100g: number
+  source: 'openfoodfacts'
+  completeness: number | null
+}
+
+export type SearchFoodsResult = {
+  local: Product[]
+  remote: FoodCandidate[]
+}
+
+export type BarcodeLookupResult =
+  | { found: true; origin: 'local'; product: Product }
+  | { found: true; origin: 'openfoodfacts'; product: FoodCandidate }
+  | { found: false; barcode: string }
+
 export function createProduct(input: {
   name: string
   brand?: string
@@ -48,11 +70,24 @@ export function createProduct(input: {
   protein_100g: number
   carbs_100g: number
   fat_100g: number
+  source?: 'custom' | 'openfoodfacts'
 }): Promise<Product> {
   return request<Product>('/api/products', {
     method: 'POST',
     body: JSON.stringify(input),
   })
+}
+
+export function searchFoods(query: string): Promise<SearchFoodsResult> {
+  return request<SearchFoodsResult>(
+    `/api/foods/search?q=${encodeURIComponent(query)}`,
+  )
+}
+
+export function lookupBarcode(code: string): Promise<BarcodeLookupResult> {
+  return request<BarcodeLookupResult>(
+    `/api/foods/barcode/${encodeURIComponent(code)}`,
+  )
 }
 
 export function createEntry(input: {

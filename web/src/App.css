@@ -305,6 +305,51 @@
   border: 1px solid var(--border);
 }
 
+.tabs-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.search-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.search-row input {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  min-width: 0;
+}
+
+.primary-btn.compact {
+  padding: 12px 14px;
+  white-space: nowrap;
+}
+
+.section-title {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.off-note {
+  margin: 0;
+}
+
 .tab {
   appearance: none;
   border: none;
