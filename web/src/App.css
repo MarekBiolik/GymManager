@@ -323,27 +323,116 @@
   gap: 12px;
 }
 
-.search-row {
+.search-bar {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: 8px;
+  align-items: center;
 }
 
-.search-row input {
+.search-icon-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.search-icon-btn:active {
+  background: var(--surface-2);
+}
+
+.search-input-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.search-input-wrap input {
   appearance: none;
+  width: 100%;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
   border-radius: 12px;
-  padding: 12px 14px;
+  padding: 12px 42px 12px 14px;
   font-size: 1rem;
-  min-width: 0;
 }
 
-.primary-btn.compact {
-  padding: 12px 14px;
-  white-space: nowrap;
-  line-height: 1.2;
+.search-clear-btn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.search-clear-btn:active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.scanner-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 16px calc(16px + var(--safe-bottom));
+}
+
+.scanner-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scanner-frame {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 28%;
+  height: 28%;
+  border: 2px solid rgba(34, 197, 94, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.scanner-hint {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #fff;
+  font-weight: 600;
+  text-align: center;
+}
+
+.scanner-cancel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 280px);
 }
 
 .section-title {

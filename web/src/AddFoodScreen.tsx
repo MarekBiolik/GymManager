@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react'
 import {
   createEntry,
   createProduct,
@@ -8,6 +15,8 @@ import {
   searchFoods,
   type FoodCandidate,
 } from './api'
+import { BarcodeScannerOverlay } from './BarcodeScannerOverlay'
+import { canUseCameraBarcodeScan, extractBarcode } from './barcodeScan'
 import { t } from './i18n'
 import { macrosForGrams, round0, round1 } from './nutrition'
 import type { MealId, Product } from './types'
@@ -39,10 +48,13 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
   const [saving, setSaving] = useState(false)
 
   const [query, setQuery] = useState('')
-  const [barcode, setBarcode] = useState('')
+  const [customBarcode, setCustomBarcode] = useState('')
   const [searching, setSearching] = useState(false)
   const [localHits, setLocalHits] = useState<Product[]>([])
   const [remoteHits, setRemoteHits] = useState<FoodCandidate[]>([])
+  const [scanning, setScanning] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchRequestId = useRef(0)
 
   const [name, setName] = useState('')
   const [brand, setBrand] = useState('')
@@ -82,21 +94,56 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     setProtein('')
     setCarbs('')
     setFat('')
-    if (prefillBarcode) setBarcode(prefillBarcode)
+    setCustomBarcode(prefillBarcode ?? '')
   }
 
-  async function runSearch(event?: FormEvent) {
-    event?.preventDefault()
-    const q = query.trim()
-    if (q.length < 2) {
-      setError(t.addFood.queryTooShort)
-      return
+  function clearSearch() {
+    searchRequestId.current += 1
+    setQuery('')
+    setLocalHits([])
+    setRemoteHits([])
+    setSelected(null)
+    setError(null)
+    setSearching(false)
+    searchInputRef.current?.focus()
+  }
+
+  const resolveBarcode = useCallback(async (code: string) => {
+    const requestId = ++searchRequestId.current
+    setSearching(true)
+    setError(null)
+    setSelected(null)
+    setLocalHits([])
+    setRemoteHits([])
+    try {
+      const result = await lookupBarcode(code)
+      if (requestId !== searchRequestId.current) return
+      if (!result.found) {
+        openCustomBlank(code)
+        setError(t.addFood.barcodeNotFound)
+        return
+      }
+      setTab('search')
+      setQuery(code)
+      setLocalHits(result.origin === 'local' ? [result.product] : [])
+      setRemoteHits(result.origin === 'openfoodfacts' ? [result.product] : [])
+      setSelected(result.product)
+    } catch (err) {
+      if (requestId !== searchRequestId.current) return
+      setError(err instanceof Error ? err.message : t.addFood.barcodeFailed)
+    } finally {
+      if (requestId === searchRequestId.current) setSearching(false)
     }
+  }, [])
+
+  const runTextSearch = useCallback(async (q: string) => {
+    const requestId = ++searchRequestId.current
     setSearching(true)
     setError(null)
     setSelected(null)
     try {
       const result = await searchFoods(q)
+      if (requestId !== searchRequestId.current) return
       setLocalHits(result.local)
       setRemoteHits(result.remote)
       if (result.warning) {
@@ -105,38 +152,55 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
         setError(t.addFood.noResults)
       }
     } catch (err) {
+      if (requestId !== searchRequestId.current) return
       setError(err instanceof Error ? err.message : t.addFood.searchFailed)
     } finally {
-      setSearching(false)
+      if (requestId === searchRequestId.current) setSearching(false)
     }
-  }
+  }, [])
 
-  async function runBarcode(event?: FormEvent) {
-    event?.preventDefault()
-    const code = barcode.replace(/\D/g, '')
-    if (code.length < 8) {
-      setError(t.addFood.barcodeTooShort)
+  useEffect(() => {
+    const q = query.trim()
+    if (q.length === 0) {
+      searchRequestId.current += 1
+      setLocalHits([])
+      setRemoteHits([])
+      setSearching(false)
+      setError(null)
       return
     }
-    setSearching(true)
-    setError(null)
-    setSelected(null)
-    try {
-      const result = await lookupBarcode(code)
-      if (!result.found) {
-        openCustomBlank(code)
-        setError(t.addFood.barcodeNotFound)
-        return
-      }
-      setTab('search')
-      setLocalHits(result.origin === 'local' ? [result.product] : [])
-      setRemoteHits(result.origin === 'openfoodfacts' ? [result.product] : [])
-      setSelected(result.product)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.addFood.barcodeFailed)
-    } finally {
-      setSearching(false)
+
+    const asBarcode = extractBarcode(q)
+    if (asBarcode && asBarcode === q.replace(/\D/g, '') && q.replace(/\D/g, '').length >= 8) {
+      const handle = window.setTimeout(() => {
+        void resolveBarcode(asBarcode)
+      }, 350)
+      return () => window.clearTimeout(handle)
     }
+
+    if (q.length < 2) {
+      searchRequestId.current += 1
+      setLocalHits([])
+      setRemoteHits([])
+      setSearching(false)
+      setError(null)
+      return
+    }
+
+    const handle = window.setTimeout(() => {
+      void runTextSearch(q)
+    }, 300)
+    return () => window.clearTimeout(handle)
+  }, [query, resolveBarcode, runTextSearch])
+
+  function openScanner() {
+    if (canUseCameraBarcodeScan()) {
+      setError(null)
+      setScanning(true)
+      return
+    }
+    setError(t.addFood.scanFallbackHint)
+    searchInputRef.current?.focus()
   }
 
   async function ensureProduct(item: Selectable): Promise<Product> {
@@ -182,7 +246,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     const proteinN = Number(protein)
     const carbsN = Number(carbs)
     const fatN = Number(fat)
-    const code = barcode.replace(/\D/g, '')
+    const code = customBarcode.replace(/\D/g, '')
 
     if (!name.trim()) {
       setError(t.addFood.nameRequired)
@@ -327,28 +391,40 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
 
         {tab === 'search' && (
           <div className="search-panel">
-            <form className="search-row" onSubmit={runSearch}>
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t.addFood.searchPlaceholder}
-                enterKeyHint="search"
-              />
-              <button type="submit" className="primary-btn compact" disabled={searching}>
-                {searching ? '…' : t.addFood.search}
+            <div className="search-bar">
+              <button
+                type="button"
+                className="search-icon-btn"
+                aria-label={t.addFood.scanAria}
+                title={t.addFood.scanAria}
+                onClick={openScanner}
+              >
+                <BarcodeIcon />
               </button>
-            </form>
-            <form className="search-row" onSubmit={runBarcode}>
-              <input
-                value={barcode}
-                onChange={(e) => setBarcode(e.target.value)}
-                placeholder={t.addFood.barcodePlaceholder}
-                inputMode="numeric"
-              />
-              <button type="submit" className="primary-btn compact" disabled={searching}>
-                {t.addFood.barcode}
-              </button>
-            </form>
+              <div className="search-input-wrap">
+                <input
+                  ref={searchInputRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t.addFood.searchPlaceholder}
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                />
+                {query ? (
+                  <button
+                    type="button"
+                    className="search-clear-btn"
+                    aria-label={t.addFood.clearSearch}
+                    onClick={clearSearch}
+                  >
+                    ×
+                  </button>
+                ) : null}
+              </div>
+            </div>
+            {searching ? <p className="muted small">{t.addFood.searching}</p> : null}
             {localHits.length > 0 ? (
               <>
                 <h2 className="section-title">{t.addFood.inApp}</h2>
@@ -391,8 +467,8 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
             <label className="field">
               <span>{t.addFood.barcodeOptional}</span>
               <input
-                value={barcode}
-                onChange={(e) => setBarcode(e.target.value)}
+                value={customBarcode}
+                onChange={(e) => setCustomBarcode(e.target.value)}
                 inputMode="numeric"
               />
             </label>
@@ -486,6 +562,43 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
           <p className="error">{error}</p>
         ) : null}
       </div>
+
+      {scanning ? (
+        <BarcodeScannerOverlay
+          onDetected={(code) => {
+            setScanning(false)
+            setQuery(code)
+            void resolveBarcode(code)
+          }}
+          onCancel={() => setScanning(false)}
+          onError={(message) => setError(message)}
+        />
+      ) : null}
     </div>
+  )
+}
+
+function BarcodeIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7 7h.01M10 7v10M12.5 7v10M15 7v10M17.5 7v10"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+      />
+    </svg>
   )
 }
