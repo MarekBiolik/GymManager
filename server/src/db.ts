@@ -503,3 +503,46 @@ export function getDay(entryDate: string): {
     entries: rows.map(entryFromJoinRow),
   }
 }
+
+export type WeekDaySummary = {
+  date: string
+  kcal: number
+  hasEntries: boolean
+}
+
+/** Daily kcal totals for inclusive date range (YYYY-MM-DD). */
+export function getWeekKcalSummary(
+  startDate: string,
+  endDate: string,
+): WeekDaySummary[] {
+  const rows = db
+    .prepare(
+      `SELECT
+         e.entry_date AS date,
+         SUM(p.kcal_100g * e.grams / 100.0) AS kcal
+       FROM diary_entries e
+       JOIN products p ON p.id = e.product_id
+       WHERE e.entry_date >= ? AND e.entry_date <= ?
+       GROUP BY e.entry_date`,
+    )
+    .all(startDate, endDate) as Array<{ date: string; kcal: number }>
+
+  const byDate = new Map(rows.map((row) => [row.date, Number(row.kcal) || 0]))
+  const days: WeekDaySummary[] = []
+  let cursor = startDate
+  while (cursor <= endDate) {
+    const kcal = byDate.get(cursor) ?? 0
+    days.push({
+      date: cursor,
+      kcal,
+      hasEntries: byDate.has(cursor),
+    })
+    const [y, m, d] = cursor.split('-').map(Number)
+    const next = new Date(y, m - 1, d + 1)
+    const ny = next.getFullYear()
+    const nm = String(next.getMonth() + 1).padStart(2, '0')
+    const nd = String(next.getDate()).padStart(2, '0')
+    cursor = `${ny}-${nm}-${nd}`
+  }
+  return days
+}

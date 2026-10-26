@@ -31,3 +31,36 @@ export function formatDateLabel(isoDate: string): string {
 export function isToday(isoDate: string): boolean {
   return isoDate === todayLocal()
 }
+
+/** Monday-first week containing the given date. */
+export function startOfWeekMonday(isoDate: string): string {
+  const date = parseIsoDate(isoDate)
+  const day = date.getDay() // 0 Sun .. 6 Sat
+  const offset = day === 0 ? -6 : 1 - day
+  date.setDate(date.getDate() + offset)
+  return formatIsoDate(date)
+}
+
+export function weekDates(isoDate: string): string[] {
+  const start = startOfWeekMonday(isoDate)
+  return Array.from({ length: 7 }, (_, i) => shiftIsoDate(start, i))
+}
+
+/** Polish weekday short labels, Monday-first. */
+export const WEEKDAY_SHORT_PL = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd'] as const
+
+export function formatWeekRangeLabel(isoDate: string): string {
+  const days = weekDates(isoDate)
+  const start = parseIsoDate(days[0])
+  const end = parseIsoDate(days[6])
+  const sameMonth = start.getMonth() === end.getMonth()
+  const startLabel = new Intl.DateTimeFormat('pl-PL', {
+    day: 'numeric',
+    month: sameMonth ? undefined : 'short',
+  }).format(start)
+  const endLabel = new Intl.DateTimeFormat('pl-PL', {
+    day: 'numeric',
+    month: 'short',
+  }).format(end)
+  return `${startLabel} – ${endLabel}`
+}

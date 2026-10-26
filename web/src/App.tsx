@@ -1,12 +1,26 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { AddFoodScreen } from './AddFoodScreen'
-import { deleteEntry, fetchDay, updateEntryGrams } from './api'
-import { formatDateLabel, isToday, shiftIsoDate, todayLocal } from './dates'
+import {
+  deleteEntry,
+  fetchDay,
+  fetchWeek,
+  updateEntryGrams,
+  type WeekDaySummary,
+} from './api'
+import {
+  formatWeekRangeLabel,
+  isToday,
+  parseIsoDate,
+  shiftIsoDate,
+  startOfWeekMonday,
+  todayLocal,
+  weekDates,
+  WEEKDAY_SHORT_PL,
+} from './dates'
 import { t } from './i18n'
 import {
   mealMacros,
   progress,
-  remaining,
   round0,
   round1,
   sumMacros,
@@ -21,6 +35,7 @@ import './App.css'
 function App() {
   const [date, setDate] = useState(todayLocal)
   const [day, setDay] = useState<DayData | null>(null)
+  const [weekDays, setWeekDays] = useState<WeekDaySummary[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -28,18 +43,25 @@ function App() {
   const [addMeal, setAddMeal] = useState<MealId>('breakfast_1')
   const [editing, setEditing] = useState<DiaryEntry | null>(null)
 
+  const weekStart = useMemo(() => startOfWeekMonday(date), [date])
+  const weekStrip = useMemo(() => weekDates(date), [date])
+
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchDay(date)
-      setDay(data)
+      const [dayData, weekData] = await Promise.all([
+        fetchDay(date),
+        fetchWeek(weekStart),
+      ])
+      setDay(dayData)
+      setWeekDays(weekData.days)
     } catch (err) {
       setError(err instanceof Error ? err.message : t.app.loadDayFailed)
     } finally {
       setLoading(false)
     }
-  }, [date])
+  }, [date, weekStart])
 
   useEffect(() => {
     void load()
@@ -50,15 +72,11 @@ function App() {
     [day],
   )
 
-  const left = useMemo(
-    () =>
-      day
-        ? remaining(day.goals, totals)
-        : { kcal: 0, protein: 0, carbs: 0, fat: 0 },
-    [day, totals],
-  )
-
-  const viewingToday = isToday(date)
+  const weekByDate = useMemo(() => {
+    const map = new Map<string, WeekDaySummary>()
+    for (const item of weekDays) map.set(item.date, item)
+    return map
+  }, [weekDays])
 
   function openAdd(meal: MealId) {
     setAddMeal(meal)
@@ -78,20 +96,19 @@ function App() {
   return (
     <div className="app-shell">
       <div className="phone-frame">
-        <header className="top-bar top-bar--day">
-          <button
-            type="button"
-            className="day-nav-btn"
-            aria-label={t.app.prevDay}
-            onClick={() => setDate((d) => shiftIsoDate(d, -1))}
-          >
-            ‹
-          </button>
-          <div className="day-heading">
-            <h1>{viewingToday ? t.app.today : formatDateLabel(date)}</h1>
-            <p className="date-label">
-              {viewingToday ? formatDateLabel(date) : null}
-              {!viewingToday ? (
+        <header className="week-header">
+          <div className="week-toolbar">
+            <button
+              type="button"
+              className="day-nav-btn"
+              aria-label={t.app.prevWeek}
+              onClick={() => setDate((d) => shiftIsoDate(startOfWeekMonday(d), -7))}
+            >
+              ‹
+            </button>
+            <div className="week-heading">
+              <p className="week-range">{formatWeekRangeLabel(date)}</p>
+              {!isToday(date) ? (
                 <button
                   type="button"
                   className="text-btn jump-today"
@@ -100,16 +117,52 @@ function App() {
                   {t.app.jumpToToday}
                 </button>
               ) : null}
-            </p>
+            </div>
+            <button
+              type="button"
+              className="day-nav-btn"
+              aria-label={t.app.nextWeek}
+              onClick={() => setDate((d) => shiftIsoDate(startOfWeekMonday(d), 7))}
+            >
+              ›
+            </button>
           </div>
-          <button
-            type="button"
-            className="day-nav-btn"
-            aria-label={t.app.nextDay}
-            onClick={() => setDate((d) => shiftIsoDate(d, 1))}
-          >
-            ›
-          </button>
+
+          <div className="week-strip" role="tablist" aria-label={t.app.weekAria}>
+            {weekStrip.map((iso, index) => {
+              const dayNum = parseIsoDate(iso).getDate()
+              const label = WEEKDAY_SHORT_PL[index]
+              const selected = iso === date
+              const today = isToday(iso)
+              const summary = weekByDate.get(iso)
+              return (
+                <button
+                  key={iso}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  aria-label={t.app.selectDayAria(label, dayNum)}
+                  className={[
+                    'week-day',
+                    selected ? 'is-selected' : '',
+                    today ? 'is-today' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  onClick={() => setDate(iso)}
+                >
+                  <span className="week-day-label">{label}</span>
+                  <span className="week-day-num">{dayNum}</span>
+                  <span
+                    className={
+                      summary?.hasEntries ? 'week-day-dot is-on' : 'week-day-dot'
+                    }
+                    aria-hidden="true"
+                  />
+                </button>
+              )
+            })}
+          </div>
         </header>
 
         <main className="day-scroll day-scroll--no-fab">
@@ -121,13 +174,9 @@ function App() {
               <section className="summary-card" aria-label={t.app.daySummaryAria}>
                 <div className="macro macro--kcal summary-kcal">
                   <span className="macro-label">{t.app.kcal}</span>
-                  <div className="kcal-remaining">
-                    {round0(left.kcal)}
-                    <span>kcal</span>
+                  <div className="macro-value macro-value--lg">
+                    {round0(totals.kcal)} / {round0(day.goals.kcal)}
                   </div>
-                  <p className="kcal-caption">
-                    {t.app.kcalCaption(round0(day.goals.kcal), round0(totals.kcal))}
-                  </p>
                   <div className="macro-bar macro-bar--lg" aria-hidden="true">
                     <i style={{ width: `${progress(totals.kcal, day.goals.kcal)}%` }} />
                   </div>

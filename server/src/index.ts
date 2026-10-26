@@ -7,6 +7,7 @@ import {
   findByBarcode,
   getDay,
   getGoals,
+  getWeekKcalSummary,
   listCustomProducts,
   listFrequentProductsForMeal,
   MEAL_IDS,
@@ -80,6 +81,29 @@ app.get('/api/day', (req, res) => {
       ? req.query.date
       : todayLocal()
   res.json(getDay(date))
+})
+
+app.get('/api/week', (req, res) => {
+  const start =
+    typeof req.query.start === 'string' &&
+    /^\d{4}-\d{2}-\d{2}$/.test(req.query.start)
+      ? req.query.start
+      : null
+  if (!start) {
+    res.status(400).json({ error: 'Invalid start date' })
+    return
+  }
+  const [y, m, d] = start.split('-').map(Number)
+  const endDate = new Date(y, m - 1, d + 6)
+  const ey = endDate.getFullYear()
+  const em = String(endDate.getMonth() + 1).padStart(2, '0')
+  const ed = String(endDate.getDate()).padStart(2, '0')
+  const end = `${ey}-${em}-${ed}`
+  res.json({
+    start,
+    end,
+    days: getWeekKcalSummary(start, end),
+  })
 })
 
 app.get('/api/products/frequent', (req, res) => {

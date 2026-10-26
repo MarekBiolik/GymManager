@@ -32,6 +32,24 @@ export function fetchDay(date?: string): Promise<DayData> {
   return request<DayData>(`/api/day${query}`)
 }
 
+export type WeekDaySummary = {
+  date: string
+  kcal: number
+  hasEntries: boolean
+}
+
+export type WeekSummary = {
+  start: string
+  end: string
+  days: WeekDaySummary[]
+}
+
+export function fetchWeek(startDate: string): Promise<WeekSummary> {
+  return request<WeekSummary>(
+    `/api/week?start=${encodeURIComponent(startDate)}`,
+  )
+}
+
 export function fetchFrequentProducts(meal: MealId): Promise<Product[]> {
   return request<Product[]>(
     `/api/products/frequent?meal=${encodeURIComponent(meal)}`,
