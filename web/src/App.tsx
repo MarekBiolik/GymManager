@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { AddFoodScreen } from './AddFoodScreen'
 import { deleteEntry, fetchDay, updateEntryGrams } from './api'
 import { t } from './i18n'
@@ -79,6 +79,16 @@ function App() {
     setAdding(true)
   }
 
+  async function handleDelete(entry: DiaryEntry, event: MouseEvent) {
+    event.stopPropagation()
+    try {
+      await deleteEntry(entry.id)
+      await load()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t.app.deleteFailed)
+    }
+  }
+
   return (
     <div className="app-shell">
       <div className="phone-frame">
@@ -140,20 +150,27 @@ function App() {
                 return (
                   <section key={meal} className="meal-section">
                     <div className="meal-header">
-                      <h2>{mealLabel}</h2>
-                      <div className="meal-header-right">
-                        <span className="meal-kcal">{round0(mealTotal.kcal)} kcal</span>
-                        <button
-                          type="button"
-                          className="icon-add"
-                          aria-label={t.app.addToMealAria(mealLabel)}
-                          onClick={() => openAdd(meal)}
-                        >
-                          <span className="icon-add-glyph" aria-hidden="true">
-                            +
-                          </span>
-                        </button>
+                      <div className="meal-header-text">
+                        <h2>{mealLabel}</h2>
+                        <p className="meal-macros">
+                          {t.app.mealMacros(
+                            round0(mealTotal.kcal),
+                            round1(mealTotal.protein),
+                            round1(mealTotal.carbs),
+                            round1(mealTotal.fat),
+                          )}
+                        </p>
                       </div>
+                      <button
+                        type="button"
+                        className="icon-add"
+                        aria-label={t.app.addToMealAria(mealLabel)}
+                        onClick={() => openAdd(meal)}
+                      >
+                        <span className="icon-add-glyph" aria-hidden="true">
+                          +
+                        </span>
+                      </button>
                     </div>
                     {mealEntries.length === 0 ? (
                       <p className="meal-empty">{t.app.noProducts}</p>
@@ -162,7 +179,7 @@ function App() {
                         {mealEntries.map((entry) => {
                           const m = macrosForGrams(entry.product, entry.grams)
                           return (
-                            <li key={entry.id}>
+                            <li key={entry.id} className="entry-item">
                               <button
                                 type="button"
                                 className="entry-row entry-row-btn"
@@ -180,6 +197,14 @@ function App() {
                                     {round1(m.fat)}
                                   </div>
                                 </div>
+                              </button>
+                              <button
+                                type="button"
+                                className="entry-delete"
+                                aria-label={t.app.deleteEntryAria(entry.product.name)}
+                                onClick={(event) => void handleDelete(entry, event)}
+                              >
+                                ×
                               </button>
                             </li>
                           )

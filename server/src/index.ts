@@ -16,9 +16,15 @@ import {
   type MealId,
 } from './db.ts'
 import { fetchByBarcode, rankFoodMatches, searchOff } from './openFoodFacts.ts'
+import { seedStaples } from './staples.ts'
 
 const PORT = Number(process.env.PORT ?? 3001)
 const MEALS = new Set<MealId>(MEAL_IDS)
+
+const seeded = seedStaples()
+if (seeded > 0) {
+  console.log(`Seeded ${seeded} staple foods`)
+}
 
 const app = express()
 app.use(cors())

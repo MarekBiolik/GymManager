@@ -2,7 +2,13 @@
 
 Personal diet tracker for logging meals and macros (kcal, protein, carbs, fat). Mobile-first web UI with a small Express + SQLite API.
 
-The **UI is Polish** for now; product search can pull nutrition data from [Open Food Facts](https://world.openfoodfacts.org/) (ODbL). Attribution and licensing notes belong in docs, not in the in-app chrome.
+The **UI is Polish** for now. Search uses:
+
+1. A seeded **staple foods** list (banana, oil spoon sizes, chicken breast, etc.) with typical serving units
+2. Your own products and diary history
+3. [Open Food Facts](https://world.openfoodfacts.org/) (ODbL) for packaged barcodes / branded items
+
+Attribution for Open Food Facts belongs in docs, not in the in-app chrome. We do **not** scrape supermarket sites (fragile and against typical ToS); a local staple seed + OFF is the practical path for a personal tracker.
 
 ## Stack
 

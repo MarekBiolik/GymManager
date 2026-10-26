@@ -1,0 +1,319 @@
+[
+  {
+    "name": "Banan",
+    "kcal_100g": 89,
+    "protein_100g": 1.1,
+    "carbs_100g": 22.8,
+    "fat_100g": 0.3,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 120 },
+      { "key": "piece_small", "label": "sztuka (mała)", "grams": 90 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Jabłko",
+    "kcal_100g": 52,
+    "protein_100g": 0.3,
+    "carbs_100g": 14,
+    "fat_100g": 0.2,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 180 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Pomarańcza",
+    "kcal_100g": 47,
+    "protein_100g": 0.9,
+    "carbs_100g": 12,
+    "fat_100g": 0.1,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Truskawka",
+    "kcal_100g": 32,
+    "protein_100g": 0.7,
+    "carbs_100g": 8,
+    "fat_100g": 0.3,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Borówka",
+    "kcal_100g": 57,
+    "protein_100g": 0.7,
+    "carbs_100g": 14,
+    "fat_100g": 0.3,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Winogrono",
+    "kcal_100g": 69,
+    "protein_100g": 0.7,
+    "carbs_100g": 18,
+    "fat_100g": 0.2,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Pomidor",
+    "kcal_100g": 18,
+    "protein_100g": 0.9,
+    "carbs_100g": 3.9,
+    "fat_100g": 0.2,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 120 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Ogórek",
+    "kcal_100g": 15,
+    "protein_100g": 0.7,
+    "carbs_100g": 3.6,
+    "fat_100g": 0.1,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 200 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Marchew",
+    "kcal_100g": 41,
+    "protein_100g": 0.9,
+    "carbs_100g": 10,
+    "fat_100g": 0.2,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 60 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Papryka czerwona",
+    "kcal_100g": 31,
+    "protein_100g": 1,
+    "carbs_100g": 6,
+    "fat_100g": 0.3,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Sałata lodowa",
+    "kcal_100g": 14,
+    "protein_100g": 0.9,
+    "carbs_100g": 3,
+    "fat_100g": 0.1,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 50 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Ziemniak gotowany",
+    "kcal_100g": 87,
+    "protein_100g": 1.9,
+    "carbs_100g": 20,
+    "fat_100g": 0.1,
+    "servings": [
+      { "key": "piece_medium", "label": "sztuka (średnia)", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Ryż biały ugotowany",
+    "kcal_100g": 130,
+    "protein_100g": 2.7,
+    "carbs_100g": 28,
+    "fat_100g": 0.3,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 160 },
+      { "key": "tbsp", "label": "łyżka", "grams": 15 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Makaron ugotowany",
+    "kcal_100g": 131,
+    "protein_100g": 5,
+    "carbs_100g": 25,
+    "fat_100g": 1.1,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 140 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Owies / płatki owsiane",
+    "kcal_100g": 389,
+    "protein_100g": 17,
+    "carbs_100g": 66,
+    "fat_100g": 7,
+    "servings": [
+      { "key": "tbsp", "label": "łyżka", "grams": 10 },
+      { "key": "cup", "label": "szklanka", "grams": 80 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Chleb pszenny",
+    "kcal_100g": 265,
+    "protein_100g": 9,
+    "carbs_100g": 49,
+    "fat_100g": 3.2,
+    "servings": [
+      { "key": "slice", "label": "kromka", "grams": 30 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Jajko kurze",
+    "kcal_100g": 155,
+    "protein_100g": 13,
+    "carbs_100g": 1.1,
+    "fat_100g": 11,
+    "servings": [
+      { "key": "piece", "label": "sztuka (L)", "grams": 60 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Mleko 2%",
+    "kcal_100g": 50,
+    "protein_100g": 3.3,
+    "carbs_100g": 4.8,
+    "fat_100g": 2,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 250 },
+      { "key": "tbsp", "label": "łyżka", "grams": 15 },
+      { "key": "g", "label": "gramy / ml", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Twaróg półtłusty",
+    "kcal_100g": 132,
+    "protein_100g": 16,
+    "carbs_100g": 3.5,
+    "fat_100g": 6,
+    "servings": [
+      { "key": "tbsp", "label": "łyżka", "grams": 20 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Jogurt naturalny",
+    "kcal_100g": 61,
+    "protein_100g": 3.5,
+    "carbs_100g": 4.7,
+    "fat_100g": 3.3,
+    "servings": [
+      { "key": "cup", "label": "szklanka / opakowanie", "grams": 180 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Pierś z kurczaka pieczona",
+    "kcal_100g": 165,
+    "protein_100g": 31,
+    "carbs_100g": 0,
+    "fat_100g": 3.6,
+    "servings": [
+      { "key": "piece", "label": "porcja", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Łosoś pieczony",
+    "kcal_100g": 206,
+    "protein_100g": 22,
+    "carbs_100g": 0,
+    "fat_100g": 12,
+    "servings": [
+      { "key": "piece", "label": "porcja", "grams": 150 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Oliwa z oliwek",
+    "kcal_100g": 884,
+    "protein_100g": 0,
+    "carbs_100g": 0,
+    "fat_100g": 100,
+    "servings": [
+      { "key": "tbsp", "label": "łyżka", "grams": 10 },
+      { "key": "tsp", "label": "łyżeczka", "grams": 5 },
+      { "key": "g", "label": "gramy / ml", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Masło",
+    "kcal_100g": 717,
+    "protein_100g": 0.9,
+    "carbs_100g": 0.1,
+    "fat_100g": 81,
+    "servings": [
+      { "key": "tsp", "label": "łyżeczka", "grams": 5 },
+      { "key": "tbsp", "label": "łyżka", "grams": 10 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Orzechy włoskie",
+    "kcal_100g": 654,
+    "protein_100g": 15,
+    "carbs_100g": 14,
+    "fat_100g": 65,
+    "servings": [
+      { "key": "tbsp", "label": "łyżka", "grams": 10 },
+      { "key": "handful", "label": "garść", "grams": 30 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Miód",
+    "kcal_100g": 304,
+    "protein_100g": 0.3,
+    "carbs_100g": 82,
+    "fat_100g": 0,
+    "servings": [
+      { "key": "tsp", "label": "łyżeczka", "grams": 7 },
+      { "key": "tbsp", "label": "łyżka", "grams": 21 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Cukier biały",
+    "kcal_100g": 387,
+    "protein_100g": 0,
+    "carbs_100g": 100,
+    "fat_100g": 0,
+    "servings": [
+      { "key": "tsp", "label": "łyżeczka", "grams": 4 },
+      { "key": "tbsp", "label": "łyżka", "grams": 12 },
+      { "key": "g", "label": "gramy", "grams": 1 }
+    ]
+  },
+  {
+    "name": "Woda",
+    "kcal_100g": 0,
+    "protein_100g": 0,
+    "carbs_100g": 0,
+    "fat_100g": 0,
+    "servings": [
+      { "key": "cup", "label": "szklanka", "grams": 250 },
+      { "key": "g", "label": "ml", "grams": 1 }
+    ]
+  }
+]

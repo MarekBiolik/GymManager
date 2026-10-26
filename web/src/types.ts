@@ -5,6 +5,12 @@ export type MealId =
   | 'snack'
   | 'dinner'
 
+export type ServingOption = {
+  key: string
+  label: string
+  grams: number
+}
+
 export type Product = {
   id: number
   name: string
@@ -14,7 +20,8 @@ export type Product = {
   protein_100g: number
   carbs_100g: number
   fat_100g: number
-  source: 'custom' | 'openfoodfacts'
+  source: 'custom' | 'openfoodfacts' | 'staple'
+  servings: ServingOption[]
   created_at: string
 }
 
@@ -47,3 +54,10 @@ export const MEAL_ORDER: MealId[] = [
   'snack',
   'dinner',
 ]
+
+export function productServings(product: {
+  servings?: ServingOption[] | null
+}): ServingOption[] {
+  if (product.servings && product.servings.length > 0) return product.servings
+  return [{ key: 'g', label: 'gramy', grams: 1 }]
+}

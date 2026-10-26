@@ -149,10 +149,15 @@
 
 .meal-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid transparent;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.meal-header-text {
+  min-width: 0;
 }
 
 .meal-header h2 {
@@ -161,15 +166,11 @@
   font-weight: 650;
 }
 
-.meal-header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.meal-kcal {
+.meal-macros {
+  margin: 4px 0 0;
   color: var(--muted);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .icon-add {
@@ -202,7 +203,26 @@
 .entry-list {
   list-style: none;
   margin: 0;
-  padding: 0 8px 8px;
+  padding: 4px 8px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.entry-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  gap: 2px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.entry-item + .entry-item {
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  padding-top: 4px;
+  margin-top: 2px;
 }
 
 .entry-row {
@@ -211,7 +231,6 @@
   justify-content: space-between;
   gap: 12px;
   padding: 10px 8px;
-  border-top: 1px solid var(--border);
 }
 
 .entry-row-btn {
@@ -221,12 +240,29 @@
   background: transparent;
   color: inherit;
   text-align: left;
-  padding: 12px 8px;
+  padding: 10px 8px 10px 10px;
   border-radius: 10px;
+  min-width: 0;
 }
 
 .entry-row-btn:active {
   background: rgba(255, 255, 255, 0.04);
+}
+
+.entry-delete {
+  width: 40px;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: #fca5a5;
+  font-size: 1.4rem;
+  line-height: 1;
+  border-radius: 10px;
+  align-self: center;
+}
+
+.entry-delete:active {
+  background: rgba(239, 68, 68, 0.12);
 }
 
 .muted {

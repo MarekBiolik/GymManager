@@ -52,6 +52,7 @@ export type FoodCandidate = {
   fat_100g: number
   source: 'openfoodfacts'
   completeness: number | null
+  servings?: import('./types').ServingOption[]
 }
 
 export type SearchFoodsResult = {

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { t } from './i18n'
 import { macrosForGrams, round0, round1 } from './nutrition'
+import { productServings, type ServingOption } from './types'
 
 type Nutrition = {
   name: string
@@ -9,6 +10,7 @@ type Nutrition = {
   protein_100g: number
   carbs_100g: number
   fat_100g: number
+  servings?: ServingOption[] | null
 }
 
 type Props = {
@@ -20,7 +22,16 @@ type Props = {
   onDelete?: () => void | Promise<void>
 }
 
-const PRESETS = [50, 100, 150, 200, 250]
+function pickInitialServing(
+  servings: ServingOption[],
+  initialGrams?: number,
+): ServingOption {
+  if (initialGrams != null) {
+    const exact = servings.find((s) => s.grams === initialGrams)
+    if (exact) return exact
+  }
+  return servings.find((s) => s.key !== 'g') ?? servings[0]
+}
 
 export function PortionScreen({
   product,
@@ -30,15 +41,53 @@ export function PortionScreen({
   onConfirm,
   onDelete,
 }: Props) {
-  const [grams, setGrams] = useState(String(initialGrams))
+  const servings = productServings(product)
+  const [servingKey, setServingKey] = useState(
+    () => pickInitialServing(servings, initialGrams).key,
+  )
+  const activeServing =
+    servings.find((s) => s.key === servingKey) ?? servings[0]
+  const isGramsUnit = activeServing.grams === 1 && activeServing.key === 'g'
+
+  const [amount, setAmount] = useState(() => {
+    const initial = pickInitialServing(servings, initialGrams)
+    if (initial.grams === 1 && initial.key === 'g') {
+      return String(initialGrams)
+    }
+    if (initialGrams && initial.grams > 1) {
+      const qty = initialGrams / initial.grams
+      return Number.isInteger(qty) ? String(qty) : qty.toFixed(1)
+    }
+    return '1'
+  })
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const gramsNumber = Number(grams)
+  const amountNumber = Number(amount.replace(',', '.'))
+  const gramsNumber = useMemo(() => {
+    if (!Number.isFinite(amountNumber) || amountNumber <= 0) return NaN
+    return amountNumber * activeServing.grams
+  }, [amountNumber, activeServing.grams])
+
   const preview = useMemo(() => {
     if (!Number.isFinite(gramsNumber) || gramsNumber <= 0) return null
     return macrosForGrams(product, gramsNumber)
   }, [product, gramsNumber])
+
+  function selectServing(option: ServingOption) {
+    if (Number.isFinite(gramsNumber) && gramsNumber > 0) {
+      if (option.grams === 1 && option.key === 'g') {
+        setAmount(String(Math.round(gramsNumber)))
+      } else {
+        const qty = gramsNumber / option.grams
+        setAmount(Number.isInteger(qty) ? String(qty) : qty.toFixed(2))
+      }
+    } else {
+      setAmount(option.grams === 1 && option.key === 'g' ? '100' : '1')
+    }
+    setServingKey(option.key)
+  }
 
   async function confirm() {
     if (!Number.isFinite(gramsNumber) || gramsNumber <= 0) {
@@ -75,32 +124,47 @@ export function PortionScreen({
           </div>
         </div>
 
+        <div className="field">
+          <span>{t.addFood.portionUnit}</span>
+          <div className="portion-presets" role="listbox" aria-label={t.addFood.portionUnit}>
+            {servings.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                role="option"
+                aria-selected={option.key === activeServing.key}
+                className={
+                  option.key === activeServing.key
+                    ? 'portion-preset is-active'
+                    : 'portion-preset'
+                }
+                onClick={() => selectServing(option)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <label className="field">
-          <span>{t.addFood.portionGrams}</span>
+          <span>
+            {isGramsUnit
+              ? t.addFood.portionGrams
+              : t.addFood.portionAmount(activeServing.label)}
+          </span>
           <input
             inputMode="decimal"
-            value={grams}
-            onChange={(e) => setGrams(e.target.value)}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
             autoFocus
           />
         </label>
 
-        <div className="portion-presets">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              className={
-                Number(grams) === preset
-                  ? 'portion-preset is-active'
-                  : 'portion-preset'
-              }
-              onClick={() => setGrams(String(preset))}
-            >
-              {preset} g
-            </button>
-          ))}
-        </div>
+        {!isGramsUnit && Number.isFinite(gramsNumber) && gramsNumber > 0 ? (
+          <p className="muted small">
+            {t.addFood.portionEqualsGrams(round0(gramsNumber))}
+          </p>
+        ) : null}
 
         {preview ? (
           <p className="portion-preview">
