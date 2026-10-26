@@ -55,6 +55,7 @@ export type FoodCandidate = {
 export type SearchFoodsResult = {
   local: Product[]
   remote: FoodCandidate[]
+  warning?: string
 }
 
 export type BarcodeLookupResult =

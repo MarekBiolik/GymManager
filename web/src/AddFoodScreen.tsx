@@ -98,8 +98,10 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       const result = await searchFoods(q)
       setLocalHits(result.local)
       setRemoteHits(result.remote)
-      if (result.local.length === 0 && result.remote.length === 0) {
-        setError('Brak wyników — dodaj własny produkt')
+      if (result.warning) {
+        setError(result.warning)
+      } else if (result.local.length === 0 && result.remote.length === 0) {
+        setError('Brak wyników — dodaj własny produkt albo wpisz kod EAN')
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Szukanie nieudane')

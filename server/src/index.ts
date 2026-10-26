@@ -89,8 +89,9 @@ app.get('/api/foods/search', async (req, res) => {
     return
   }
 
+  const local = searchLocalProducts(q)
+
   try {
-    const local = searchLocalProducts(q)
     const remote = await searchOff(q)
     const localKeys = new Set(
       local
@@ -102,8 +103,14 @@ app.get('/api/foods/search', async (req, res) => {
     )
     res.json({ local, remote: remoteFiltered })
   } catch (err) {
-    res.status(502).json({
-      error: err instanceof Error ? err.message : 'Open Food Facts unavailable',
+    // Local hits still useful when OFF is overloaded (503).
+    res.json({
+      local,
+      remote: [],
+      warning:
+        err instanceof Error
+          ? err.message
+          : 'Open Food Facts chwilowo niedostępne',
     })
   }
 })
