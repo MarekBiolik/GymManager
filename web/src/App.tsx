@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AddFoodScreen } from './AddFoodScreen'
-import { deleteEntry, fetchDay } from './api'
+import { deleteEntry, fetchDay, updateEntryGrams } from './api'
 import { t } from './i18n'
 import {
   mealMacros,
@@ -11,7 +11,8 @@ import {
   sumMacros,
   macrosForGrams,
 } from './nutrition'
-import type { DayData, MealId } from './types'
+import { PortionScreen } from './PortionScreen'
+import type { DayData, DiaryEntry, MealId } from './types'
 import { MEAL_ORDER } from './types'
 import './App.css'
 
@@ -38,7 +39,8 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [adding, setAdding] = useState(false)
-  const [addMeal, setAddMeal] = useState<MealId>('breakfast')
+  const [addMeal, setAddMeal] = useState<MealId>('breakfast_1')
+  const [editing, setEditing] = useState<DiaryEntry | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -72,15 +74,6 @@ function App() {
     [day, totals],
   )
 
-  async function handleDelete(id: number) {
-    try {
-      await deleteEntry(id)
-      await load()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.app.deleteFailed)
-    }
-  }
-
   function openAdd(meal: MealId) {
     setAddMeal(meal)
     setAdding(true)
@@ -94,7 +87,7 @@ function App() {
           <p className="date-label">{formatDateLabel(date)}</p>
         </header>
 
-        <main className="day-scroll">
+        <main className="day-scroll day-scroll--no-fab">
           {error ? <p className="error banner">{error}</p> : null}
           {loading && !day ? <p className="muted">{t.app.loading}</p> : null}
 
@@ -169,24 +162,24 @@ function App() {
                         {mealEntries.map((entry) => {
                           const m = macrosForGrams(entry.product, entry.grams)
                           return (
-                            <li key={entry.id} className="entry-row">
-                              <div>
-                                <strong>{entry.product.name}</strong>
-                                {entry.product.brand ? (
-                                  <span className="muted"> · {entry.product.brand}</span>
-                                ) : null}
-                                <div className="muted small">
-                                  {round0(entry.grams)} g · {round0(m.kcal)} kcal · B{' '}
-                                  {round1(m.protein)} · W {round1(m.carbs)} · T{' '}
-                                  {round1(m.fat)}
-                                </div>
-                              </div>
+                            <li key={entry.id}>
                               <button
                                 type="button"
-                                className="text-btn danger"
-                                onClick={() => void handleDelete(entry.id)}
+                                className="entry-row entry-row-btn"
+                                aria-label={t.app.editEntryAria(entry.product.name)}
+                                onClick={() => setEditing(entry)}
                               >
-                                {t.app.delete}
+                                <div>
+                                  <strong>{entry.product.name}</strong>
+                                  {entry.product.brand ? (
+                                    <span className="muted"> · {entry.product.brand}</span>
+                                  ) : null}
+                                  <div className="muted small">
+                                    {round0(entry.grams)} g · {round0(m.kcal)} kcal · B{' '}
+                                    {round1(m.protein)} · W {round1(m.carbs)} · T{' '}
+                                    {round1(m.fat)}
+                                  </div>
+                                </div>
                               </button>
                             </li>
                           )
@@ -200,19 +193,9 @@ function App() {
           ) : null}
         </main>
 
-        <nav className="bottom-nav" aria-label={t.app.navAria}>
+        <nav className="bottom-nav bottom-nav--simple" aria-label={t.app.navAria}>
           <button type="button" className="nav-btn is-active">
             {t.app.diary}
-          </button>
-          <button
-            type="button"
-            className="add-fab"
-            aria-label={t.app.addFoodAria}
-            onClick={() => openAdd('breakfast')}
-          >
-            <span className="add-fab-icon" aria-hidden="true">
-              +
-            </span>
           </button>
           <button type="button" className="nav-btn" disabled>
             {t.app.more}
@@ -222,10 +205,29 @@ function App() {
         {adding ? (
           <AddFoodScreen
             date={date}
-            initialMeal={addMeal}
+            meal={addMeal}
             onClose={() => setAdding(false)}
             onSaved={async () => {
               setAdding(false)
+              await load()
+            }}
+          />
+        ) : null}
+
+        {editing ? (
+          <PortionScreen
+            product={editing.product}
+            initialGrams={editing.grams}
+            confirmLabel={t.addFood.saveChanges}
+            onBack={() => setEditing(null)}
+            onConfirm={async (grams) => {
+              await updateEntryGrams(editing.id, grams)
+              setEditing(null)
+              await load()
+            }}
+            onDelete={async () => {
+              await deleteEntry(editing.id)
+              setEditing(null)
               await load()
             }}
           />

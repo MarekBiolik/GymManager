@@ -14,6 +14,21 @@ export const db = new Database(dbPath)
 db.pragma('journal_mode = WAL')
 db.pragma('foreign_keys = ON')
 
+export type MealId =
+  | 'breakfast_1'
+  | 'breakfast_2'
+  | 'lunch'
+  | 'snack'
+  | 'dinner'
+
+export const MEAL_IDS: MealId[] = [
+  'breakfast_1',
+  'breakfast_2',
+  'lunch',
+  'snack',
+  'dinner',
+]
+
 db.exec(`
   CREATE TABLE IF NOT EXISTS products (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +46,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS diary_entries (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     entry_date TEXT NOT NULL,
-    meal TEXT NOT NULL CHECK (meal IN ('breakfast', 'lunch', 'dinner', 'snacks')),
+    meal TEXT NOT NULL CHECK (meal IN ('breakfast_1', 'breakfast_2', 'lunch', 'snack', 'dinner')),
     product_id INTEGER NOT NULL REFERENCES products(id),
     grams REAL NOT NULL CHECK (grams > 0),
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -46,6 +61,8 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_products_barcode ON products(barcode);
 `)
 
+migrateDiaryMealsIfNeeded()
+
 const DEFAULT_GOALS = {
   kcal: 2200,
   protein: 160,
@@ -58,8 +75,6 @@ for (const [key, value] of Object.entries(DEFAULT_GOALS)) {
     `INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)`,
   ).run(`goal_${key}`, String(value))
 }
-
-export type MealId = 'breakfast' | 'lunch' | 'dinner' | 'snacks'
 
 export type Product = {
   id: number
@@ -88,6 +103,50 @@ export type DiaryEntry = {
   grams: number
   created_at: string
   product: Product
+}
+
+function migrateDiaryMealsIfNeeded() {
+  const row = db
+    .prepare(
+      `SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'diary_entries'`,
+    )
+    .get() as { sql: string } | undefined
+
+  if (!row?.sql || row.sql.includes('breakfast_1')) return
+
+  db.exec(`
+    CREATE TABLE diary_entries_v2 (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_date TEXT NOT NULL,
+      meal TEXT NOT NULL CHECK (meal IN ('breakfast_1', 'breakfast_2', 'lunch', 'snack', 'dinner')),
+      product_id INTEGER NOT NULL REFERENCES products(id),
+      grams REAL NOT NULL CHECK (grams > 0),
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    INSERT INTO diary_entries_v2 (id, entry_date, meal, product_id, grams, created_at)
+    SELECT
+      id,
+      entry_date,
+      CASE meal
+        WHEN 'breakfast' THEN 'breakfast_1'
+        WHEN 'snacks' THEN 'snack'
+        WHEN 'breakfast_1' THEN 'breakfast_1'
+        WHEN 'breakfast_2' THEN 'breakfast_2'
+        WHEN 'lunch' THEN 'lunch'
+        WHEN 'dinner' THEN 'dinner'
+        WHEN 'snack' THEN 'snack'
+        ELSE 'snack'
+      END,
+      product_id,
+      grams,
+      created_at
+    FROM diary_entries;
+
+    DROP TABLE diary_entries;
+    ALTER TABLE diary_entries_v2 RENAME TO diary_entries;
+    CREATE INDEX IF NOT EXISTS idx_diary_date ON diary_entries(entry_date);
+  `)
 }
 
 function rowToProduct(row: Record<string, unknown>): Product {
@@ -168,17 +227,22 @@ export function createProduct(input: {
   return rowToProduct(row)
 }
 
-export function listRecentProducts(limit = 20): Product[] {
+/** Most frequently logged products for a meal (count desc, then recency). */
+export function listFrequentProductsForMeal(
+  meal: MealId,
+  limit = 30,
+): Product[] {
   const rows = db
     .prepare(
-      `SELECT p.*
+      `SELECT p.*, COUNT(*) AS use_count, MAX(e.created_at) AS last_used
        FROM products p
        JOIN diary_entries e ON e.product_id = p.id
+       WHERE e.meal = ?
        GROUP BY p.id
-       ORDER BY MAX(e.created_at) DESC
+       ORDER BY use_count DESC, last_used DESC
        LIMIT ?`,
     )
-    .all(limit) as Array<Record<string, unknown>>
+    .all(meal, limit) as Array<Record<string, unknown>>
   return rows.map(rowToProduct)
 }
 
@@ -254,6 +318,63 @@ export function addDiaryEntry(input: {
     grams: input.grams,
     created_at: new Date().toISOString(),
     product,
+  }
+}
+
+export function updateDiaryEntryGrams(
+  id: number,
+  grams: number,
+): DiaryEntry | null {
+  if (!(grams > 0)) return null
+  const result = db
+    .prepare(`UPDATE diary_entries SET grams = ? WHERE id = ?`)
+    .run(grams, id)
+  if (result.changes === 0) return null
+
+  const row = db
+    .prepare(
+      `SELECT
+         e.id AS entry_id,
+         e.entry_date,
+         e.meal,
+         e.grams,
+         e.created_at AS entry_created_at,
+         p.id AS product_id,
+         p.name,
+         p.brand,
+         p.barcode,
+         p.kcal_100g,
+         p.protein_100g,
+         p.carbs_100g,
+         p.fat_100g,
+         p.source,
+         p.created_at AS product_created_at
+       FROM diary_entries e
+       JOIN products p ON p.id = e.product_id
+       WHERE e.id = ?`,
+    )
+    .get(id) as Record<string, unknown> | undefined
+
+  if (!row) return null
+
+  return {
+    id: Number(row.entry_id),
+    entry_date: String(row.entry_date),
+    meal: row.meal as MealId,
+    grams: Number(row.grams),
+    created_at: String(row.entry_created_at),
+    product: rowToProduct({
+      id: row.product_id,
+      name: row.name,
+      brand: row.brand,
+      barcode: row.barcode,
+      kcal_100g: row.kcal_100g,
+      protein_100g: row.protein_100g,
+      carbs_100g: row.carbs_100g,
+      fat_100g: row.fat_100g,
+      source: row.source,
+      created_at: row.product_created_at,
+    }),
   }
 }
 

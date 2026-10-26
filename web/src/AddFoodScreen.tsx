@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -9,8 +8,8 @@ import {
 import {
   createEntry,
   createProduct,
+  fetchFrequentProducts,
   fetchMyProducts,
-  fetchRecentProducts,
   lookupBarcode,
   searchFoods,
   type FoodCandidate,
@@ -18,11 +17,11 @@ import {
 import { BarcodeScannerOverlay } from './BarcodeScannerOverlay'
 import { canUseCameraBarcodeScan, extractBarcode } from './barcodeScan'
 import { t } from './i18n'
-import { macrosForGrams, round0, round1 } from './nutrition'
+import { round0, round1 } from './nutrition'
+import { PortionScreen } from './PortionScreen'
 import type { MealId, Product } from './types'
-import { MEAL_ORDER } from './types'
 
-type Tab = 'search' | 'recent' | 'mine' | 'custom'
+type Tab = 'search' | 'mine' | 'custom'
 
 type Selectable = Product | FoodCandidate
 
@@ -32,20 +31,18 @@ function isSavedProduct(item: Selectable): item is Product {
 
 type Props = {
   date: string
-  initialMeal: MealId
+  meal: MealId
   onClose: () => void
   onSaved: () => void
 }
 
-export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
+export function AddFoodScreen({ date, meal, onClose, onSaved }: Props) {
   const [tab, setTab] = useState<Tab>('search')
-  const [meal, setMeal] = useState<MealId>(initialMeal)
-  const [recent, setRecent] = useState<Product[]>([])
+  const [frequent, setFrequent] = useState<Product[]>([])
   const [mine, setMine] = useState<Product[]>([])
-  const [selected, setSelected] = useState<Selectable | null>(null)
-  const [grams, setGrams] = useState('100')
+  const [pending, setPending] = useState<Selectable | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [savingCustom, setSavingCustom] = useState(false)
 
   const [query, setQuery] = useState('')
   const [customBarcode, setCustomBarcode] = useState('')
@@ -63,31 +60,30 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
   const [carbs, setCarbs] = useState('')
   const [fat, setFat] = useState('')
 
+  const mealLabel = t.meals[meal]
+
+  const reloadLists = useCallback(async () => {
+    const [freq, my] = await Promise.all([
+      fetchFrequentProducts(meal),
+      fetchMyProducts(),
+    ])
+    setFrequent(freq)
+    setMine(my)
+  }, [meal])
+
   useEffect(() => {
     let cancelled = false
-    Promise.all([fetchRecentProducts(), fetchMyProducts()])
-      .then(([recentProducts, myProducts]) => {
-        if (cancelled) return
-        setRecent(recentProducts)
-        setMine(myProducts)
-      })
-      .catch((err: Error) => {
-        if (!cancelled) setError(err.message)
-      })
+    reloadLists().catch((err: Error) => {
+      if (!cancelled) setError(err.message)
+    })
     return () => {
       cancelled = true
     }
-  }, [])
-
-  const gramsNumber = Number(grams)
-  const preview = useMemo(() => {
-    if (!selected || !Number.isFinite(gramsNumber) || gramsNumber <= 0) return null
-    return macrosForGrams(selected, gramsNumber)
-  }, [selected, gramsNumber])
+  }, [reloadLists])
 
   function openCustomBlank(prefillBarcode?: string) {
     setTab('custom')
-    setSelected(null)
+    setPending(null)
     setName('')
     setBrand('')
     setKcal('')
@@ -102,7 +98,6 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     setQuery('')
     setLocalHits([])
     setRemoteHits([])
-    setSelected(null)
     setError(null)
     setSearching(false)
     searchInputRef.current?.focus()
@@ -112,7 +107,6 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     const requestId = ++searchRequestId.current
     setSearching(true)
     setError(null)
-    setSelected(null)
     setLocalHits([])
     setRemoteHits([])
     try {
@@ -125,9 +119,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       }
       setTab('search')
       setQuery(code)
-      setLocalHits(result.origin === 'local' ? [result.product] : [])
-      setRemoteHits(result.origin === 'openfoodfacts' ? [result.product] : [])
-      setSelected(result.product)
+      setPending(result.product)
     } catch (err) {
       if (requestId !== searchRequestId.current) return
       setError(err instanceof Error ? err.message : t.addFood.barcodeFailed)
@@ -140,7 +132,6 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     const requestId = ++searchRequestId.current
     setSearching(true)
     setError(null)
-    setSelected(null)
     try {
       const result = await searchFoods(q)
       if (requestId !== searchRequestId.current) return
@@ -171,7 +162,11 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     }
 
     const asBarcode = extractBarcode(q)
-    if (asBarcode && asBarcode === q.replace(/\D/g, '') && q.replace(/\D/g, '').length >= 8) {
+    if (
+      asBarcode &&
+      asBarcode === q.replace(/\D/g, '') &&
+      q.replace(/\D/g, '').length >= 8
+    ) {
       const handle = window.setTimeout(() => {
         void resolveBarcode(asBarcode)
       }, 350)
@@ -217,27 +212,16 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     })
   }
 
-  async function saveSelected() {
-    if (!selected || !Number.isFinite(gramsNumber) || gramsNumber <= 0) {
-      setError(t.addFood.invalidGrams)
-      return
-    }
-    setSaving(true)
-    setError(null)
-    try {
-      const product = await ensureProduct(selected)
-      await createEntry({
-        entry_date: date,
-        meal,
-        product_id: product.id,
-        grams: gramsNumber,
-      })
-      onSaved()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.addFood.saveFailed)
-    } finally {
-      setSaving(false)
-    }
+  async function confirmPortion(grams: number) {
+    if (!pending) return
+    const product = await ensureProduct(pending)
+    await createEntry({
+      entry_date: date,
+      meal,
+      product_id: product.id,
+      grams,
+    })
+    onSaved()
   }
 
   async function saveCustom(event: FormEvent) {
@@ -253,16 +237,13 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
       return
     }
     if (
-      ![kcalN, proteinN, carbsN, fatN, gramsNumber].every(
-        (n) => Number.isFinite(n) && n >= 0,
-      ) ||
-      gramsNumber <= 0
+      ![kcalN, proteinN, carbsN, fatN].every((n) => Number.isFinite(n) && n >= 0)
     ) {
       setError(t.addFood.macrosRequired)
       return
     }
 
-    setSaving(true)
+    setSavingCustom(true)
     setError(null)
     try {
       const product = await createProduct({
@@ -275,17 +256,12 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
         fat_100g: fatN,
         source: 'custom',
       })
-      await createEntry({
-        entry_date: date,
-        meal,
-        product_id: product.id,
-        grams: gramsNumber,
-      })
-      onSaved()
+      setPending(product)
+      setTab('search')
     } catch (err) {
       setError(err instanceof Error ? err.message : t.addFood.saveFailed)
     } finally {
-      setSaving(false)
+      setSavingCustom(false)
     }
   }
 
@@ -299,20 +275,13 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
           const key = isSavedProduct(product)
             ? `local-${product.id}`
             : `off-${product.barcode ?? product.name}`
-          const selectedKey = selected
-            ? isSavedProduct(selected)
-              ? `local-${selected.id}`
-              : `off-${selected.barcode ?? selected.name}`
-            : null
           return (
             <li key={key}>
               <button
                 type="button"
-                className={
-                  selectedKey === key ? 'product-row is-selected' : 'product-row'
-                }
+                className="product-row"
                 onClick={() => {
-                  setSelected(product)
+                  setPending(product)
                   setError(null)
                 }}
               >
@@ -336,42 +305,37 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
     )
   }
 
+  if (pending) {
+    return (
+      <PortionScreen
+        product={pending}
+        confirmLabel={t.addFood.addToDiary}
+        onBack={() => setPending(null)}
+        onConfirm={confirmPortion}
+      />
+    )
+  }
+
+  const showFrequent = tab === 'search' && query.trim().length === 0
+
   return (
     <div className="overlay-screen">
       <header className="overlay-header">
         <button type="button" className="text-btn" onClick={onClose}>
           {t.addFood.cancel}
         </button>
-        <h1>{t.addFood.title}</h1>
+        <h1>{t.addFood.titleForMeal(mealLabel)}</h1>
         <span className="header-spacer" />
       </header>
 
       <div className="overlay-body">
-        <label className="field">
-          <span>{t.addFood.meal}</span>
-          <select value={meal} onChange={(e) => setMeal(e.target.value as MealId)}>
-            {MEAL_ORDER.map((id) => (
-              <option key={id} value={id}>
-                {t.meals[id]}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="tabs tabs-4" role="tablist">
+        <div className="tabs tabs-3" role="tablist">
           <button
             type="button"
             className={tab === 'search' ? 'tab is-active' : 'tab'}
             onClick={() => setTab('search')}
           >
             {t.addFood.tabSearch}
-          </button>
-          <button
-            type="button"
-            className={tab === 'recent' ? 'tab is-active' : 'tab'}
-            onClick={() => setTab('recent')}
-          >
-            {t.addFood.tabRecent}
           </button>
           <button
             type="button"
@@ -424,14 +388,24 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
                 ) : null}
               </div>
             </div>
-            {searching ? <p className="muted small">{t.addFood.searching}</p> : null}
-            {localHits.length > 0 ? (
+            {searching ? (
+              <p className="muted small">{t.addFood.searching}</p>
+            ) : null}
+
+            {showFrequent ? (
+              <>
+                <h2 className="section-title">{t.addFood.frequent}</h2>
+                {renderProductList(frequent, t.addFood.frequentEmpty)}
+              </>
+            ) : null}
+
+            {!showFrequent && localHits.length > 0 ? (
               <>
                 <h2 className="section-title">{t.addFood.inApp}</h2>
                 {renderProductList(localHits, '')}
               </>
             ) : null}
-            {remoteHits.length > 0 ? (
+            {!showFrequent && remoteHits.length > 0 ? (
               <>
                 <h2 className="section-title">{t.addFood.openFoodFacts}</h2>
                 {renderProductList(remoteHits, '')}
@@ -440,10 +414,7 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
           </div>
         )}
 
-        {tab === 'recent' &&
-          renderProductList(recent, t.addFood.recentEmpty)}
-        {tab === 'mine' &&
-          renderProductList(mine, t.addFood.mineEmpty)}
+        {tab === 'mine' && renderProductList(mine, t.addFood.mineEmpty)}
 
         {tab === 'custom' && (
           <form className="custom-form" onSubmit={saveCustom}>
@@ -510,57 +481,14 @@ export function AddFoodScreen({ date, initialMeal, onClose, onSaved }: Props) {
                 />
               </label>
             </div>
-            <label className="field">
-              <span>{t.addFood.portionGrams}</span>
-              <input
-                inputMode="decimal"
-                value={grams}
-                onChange={(e) => setGrams(e.target.value)}
-                required
-              />
-            </label>
             {error ? <p className="error">{error}</p> : null}
-            <button type="submit" className="primary-btn" disabled={saving}>
-              {saving ? t.addFood.saving : t.addFood.addToDiary}
+            <button type="submit" className="primary-btn" disabled={savingCustom}>
+              {savingCustom ? t.addFood.saving : t.addFood.continueToPortion}
             </button>
           </form>
         )}
 
-        {tab !== 'custom' && selected ? (
-          <div className="portion-card">
-            <div className="portion-title">
-              {selected.name}
-              {selected.brand ? ` · ${selected.brand}` : ''}
-            </div>
-            <label className="field">
-              <span>{t.addFood.portionGrams}</span>
-              <input
-                inputMode="decimal"
-                value={grams}
-                onChange={(e) => setGrams(e.target.value)}
-              />
-            </label>
-            {preview ? (
-              <p className="muted">
-                {round0(preview.kcal)} kcal · B {round1(preview.protein)} · W{' '}
-                {round1(preview.carbs)} · T {round1(preview.fat)}
-              </p>
-            ) : null}
-            {error ? <p className="error">{error}</p> : null}
-            <button
-              type="button"
-              className="primary-btn"
-              disabled={saving}
-              onClick={() => void saveSelected()}
-            >
-              {saving ? t.addFood.saving : t.addFood.addToDiary}
-            </button>
-          </div>
-        ) : null}
-
-        {tab !== 'custom' && !selected && error ? (
-          <p className="error">{error}</p>
-        ) : null}
+        {tab !== 'custom' && error ? <p className="error">{error}</p> : null}
       </div>
 
       {scanning ? (

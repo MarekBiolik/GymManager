@@ -3,10 +3,11 @@ import type { MealId } from '../types'
 /** Polish UI strings. Add `en.ts` later and switch in `index.ts`. */
 export const pl = {
   meals: {
-    breakfast: 'Śniadanie',
+    breakfast_1: 'Śniadanie I',
+    breakfast_2: 'Śniadanie II',
     lunch: 'Obiad',
+    snack: 'Przekąska',
     dinner: 'Kolacja',
-    snacks: 'Przekąski',
   } satisfies Record<MealId, string>,
 
   app: {
@@ -21,20 +22,20 @@ export const pl = {
     delete: 'Usuń',
     diary: 'Dziennik',
     more: 'Więcej',
-    addFoodAria: 'Dodaj jedzenie',
     addToMealAria: (meal: string) => `Dodaj do: ${meal}`,
+    editEntryAria: (name: string) => `Edytuj: ${name}`,
     loading: 'Ładowanie…',
     navAria: 'Nawigacja',
     loadDayFailed: 'Nie udało się wczytać dnia. Uruchom serwer API.',
     deleteFailed: 'Nie udało się usunąć',
+    saveFailed: 'Nie udało się zapisać',
   },
 
   addFood: {
-    title: 'Dodaj jedzenie',
+    titleForMeal: (meal: string) => meal,
     cancel: 'Anuluj',
-    meal: 'Posiłek',
+    back: 'Wstecz',
     tabSearch: 'Szukaj',
-    tabRecent: 'Ostatnie',
     tabMine: 'Moje',
     tabCustom: 'Własny',
     searchPlaceholder: 'Nazwa lub kod EAN',
@@ -46,9 +47,10 @@ export const pl = {
       'Kamera niedostępna tutaj (potrzebny HTTPS) — wpisz kod EAN w wyszukiwarkę',
     cameraUnavailable: 'Nie udało się uruchomić kamery',
     cameraPermissionDenied: 'Brak dostępu do kamery — wpisz kod EAN ręcznie',
+    frequent: 'Najczęściej w tym posiłku',
+    frequentEmpty: 'Tu pojawią się produkty najczęściej dodawane do tego posiłku.',
     inApp: 'W aplikacji',
     openFoodFacts: 'Open Food Facts',
-    recentEmpty: 'Tu pojawią się ostatnio dodane produkty.',
     mineEmpty: 'Nie masz jeszcze własnych produktów.',
     name: 'Nazwa',
     namePlaceholder: 'np. Pierś z kurczaka',
@@ -59,9 +61,12 @@ export const pl = {
     protein: 'Białko',
     carbs: 'Węgle',
     fat: 'Tłuszcz',
+    portionTitle: 'Porcja',
     portionGrams: 'Porcja (g)',
     saving: 'Zapisuję…',
-    addToDiary: 'Dodaj do dziennika',
+    addToDiary: 'Dodaj',
+    saveChanges: 'Zapisz',
+    continueToPortion: 'Dalej',
     noResults: 'Brak wyników — dodaj własny produkt albo skanuj kod',
     searchFailed: 'Szukanie nieudane',
     barcodeNotFound: 'Nie znaleziono w Open Food Facts — uzupełnij makro ręcznie',
@@ -69,7 +74,7 @@ export const pl = {
     invalidGrams: 'Podaj poprawną gramaturę',
     saveFailed: 'Nie udało się zapisać',
     nameRequired: 'Podaj nazwę produktu',
-    macrosRequired: 'Uzupełnij makro na 100 g i gramaturę',
+    macrosRequired: 'Uzupełnij makro na 100 g',
   },
 } as const
 

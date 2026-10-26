@@ -32,8 +32,10 @@ export function fetchDay(date?: string): Promise<DayData> {
   return request<DayData>(`/api/day${query}`)
 }
 
-export function fetchRecentProducts(): Promise<Product[]> {
-  return request<Product[]>('/api/products/recent')
+export function fetchFrequentProducts(meal: MealId): Promise<Product[]> {
+  return request<Product[]>(
+    `/api/products/frequent?meal=${encodeURIComponent(meal)}`,
+  )
 }
 
 export function fetchMyProducts(): Promise<Product[]> {
@@ -100,6 +102,16 @@ export function createEntry(input: {
   return request<DiaryEntry>('/api/entries', {
     method: 'POST',
     body: JSON.stringify(input),
+  })
+}
+
+export function updateEntryGrams(
+  id: number,
+  grams: number,
+): Promise<DiaryEntry> {
+  return request<DiaryEntry>(`/api/entries/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ grams }),
   })
 }
 

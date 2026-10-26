@@ -1,4 +1,9 @@
-export type MealId = 'breakfast' | 'lunch' | 'dinner' | 'snacks'
+export type MealId =
+  | 'breakfast_1'
+  | 'breakfast_2'
+  | 'lunch'
+  | 'snack'
+  | 'dinner'
 
 export type Product = {
   id: number
@@ -36,8 +41,9 @@ export type DayData = {
 }
 
 export const MEAL_ORDER: MealId[] = [
-  'breakfast',
+  'breakfast_1',
+  'breakfast_2',
   'lunch',
+  'snack',
   'dinner',
-  'snacks',
 ]

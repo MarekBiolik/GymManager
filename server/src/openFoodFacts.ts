@@ -168,14 +168,63 @@ function mapProducts(products: OffProduct[]): FoodCandidate[] {
   return mapped
 }
 
-async function searchViaCgi(query: string): Promise<FoodCandidate[]> {
+function normalizeText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+}
+
+/** Drop OFF noise and rank by how closely the name/brand matches the query. */
+export function rankFoodMatches<T extends { name: string; brand: string | null }>(
+  query: string,
+  items: T[],
+): T[] {
+  const q = normalizeText(query.trim())
+  if (!q) return []
+
+  const tokens = q.split(/\s+/).filter(Boolean)
+
+  const scored = items
+    .map((item) => {
+      const name = normalizeText(item.name)
+      const brand = normalizeText(item.brand ?? '')
+      const haystack = `${name} ${brand}`
+
+      let score = 0
+      if (name === q) score = 120
+      else if (name.startsWith(q)) score = 100
+      else if (name.includes(q)) score = 80
+      else if (brand.includes(q)) score = 55
+      else if (tokens.every((token) => haystack.includes(token))) score = 45
+      else if (tokens.some((token) => haystack.includes(token))) score = 20
+      else score = 0
+
+      return { item, score }
+    })
+    .filter((row) => row.score >= 45)
+    .sort((a, b) => b.score - a.score)
+
+  return scored.map((row) => row.item)
+}
+
+async function searchViaCgi(
+  query: string,
+  options?: { polandOnly?: boolean },
+): Promise<FoodCandidate[]> {
   const params = new URLSearchParams({
     search_terms: query,
     search_simple: '1',
     action: 'process',
     json: '1',
-    page_size: '20',
+    page_size: '40',
   })
+
+  if (options?.polandOnly) {
+    params.set('tagtype_0', 'countries')
+    params.set('tag_contains_0', 'contains')
+    params.set('tag_0', 'poland')
+  }
 
   const res = await offFetch(
     `https://world.openfoodfacts.org/cgi/search.pl?${params.toString()}`,
@@ -190,7 +239,7 @@ async function searchViaCgi(query: string): Promise<FoodCandidate[]> {
   }
 
   const body = await readJson<{ products?: OffProduct[] }>(res)
-  return mapProducts(body.products ?? [])
+  return rankFoodMatches(query, mapProducts(body.products ?? []))
 }
 
 async function searchViaApiV2(query: string): Promise<FoodCandidate[]> {
@@ -214,7 +263,7 @@ async function searchViaApiV2(query: string): Promise<FoodCandidate[]> {
   }
 
   const body = await readJson<{ products?: OffProduct[] }>(res)
-  return mapProducts(body.products ?? [])
+  return rankFoodMatches(query, mapProducts(body.products ?? []))
 }
 
 export async function searchOff(query: string): Promise<FoodCandidate[]> {
@@ -222,12 +271,18 @@ export async function searchOff(query: string): Promise<FoodCandidate[]> {
   if (q.length < 2) return []
 
   try {
-    return await searchViaCgi(q)
-  } catch (cgiError) {
-    try {
-      return await searchViaApiV2(q)
-    } catch {
-      throw cgiError
-    }
+    const polandFirst = await searchViaCgi(q, { polandOnly: true })
+    if (polandFirst.length > 0) return polandFirst
+  } catch {
+    // Fall through.
   }
+
+  try {
+    const globalCgi = await searchViaCgi(q)
+    if (globalCgi.length > 0) return globalCgi
+  } catch {
+    // Fall through to API v2.
+  }
+
+  return searchViaApiV2(q)
 }

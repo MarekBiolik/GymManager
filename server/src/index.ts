@@ -8,15 +8,17 @@ import {
   getDay,
   getGoals,
   listCustomProducts,
-  listRecentProducts,
+  listFrequentProductsForMeal,
+  MEAL_IDS,
   searchLocalProducts,
   setGoals,
+  updateDiaryEntryGrams,
   type MealId,
 } from './db.ts'
-import { fetchByBarcode, searchOff } from './openFoodFacts.ts'
+import { fetchByBarcode, rankFoodMatches, searchOff } from './openFoodFacts.ts'
 
 const PORT = Number(process.env.PORT ?? 3001)
-const MEALS = new Set<MealId>(['breakfast', 'lunch', 'dinner', 'snacks'])
+const MEALS = new Set<MealId>(MEAL_IDS)
 
 const app = express()
 app.use(cors())
@@ -74,8 +76,13 @@ app.get('/api/day', (req, res) => {
   res.json(getDay(date))
 })
 
-app.get('/api/products/recent', (_req, res) => {
-  res.json(listRecentProducts())
+app.get('/api/products/frequent', (req, res) => {
+  const meal = req.query.meal as MealId
+  if (!MEALS.has(meal)) {
+    res.status(400).json({ error: 'Invalid meal' })
+    return
+  }
+  res.json(listFrequentProductsForMeal(meal))
 })
 
 app.get('/api/products/mine', (_req, res) => {
@@ -89,7 +96,7 @@ app.get('/api/foods/search', async (req, res) => {
     return
   }
 
-  const local = searchLocalProducts(q)
+  const local = rankFoodMatches(q, searchLocalProducts(q, 40))
 
   try {
     const remote = await searchOff(q)
@@ -215,6 +222,21 @@ app.post('/api/entries', (req, res) => {
   } catch {
     res.status(404).json({ error: 'Product not found' })
   }
+})
+
+app.patch('/api/entries/:id', (req, res) => {
+  const id = Number(req.params.id)
+  const grams = asNumber(req.body?.grams)
+  if (!Number.isInteger(id) || grams == null || grams <= 0) {
+    res.status(400).json({ error: 'Invalid entry update' })
+    return
+  }
+  const entry = updateDiaryEntryGrams(id, grams)
+  if (!entry) {
+    res.status(404).json({ error: 'Entry not found' })
+    return
+  }
+  res.json(entry)
 })
 
 app.delete('/api/entries/:id', (req, res) => {
