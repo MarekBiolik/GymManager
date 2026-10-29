@@ -1,0 +1,27 @@
+---
+description: All public repo artifacts must be English; Polish only in user chat and later UI strings
+alwaysApply: true
+---
+
+# English for public artifacts
+
+Everything **public** in this repository and on GitHub must be **English**.
+
+## Must be English
+
+- Documentation under `docs/` (ADRs, specs, runbooks, plans, vision, roadmap, open questions)
+- Commit messages (Conventional Commits: `docs:`, `chore:`, `feat:`, …)
+- GitHub issue and PR titles, bodies, and comments (where the agent can edit)
+- Code identifiers, comments, and strings committed to the repo (except deferred app UI copy)
+
+## Polish is OK only for
+
+- Chat with the user in Cursor
+- App UI strings later (UI/UX phase) — **do not invent i18n now**
+
+## Agent obligations
+
+- Do **not** write new Polish docs, ADRs, specs, issues, or PR text.
+- When updating existing Polish content, translate it to clear professional English.
+- Preserve structure: links, ADR numbers, Mermaid diagrams, OQ ids (`OQ-NN`).
+- Prefer full English over leaving Polish quotes unless a short quoted user phrase is essential.

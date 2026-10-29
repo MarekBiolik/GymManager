@@ -10,7 +10,7 @@ When a discrete work step is finished (docs batch, skill/rule, scaffold slice, f
 ## Rules
 
 - One step → one commit (split docs vs tooling vs app code when they landed together).
-- Message: short, imperative, explains **why** (Conventional Commits preferred: `docs:`, `chore:`, `feat:`, …).
+- Message: **English**, short, imperative, explains **why** (Conventional Commits preferred: `docs:`, `chore:`, `feat:`, …).
 - Stage only files that belong to that step.
 - **Never** add `Co-authored-by` or other trailer crediting Cursor/the agent.
 - Do not commit secrets, `node_modules`, build artifacts, or local DB files.

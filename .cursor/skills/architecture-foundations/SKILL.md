@@ -96,7 +96,7 @@ Tell the user:
 
 ## Quality bar
 
-- Concise Polish or English—**match the user’s language**
+- Concise **English** for all docs written into the repo (user chat may be Polish; see `english-public-artifacts` rule)
 - Prefer pointed docs over essays; diagrams where they replace paragraphs
 - No fake version pins; pin versions at scaffolding time
 - Restart/legacy: treat missing sources as greenfield; document debris explicitly
