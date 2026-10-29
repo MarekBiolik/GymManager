@@ -140,6 +140,7 @@ Area env + skill packages are tracked under the [Issue map](#issue-map).
 | Supabase / DB | `.cursor/skills/supabase-db/` (env: `references/env-checklist.md`) |
 | Android (Compose) | `.cursor/skills/android-compose/` (env: `references/env-checklist.md`) |
 | Web (React) | `.cursor/skills/web-react/` (env: `references/env-checklist.md`) |
+| iOS (SwiftUI, build-spec) | `.cursor/skills/ios-swiftui/` (env: `references/env-checklist.md`; runtime → #49) |
 
 ## Issue map
 
