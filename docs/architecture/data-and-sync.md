@@ -166,7 +166,7 @@ Rules:
 
 1. Prefer restore via schema from `supabase/migrations/` + reload data from dump.
 2. On Pro: restore from daily backup in the dashboard per Supabase docs.
-3. Restore drill (practice on an empty project) — follow-up [#9](https://github.com/MarekBiolik/GymManager/issues/9); does not block the hosting decision.
+3. Restore drill (practice on an empty / local project) — [runbook](../runbooks/supabase-dump-restore.md) ([#9](https://github.com/MarekBiolik/GymManager/issues/9)); does not block the hosting decision.
 4. `staging` / `prod` split — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) before public beta.
 
 ### Exit path

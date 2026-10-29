@@ -40,6 +40,10 @@ Project documentation index. These documents are the source of truth for archite
 - [Glossary](domain/glossary.md)
 - [Data model (outline)](domain/data-model.md)
 
+## Operator runbooks
+
+- [Supabase dump and restore (Free)](runbooks/supabase-dump-restore.md) — periodic `db dump`, no PII in git, restore drill ([ADR 0004](decisions/0004-supabase-hosting.md), [#9](https://github.com/MarekBiolik/GymManager/issues/9))
+
 ## Specifications (SQL / migrations — draft)
 
 - [First migration: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL in `docs/specs/sql/` (**NOT APPLIED**)

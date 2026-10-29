@@ -20,7 +20,7 @@ Empty, **building** projects in the monorepo + attached Supabase Cloud (`dev`) +
 | Separate `staging` / `prod` Cloud | [ADR 0004](../decisions/0004-supabase-hosting.md), [#10](https://github.com/MarekBiolik/GymManager/issues/10) |
 | Full Auth UI + IdP in apps | Phase 2; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12) |
 | First migration SQL spec (table/RLS content) | [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6) — **input**, not #7/#14 output; apply = #21 |
-| Dump/restore runbook (operational drill) | [#9](https://github.com/MarekBiolik/GymManager/issues/9) — after `supabase/` appears |
+| Dump/restore runbook (operational drill) | [runbook](../runbooks/supabase-dump-restore.md) / [#9](https://github.com/MarekBiolik/GymManager/issues/9) — after `supabase/` appears |
 | Domain features (nutrition / training / measurements) | Phases 3–5 |
 
 ## Input decisions (closed)
