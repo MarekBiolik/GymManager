@@ -72,6 +72,26 @@ Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 
 ---
 
+## OQ-09 — Theming and style-swap governance
+
+**Status:** open  
+**Context:** [ADR 0010](decisions/0010-design-tokens-ssot.md) + [design-tokens](specs/design-tokens.md) make visual values swappable via SSOT. The first style is [Fitness/Gym OLED dark](specs/visual-style-fitness-gym.md). Still open: whether/when to ship **light mode**, how **default vs alternate** styles are chosen, and **who** may change the active theme (user setting vs build-time / release-only).
+
+**Why it matters:** light mode and multi-style policy affect token files, generator mode switching, settings UI, and store screenshots — without blocking dark-first MVP UI.
+
+**Options (known):**
+
+1. **Dark-only through MVP** — ship OLED Fitness/Gym only; add light semantic map later (phase 6 or post-MVP).
+2. **Dark default + optional light** — user toggle; both semantic maps maintained from day of first settings screen.
+3. **Build-time / flavor styles only** — no in-app theme picker; alternate styles are release or white-label forks via token sets.
+4. **In-app style catalog** — user picks among named themes (Fitness/Gym + future); higher settings and QA cost.
+
+**Closing phase:** before or during **phase 6** polish (or earlier if a second style is required for launch). Does not block Phase 1 tokens contract or dark-first scaffold theme wiring.
+
+**Links:** [ADR 0010](decisions/0010-design-tokens-ssot.md), [design-tokens](specs/design-tokens.md) ([#61](https://github.com/MarekBiolik/GymManager/issues/61)), [visual-style-fitness-gym](specs/visual-style-fitness-gym.md) ([#62](https://github.com/MarekBiolik/GymManager/issues/62)).
+
+---
+
 ## How to add new questions
 
 1. Assign id `OQ-NN`.
