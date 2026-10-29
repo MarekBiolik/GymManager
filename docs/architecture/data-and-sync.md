@@ -108,7 +108,7 @@ Pliki (np. zdjęcia opakowań / postęp) → Supabase Storage + RLS na bucketach
 ## Migracje
 
 - Katalog `supabase/migrations/` (faza 1 — [playbook](../plans/phase-1-scaffold-playbook.md)).
-- Treść pierwszej migracji: spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) (odblokowane po sync [#5](https://github.com/MarekBiolik/GymManager/issues/5) → [ADR 0008](../decisions/0008-sync-strategy-online-first.md)); nie wymyślać schematu ad hoc w PR samego scaffoldu. Apply SQL → [#21](https://github.com/MarekBiolik/GymManager/issues/21).
+- Treść pierwszej migracji: [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6); OQ-03 → [ADR 0008](../decisions/0008-sync-strategy-online-first.md)). Draft SQL w `docs/specs/sql/` = **NOT APPLIED**. Nie wymyślać schematu ad hoc w PR scaffoldu (#14). Apply 1:1 → [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 - Każda zmiana schematu = migracja w PR.
 - Zakaz „ręcznej” zmiany prod bez migracji.
 

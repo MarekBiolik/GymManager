@@ -30,13 +30,13 @@ Email z IdP trafia do `auth.users` — kompromis względem „zero PII”; nie b
 
 ## Tabela `profiles`
 
-Rekord aplikacji 1:1 z `auth.users` (`profiles.id` = `auth.users.id`). Szczegóły schematu: [data-model](../domain/data-model.md) i issue pierwszej migracji.
+Rekord aplikacji 1:1 z `auth.users` (`profiles.id` = `auth.users.id`). SQL: [spec pierwszej migracji](../specs/first-migration-profiles-rls.md); zarys: [data-model](../domain/data-model.md).
 
 | Trzymamy | Nie trzymamy / nie zbieramy |
 |----------|----------------------------|
 | `id` (UUID = auth user) | Imię, nazwisko, display name |
 | `created_at`, `updated_at` | Płeć, data urodzenia, telefon |
-| Preferencje apki (np. jednostki `kg`/`lb`, ewentualnie locale UI) | Email (zostaje w `auth.users`, nie w `profiles`) |
+| `preferred_units` (`kg`/`lb`); ewentualnie locale UI później | Email (zostaje w `auth.users`, nie w `profiles`) |
 | | Avatar / zdjęcie z IdP |
 | | Adres, zgody marketingowe |
 
@@ -87,7 +87,7 @@ Zarys na poziomie spec (implementacja w fazie auth/scaffold — osobny follow-up
 
 1. **Wejście:** ustawienia konta → „Usuń konto” → potwierdzenie (świadome, trudne do przypadkowego kliknięcia).
 2. **Skutek:** usunięcie wszystkich wierszy aplikacji użytkownika (`user_id` / `profiles.id`) oraz usunięcie użytkownika w Supabase Auth (koniec sesji na wszystkich urządzeniach).
-3. **Mechanizm (kierunek):** FK `ON DELETE CASCADE` z `profiles` / `auth.users` **albo** zaufana funkcja (Edge Function / service role) kasująca dane + Auth — wybór przy pierwszej migracji / scaffoldzie; **nie** kasowanie tylko z klienta przez klucz `anon`.
+3. **Mechanizm (kierunek):** pierwsza migracja ustala FK `ON DELETE CASCADE` z `profiles` / tabel użytkownika → `auth.users` ([spec](../specs/first-migration-profiles-rls.md)); pełny flow UI + ewentualna Edge Function — [#13](https://github.com/MarekBiolik/GymManager/issues/13). **Nie** kasowanie tylko z klienta przez klucz `anon`.
 4. **Po usunięciu:** brak celowego przechowywania PII „na potem”; dumpy backupowe mogą chwilowo zawierać historyczne dane do wygaśnięcia retencji hostingu (patrz polityka backupów przy OQ-05 / data-and-sync).
 5. **Store:** procedura ma być spójna z wymaganiami usuwania konta Apple / Google Play (ścieżka w apce, nie tylko „napisz do supportu”).
 

@@ -143,7 +143,7 @@ Encje jak w [data-model](../domain/data-model.md). Poniżej **podział odpowiedz
 
 ## Checklista migracji (faza 1–2)
 
-Przy każdej nowej tabeli użytkownika w `supabase/migrations/` (i w specu [#6](https://github.com/MarekBiolik/GymManager/issues/6)):
+Przy każdej nowej tabeli użytkownika w `supabase/migrations/` (i w [specu pierwszej migracji](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6)):
 
 - [ ] `user_id` (lub `profiles.id` 1:1) + FK do Auth / profiles
 - [ ] `created_at`, `updated_at` timestamptz ([ADR 0008](../decisions/0008-sync-strategy-online-first.md))
@@ -168,5 +168,5 @@ Przy każdej nowej tabeli użytkownika w `supabase/migrations/` (i w specu [#6](
 - [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md) — decyzja web bez KMP-JS; preferencja Postgres dla wspólnych niezmienników
 - [clients](clients.md), [shared-core](shared-core.md), [data-and-sync](data-and-sync.md)
 - [data-model](../domain/data-model.md), [coding-standards](../conventions/coding-standards.md) (SQL)
-- Spec pierwszej migracji: [#6](https://github.com/MarekBiolik/GymManager/issues/6)
+- Spec pierwszej migracji: [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6))
 - Apply SQL: [#21](https://github.com/MarekBiolik/GymManager/issues/21)

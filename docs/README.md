@@ -39,6 +39,10 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 - [Słownik pojęć](domain/glossary.md)
 - [Model danych (zarys)](domain/data-model.md)
 
+## Specyfikacje (SQL / migracje — draft)
+
+- [Pierwsza migracja: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL w `docs/specs/sql/` (**NOT APPLIED**)
+
 ## Konwencje
 
 - [Standardy kodu](conventions/coding-standards.md)

@@ -19,7 +19,7 @@ Puste, **budujące się** projekty w monorepo + podpięty Supabase Cloud (`dev`)
 | Nx / Turborepo / publikacja core do rejestru | [ADR 0005](../decisions/0005-monorepo-tooling.md) |
 | Osobne `staging` / `prod` Cloud | [ADR 0004](../decisions/0004-supabase-hosting.md), [#10](https://github.com/MarekBiolik/GymManager/issues/10) |
 | Pełny Auth UI + IdP w apkach | Faza 2; checklista IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12) |
-| Spec SQL pierwszej migracji (treść tabel/RLS) | [#6](https://github.com/MarekBiolik/GymManager/issues/6) — **wejście**, nie output #7/#14 |
+| Spec SQL pierwszej migracji (treść tabel/RLS) | [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6) — **wejście**, nie output #7/#14; apply = #21 |
 | Runbook dump/restore (operacyjny drill) | [#9](https://github.com/MarekBiolik/GymManager/issues/9) — po pojawieniu się `supabase/` |
 | Domains features (żywienie / trening / pomiary) | Fazy 3–5 |
 
@@ -59,8 +59,8 @@ flowchart TD
 
 1. **#14 może wystartować** zaraz po zmergowaniu playbooku (#7): puste projekty, CI, `supabase/` z config CLI, link do Cloud `dev`.
 2. **Treść pierwszej migracji** (`profiles` + baseline RLS + ewentualnie 1–2 tabele) pochodzi ze **specu #6** — nie wymyślać schematu ad hoc w PR scaffoldu.
-3. #5 / OQ-03 jest **decided** ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)); #6 może iść. Dopóki #6 OPEN: w #14 trzymaj `supabase/migrations/` puste albo tylko plik-placeholder uzgodniony w PR; **nie** aplikuj „tymczasowego” schematu produkcyjnego.
-4. Po zamknięciu #6 i istnieniu `supabase/` z #14: implementacja migracji = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (SQL 1:1 ze specu + apply na `dev`).
+3. #5 / OQ-03 jest **decided** ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)); spec #6 = [docs/specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md). W #14 trzymaj `supabase/migrations/` puste do [#21](https://github.com/MarekBiolik/GymManager/issues/21); **nie** aplikuj „tymczasowego” schematu produkcyjnego.
+4. Po zmergowaniu specu #6 i istnieniu `supabase/` z #14: implementacja migracji = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (SQL 1:1 ze specu / `docs/specs/sql/` + apply na `dev`).
 
 ## Docelowe drzewo (przypomnienie)
 
@@ -150,9 +150,9 @@ Wykonuj **w tej kolejności**. Każdy krok ma własny Definition of Done. Prefer
    - [ ] URL + anon w lokalnym `.env*`
    - [ ] `service_role` tylko w menedżerze haseł / nigdy w repo
    - [ ] Przed ryzykowną migracją: dump (szczegóły → #9)
-5. **Migracja SQL:** dodaj dopiero gdy #6 dostarczy spec; do tego czasu nie pushuj ad-hoc schematu.
+5. **Migracja SQL:** treść ze [specu #6](../specs/first-migration-profiles-rls.md); pliki w `supabase/migrations/` lądują w [#21](https://github.com/MarekBiolik/GymManager/issues/21), nie ad-hoc w #14.
 
-**Done when:** `supabase/` w repo; link do `dev` udokumentowany; sekrety poza gitem; migracje czekają na #6 (lub są 1:1 ze specu jeśli #6 już CLOSED).
+**Done when:** `supabase/` w repo; link do `dev` udokumentowany; sekrety poza gitem; `migrations/` puste albo już 1:1 ze specu jeśli #21 zrobione w tym samym torze.
 
 ### Krok F — Szkielet CI (GitHub Actions)
 
@@ -220,7 +220,7 @@ Faza 1 jest **zamknięta**, gdy:
 1. Playbook (ten dokument) zmergowany i aktualny względem ADR 0004–0006.
 2. [#14](https://github.com/MarekBiolik/GymManager/issues/14) zaimplementowane i zmergowane — puste projekty budują się; CI szkielet na PR.
 3. Supabase Cloud `dev` podpięty; sekrety poza repo; katalog `supabase/` istnieje.
-4. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) **zmergowany** i migracja SQL zastosowana przez [#21](https://github.com/MarekBiolik/GymManager/issues/21).
+4. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) **zmergowany** i migracja SQL zastosowana przez [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 5. Brak targetu KMP-JS/Wasm; web wyłącznie przez `supabase-js`.
 6. Roadmapa poniżej odzwierciedla ten stan; follow-upy (#9 dump, #12 IdP) otwarte świadomie, nie ukryte w „done”.
 
@@ -230,7 +230,7 @@ Faza 1 jest **zamknięta**, gdy:
 |--------|------------------------------|
 | [#7](https://github.com/MarekBiolik/GymManager/issues/7) | Plan — ten dokument + update roadmapy |
 | [#14](https://github.com/MarekBiolik/GymManager/issues/14) | Implementacja kroków A–G |
-| [#6](https://github.com/MarekBiolik/GymManager/issues/6) | Spec migracji = wejście do #21 (treść SQL) |
+| [#6](https://github.com/MarekBiolik/GymManager/issues/6) | Spec migracji ([docs/specs/…](../specs/first-migration-profiles-rls.md)) = wejście do #21 |
 | [#21](https://github.com/MarekBiolik/GymManager/issues/21) | Implementacja / apply migracji ze specu #6 |
 | [#5](https://github.com/MarekBiolik/GymManager/issues/5) | Done — OQ-03 → ADR 0008; odblokowuje treść #6 |
 | [#9](https://github.com/MarekBiolik/GymManager/issues/9) | Runbook dump po `supabase/` z #14 (nie po samym #7) |

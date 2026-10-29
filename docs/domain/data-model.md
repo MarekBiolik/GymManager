@@ -1,6 +1,8 @@
 # Model danych (zarys)
 
-To **zarys koncepcyjny**, nie finalna migracja SQL. Szczegóły pól, indeksów i widoków agregujących — przy fazach modułów (3–5) i pierwszej migracji w fazie 1.
+To **zarys koncepcyjny**, nie finalna migracja SQL. Szczegóły pól, indeksów i widoków agregujących — przy fazach modułów (3–5).
+
+**Pierwsza migracja (profiles + RLS + `measurements` smoke):** [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 
 ## Diagram encji (roboczy)
 
@@ -23,11 +25,11 @@ erDiagram
 
 ### profiles
 
-Minimalny rekord aplikacji powiązany z kontem Auth. Zasady PII i usuwania konta: [auth](../architecture/auth.md), [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md).
+Minimalny rekord aplikacji powiązany z kontem Auth. Zasady PII i usuwania konta: [auth](../architecture/auth.md), [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md). Kolumny SQL: [spec pierwszej migracji](../specs/first-migration-profiles-rls.md).
 
 - `id` (UUID, PK, = auth user)
 - `created_at`, `updated_at`
-- preferencje UI / jednostki (`kg`/`lb`) — bez PII
+- `preferred_units` (`kg`/`lb`) — preferencje UI, bez PII
 - **nie:** email, display name, avatar, płeć, data urodzenia (email tylko w `auth.users`)
 
 ### foods
@@ -80,7 +82,7 @@ Serie w sesji.
 
 ### measurements
 
-Pomiary ciała.
+Pomiary ciała. **W pierwszej migracji** (smoke RLS) — [spec](../specs/first-migration-profiles-rls.md).
 
 - `id`, `user_id`
 - `metric` (np. `body_weight_kg`, `waist_cm`)
@@ -94,11 +96,11 @@ Etykiety cross-cutting (ćwiczenia, posiłki). Relacje M:N przez tabele łączą
 
 ## Wspólne konwencje schematu
 
-- UUID jako PK (lub ULID — decyzja przy migracji).
+- UUID jako PK (`gen_random_uuid()`) — ustalone w [spec pierwszej migracji](../specs/first-migration-profiles-rls.md); nie ULID.
 - `timestamptz` dla wszystkich dat.
 - Soft-delete tylko jeśli jest case (np. undo); domyślnie **hard delete**. Tombstone pod sync offline — dopiero przy offline-write ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
-- Każda tabela użytkownika: `created_at`, `updated_at` (timestamptz) — LWW na wiersz w MVP sync.
-- Indeksy: `(user_id, eaten_at)`, `(user_id, measured_at)`, `(session_id, position)` itd.
+- Każda tabela użytkownika: `created_at`, `updated_at` (timestamptz) — LWW na wiersz w MVP sync; `updated_at` ustawiane triggerem `set_updated_at`.
+- Indeksy: `(user_id, eaten_at)`, `(user_id, measured_at DESC)` (już w pierwszej migracji), `(session_id, position)` itd.
 - Gdzie egzekwować reguły wspólne web + mobile (RLS / CHECK vs KMP / cienka TS): [postgres-invariants](../architecture/postgres-invariants.md).
 
 ## Agregacje (kierunek)
@@ -113,6 +115,6 @@ Materializowane tabele dzienne — opcjonalna optymalizacja później.
 
 ## Poza zakresem zarysu
 
-- Dokładne typy SQL i pełna treść pierwszej migracji — [#6](https://github.com/MarekBiolik/GymManager/issues/6); podział CHECK vs core: [postgres-invariants](../architecture/postgres-invariants.md)
+- Pełne tabele żywienia / treningu (fazy 3–4); dokładne typy pierwszej migracji → [spec](../specs/first-migration-profiles-rls.md); podział CHECK vs core: [postgres-invariants](../architecture/postgres-invariants.md)
 - Import z OpenFoodFacts
 - Udostępnianie danych między użytkownikami

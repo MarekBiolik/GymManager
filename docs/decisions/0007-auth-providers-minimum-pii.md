@@ -40,4 +40,5 @@ Opcje z [OQ-02](../open-questions.md): Google OAuth, Sign in with Apple, magic l
 - [OQ-02](../open-questions.md) (decided)
 - [ADR 0002](0002-backend-supabase.md)
 - [data-model — profiles](../domain/data-model.md)
-- Issue follow-up: konfiguracja IdP przy scaffoldingu / usuwanie konta w kodzie
+- [Spec pierwszej migracji — profiles](../specs/first-migration-profiles-rls.md)
+- Follow-upy: IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12), usuwanie konta [#13](https://github.com/MarekBiolik/GymManager/issues/13), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21)
