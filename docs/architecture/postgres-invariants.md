@@ -92,7 +92,7 @@ Avoid triggers with rich business logic (“session completeness”, nutrition p
 
 - Use cases, repository orchestration, DTO ↔ domain mapping.
 - Rich / multi-step validation (e.g. “session complete”, aggregation rules before writing many rows).
-- Read cache / invalidation ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) — **not** a second SoT.
+- Read cache / invalidation ([ADR 0008](../decisions/0008-sync-strategy-online-first.md); contract: [hello-sync-read-cache](../specs/hello-sync-read-cache.md)) — **not** a second SoT.
 - Domain error messages for native UI.
 
 Core does **not** replace RLS. Even correct core must write through JWT + RLS.
