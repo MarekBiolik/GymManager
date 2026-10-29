@@ -14,18 +14,20 @@ Work phases. Each phase ends with a documentation (or ADR) update before going d
 
 ## Phase 1 — Monorepo and infrastructure scaffolding
 
-**Goal:** empty, building projects + attached Supabase (`dev`) + CI skeleton.
+**Goal:** empty, building projects + attached Supabase (`dev`) + CI skeleton + **design-tokens foundation wired for apps to consume**.
 
 **Playbook (order, done per step, non-goals):** [plans/phase-1-scaffold-playbook.md](plans/phase-1-scaffold-playbook.md) — closes [#7](https://github.com/MarekBiolik/GymManager/issues/7).  
 **Code implementation:** [#14](https://github.com/MarekBiolik/GymManager/issues/14) (not this document).
 
+**Design tokens (docs-first, before/with scaffold):** [ADR 0010](decisions/0010-design-tokens-ssot.md), [design-tokens contract](specs/design-tokens.md), [Fitness/Gym visual style](specs/visual-style-fitness-gym.md). Scaffold [#14](https://github.com/MarekBiolik/GymManager/issues/14) **extends** to include `design/tokens/` stubs, the thin generator entrypoint, and app theme wiring that **consumes generated outputs** (Compose / SwiftUI / CSS+TS) — not a separate deferred issue.
+
 Scope:
 
-- Layout per [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, root scripts
+- Layout per [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, `design/`, root scripts
 - Web uses `supabase-js` only — **no** KMP→JS/Wasm ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md))
 - Attach Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); local secrets / GitHub Secrets; dumps → [#9](https://github.com/MarekBiolik/GymManager/issues/9); `staging`/`prod` split before public beta → [spec](specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)) (not in #14)
 - First schema migration: **spec** [first-migration-profiles-rls](specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6)); **apply** = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (after OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md))
-- CI skeleton on PR (Gradle core/android + pnpm web + core tests) — details in the playbook / [ci-cd](conventions/ci-cd.md)
+- CI skeleton on PR (Gradle core/android + pnpm web + core tests + token regen-clean when generator exists) — details in the playbook / [ci-cd](conventions/ci-cd.md)
 - Auth: **no** full OAuth smoke in the scaffold; IdP checklist [spec](specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)), login UI → phase 2
 
 **Done when (before deep phase-2 code):**
@@ -79,6 +81,8 @@ Scope:
 ## Phase 6 — UX integration “one app”
 
 **Goal:** coherent navigation between modules, polish, App Store / Play Store / web hosting.
+
+**Owns:** module-switching UX ([OQ-08](open-questions.md)), store polish, coherent nav — **not** the first design-token decision ([ADR 0010](decisions/0010-design-tokens-ssot.md) / Phase 1). Theming / light-mode / alternate-style policy: [OQ-09](open-questions.md).
 
 ---
 

@@ -48,6 +48,7 @@ GymManager/
     android/            # Jetpack Compose; Gradle dependency on :core
     web/                # React + TS + Vite (pnpm); supabase-js — ADR 0006
   supabase/             # SQL migrations, RLS, CLI config
+  design/               # design-token SSOT + generator (ADR 0010)
   docs/                 # documentation and ADRs (decision source of truth)
 ```
 
@@ -60,6 +61,7 @@ GymManager/
 | `apps/ios/` | SwiftUI + iOS wiring | Xcode; framework from Gradle/KMP |
 | `apps/web/` | React/TS UI; Supabase via `supabase-js` (no KMP-JS) | pnpm / Vite |
 | `supabase/` | Schema, RLS, local/linked project | Supabase CLI |
+| `design/` | Token SSOT + generator → native theme outputs ([ADR 0010](../decisions/0010-design-tokens-ssot.md)) | Node (thin generator) |
 | `docs/` | Vision, architecture, ADRs, conventions | — |
 | Root scripts | `build` / `test` / `lint` across toolchains | pnpm / shell |
 
