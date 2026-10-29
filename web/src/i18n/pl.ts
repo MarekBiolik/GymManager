@@ -73,8 +73,6 @@ export const pl = {
       'Kamera niedostępna tutaj (potrzebny HTTPS) — wpisz kod EAN w wyszukiwarkę',
     cameraUnavailable: 'Nie udało się uruchomić kamery',
     cameraPermissionDenied: 'Brak dostępu do kamery — wpisz kod EAN ręcznie',
-    frequent: 'Najczęściej w tym posiłku',
-    frequentEmpty: 'Tu pojawią się produkty najczęściej dodawane do tego posiłku.',
     inApp: 'W aplikacji',
     openFoodFacts: 'Open Food Facts',
     mineEmpty: 'Nie masz jeszcze własnych produktów.',

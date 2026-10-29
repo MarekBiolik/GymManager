@@ -51,6 +51,7 @@ export function AddFoodScreen({ date, meal, onClose, onSaved }: Props) {
   const [remoteHits, setRemoteHits] = useState<FoodCandidate[]>([])
   const [scanning, setScanning] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const overlayBodyRef = useRef<HTMLDivElement>(null)
   const searchRequestId = useRef(0)
 
   const [name, setName] = useState('')
@@ -80,6 +81,11 @@ export function AddFoodScreen({ date, meal, onClose, onSaved }: Props) {
       cancelled = true
     }
   }, [reloadLists])
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    overlayBodyRef.current?.scrollTo(0, 0)
+  }, [])
 
   function openCustomBlank(prefillBarcode?: string) {
     setTab('custom')
@@ -265,9 +271,9 @@ export function AddFoodScreen({ date, meal, onClose, onSaved }: Props) {
     }
   }
 
-  function renderProductList(products: Selectable[], emptyText: string) {
+  function renderProductList(products: Selectable[], emptyText?: string) {
     if (products.length === 0) {
-      return <p className="empty-hint">{emptyText}</p>
+      return emptyText ? <p className="empty-hint">{emptyText}</p> : null
     }
     return (
       <ul className="product-list">
@@ -328,7 +334,7 @@ export function AddFoodScreen({ date, meal, onClose, onSaved }: Props) {
         <span className="header-spacer" />
       </header>
 
-      <div className="overlay-body">
+      <div className="overlay-body" ref={overlayBodyRef}>
         <div className="tabs tabs-3" role="tablist">
           <button
             type="button"
@@ -392,23 +398,18 @@ export function AddFoodScreen({ date, meal, onClose, onSaved }: Props) {
               <p className="muted small">{t.addFood.searching}</p>
             ) : null}
 
-            {showFrequent ? (
-              <>
-                <h2 className="section-title">{t.addFood.frequent}</h2>
-                {renderProductList(frequent, t.addFood.frequentEmpty)}
-              </>
-            ) : null}
+            {showFrequent ? renderProductList(frequent) : null}
 
             {!showFrequent && localHits.length > 0 ? (
               <>
                 <h2 className="section-title">{t.addFood.inApp}</h2>
-                {renderProductList(localHits, '')}
+                {renderProductList(localHits)}
               </>
             ) : null}
             {!showFrequent && remoteHits.length > 0 ? (
               <>
                 <h2 className="section-title">{t.addFood.openFoodFacts}</h2>
-                {renderProductList(remoteHits, '')}
+                {renderProductList(remoteHits)}
               </>
             ) : null}
           </div>

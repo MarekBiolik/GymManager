@@ -108,15 +108,15 @@ function App() {
             </button>
             <div className="week-heading">
               <p className="week-range">{formatWeekRangeLabel(date)}</p>
-              {!isToday(date) ? (
-                <button
-                  type="button"
-                  className="text-btn jump-today"
-                  onClick={() => setDate(todayLocal())}
-                >
-                  {t.app.jumpToToday}
-                </button>
-              ) : null}
+              <button
+                type="button"
+                className="text-btn jump-today"
+                hidden={isToday(date)}
+                tabIndex={isToday(date) ? -1 : 0}
+                onClick={() => setDate(todayLocal())}
+              >
+                {t.app.jumpToToday}
+              </button>
             </div>
             <button
               type="button"
@@ -254,9 +254,7 @@ function App() {
                         </span>
                       </button>
                     </div>
-                    {mealEntries.length === 0 ? (
-                      <p className="meal-empty">{t.app.noProducts}</p>
-                    ) : (
+                    {mealEntries.length > 0 ? (
                       <ul className="entry-list">
                         {mealEntries.map((entry) => {
                           const m = macrosForGrams(entry.product, entry.grams)
@@ -292,7 +290,7 @@ function App() {
                           )
                         })}
                       </ul>
-                    )}
+                    ) : null}
                   </section>
                 )
               })}
