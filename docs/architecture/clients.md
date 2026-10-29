@@ -44,9 +44,9 @@ Wspólne niezmienniki potrzebne web + mobile → preferuj **Postgres (RLS / CHEC
 ## Wspólne wymagania wobec klientów
 
 1. Brak tajemnic w repo (klucze Supabase anon + URL OK w kliencie; service role nigdy).
-2. Stan użytkownika (zalogowany / dane): mobile z core; web z sesji `supabase-js` / uzgodnionego kontraktu auth ([OQ-02](../open-questions.md)).
+2. Stan użytkownika (zalogowany / dane): mobile z core; web z sesji `supabase-js` / uzgodnionego kontraktu auth ([ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)).
 3. Feature flags / środowisko (dev/staging/prod) — konwencja w fazie 1.
-4. Minimalny „hello”: login + odczyt/zapis jednej encji chronionej RLS — cel fazy 2.
+4. Minimalny „hello”: login + odczyt/zapis jednej encji chronionej RLS (online-first + read cache — [ADR 0008](../decisions/0008-sync-strategy-online-first.md)) — cel fazy 2.
 
 ## Poza zakresem UI (na teraz)
 

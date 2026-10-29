@@ -96,7 +96,8 @@ Etykiety cross-cutting (ćwiczenia, posiłki). Relacje M:N przez tabele łączą
 
 - UUID jako PK (lub ULID — decyzja przy migracji).
 - `timestamptz` dla wszystkich dat.
-- Soft-delete tylko jeśli jest case (np. undo); domyślnie hard delete + ewentualny tombstone sync (OQ-03).
+- Soft-delete tylko jeśli jest case (np. undo); domyślnie **hard delete**. Tombstone pod sync offline — dopiero przy offline-write ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
+- Każda tabela użytkownika: `created_at`, `updated_at` (timestamptz) — LWW na wiersz w MVP sync.
 - Indeksy: `(user_id, eaten_at)`, `(user_id, measured_at)`, `(session_id, position)` itd.
 
 ## Agregacje (kierunek)

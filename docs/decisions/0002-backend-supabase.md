@@ -28,10 +28,11 @@ Używamy **Supabase**: PostgreSQL + Auth + Row Level Security + Realtime + Stora
 
 - Pozytywne: mało własnej infra; RLS egzekwuje „dane tylko właściciela”; darmowy tier na start; ścieżka wyjścia przez SQL dump.
 - Negatywne: zależność od produktu Supabase Auth/API; community `supabase-kt` wymaga monitorowania dojrzałości; trzeba dyscypliny migracji + RLS przy każdej tabeli.
-- Później: OQ-03 (sync). Hosting/backupy zamknięte w [ADR 0004](0004-supabase-hosting.md). Metoda logowania / PII: [ADR 0007](0007-auth-providers-minimum-pii.md).
+- Sync / offline: [ADR 0008](0008-sync-strategy-online-first.md) (OQ-03). Hosting/backupy: [ADR 0004](0004-supabase-hosting.md). Metoda logowania / PII: [ADR 0007](0007-auth-providers-minimum-pii.md).
 
 ## Powiązane
 
 - [data-and-sync](../architecture/data-and-sync.md)
 - [auth](../architecture/auth.md)
 - [tech-stack](../architecture/tech-stack.md)
+- [ADR 0008](0008-sync-strategy-online-first.md)

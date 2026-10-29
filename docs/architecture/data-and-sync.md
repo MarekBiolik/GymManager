@@ -2,7 +2,9 @@
 
 ## Source of truth
 
-**PostgreSQL (Supabase)** jest źródłem prawdy dla danych użytkownika po zsynchronizowaniu. Lokalny cache na urządzeniu jest optymalizacją UX (offline / szybkość), nie drugą „prawdą” — szczegóły strategii: [OQ-03](../open-questions.md).
+**PostgreSQL (Supabase)** jest jedynym źródłem prawdy dla danych użytkownika. Lokalny cache na urządzeniu jest optymalizacją UX (szybkość / odczyt bez sieci), **nie** drugą prawdą. Decyzja: [ADR 0008](../decisions/0008-sync-strategy-online-first.md) (zamyka [OQ-03](../open-questions.md)).
+
+Tożsamość zapisów: `user_id` = konto Supabase Auth ([ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)); izolacja przez RLS.
 
 ## Zarys schematu
 
@@ -33,19 +35,65 @@ flowchart LR
 - Klucz `service_role` **nigdy** w aplikacjach klienckich ani w publicznym repo.
 - Nowe tabele: migracja SQL **razem** z politykami RLS (konwencja CI).
 
-## Sync (zarys — do doprecyzowania w OQ-03)
+## Sync (MVP — ADR 0008)
 
-Kierunki do rozstrzygnięcia:
+Decyzja: **online-first + lokalny cache odczytu**. Szczegóły i alternatywy: [ADR 0008](../decisions/0008-sync-strategy-online-first.md).
 
-1. **Online-only na start** — prostsze; offline później.
-2. **Local-first + kolejka** — lepsze UX w siłowni bez zasięgu; więcej złożoności (konflikty, zegary).
-3. **Realtime Supabase** — live updates między urządzeniami gdy online.
+### Model
 
-Rekomendacja robocza do walidacji w fazie 2: zacząć od solidnego online + prosty lokalny cache odczytu; pełne offline-write dopiero gdy MVP modułów tego wymaga.
+```mermaid
+flowchart LR
+  UI["UI klienta"]
+  Cache["Cache odczytu"]
+  API["Supabase API + RLS"]
+  PG["Postgres SoT"]
+  UI -->|odczyt online| API
+  API --> PG
+  API -->|odśwież| Cache
+  UI -->|odczyt offline| Cache
+  UI -->|zapis tylko online| API
+```
 
-### Konflikty (gdy offline-write)
+| Element | MVP | Później |
+|---------|-----|---------|
+| Source of truth | Postgres | bez zmian |
+| Odczyt | Sieć + cache; offline → cache | ewent. szerszy pre-fetch |
+| Zapis / update / delete | Tylko online | Kolejka offline-write (osobny ADR) |
+| Konflikty | LWW na wiersz (`updated_at`) — **jedna reguła** dla żywienia / treningu / pomiarów / `profiles` | Merge per typ encji jeśli LWW boli |
+| Realtime | Opcjonalne odświeżanie UI | Nadal nie jako jedyny silnik sync |
+| Tombstone / soft-delete | Nie (hard delete) | Przy offline-write |
 
-Kandydaci: last-write-wins na wiersz; merge per typ encji; „server wins”. Wybór per typ danych (wpis posiłku ≠ szablon ćwiczenia).
+### Zachowanie offline
+
+- **Odczyt:** pokaż ostatnio zcache’owane dane; pusty cache → pusty stan + informacja o braku sieci.
+- **Zapis:** zablokowany z komunikatem; **bez** cichej kolejki w MVP.
+- **Sesja:** bez ważnego JWT brak dostępu do danych chronionych (patrz [auth](auth.md)).
+
+### Klienci
+
+| Klient | Ścieżka danych | Cache |
+|--------|----------------|-------|
+| Android / iOS | KMP repozytoria → `supabase-kt` | Cache odczytu w core (cienki helper; nie pełna kolejka) |
+| Web | `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) | Cienki cache w pamięci / storage przeglądarki; **bez** równoległej domeny sync w TS |
+
+Oba ścieżki piszą do **tego samego** Postgresa pod tym samym `user_id` — parity offline-write web↔mobile **nie** jest celem MVP (warunek revisit ADR 0006 pozostaje na później).
+
+### Konflikty (MVP)
+
+- **Reguła:** last-write-wins na **cały wiersz** według `updated_at`.
+- **Świadomie jedna reguła** dla wszystkich typów encji na start — bez osobnych polityk food vs set vs measurement.
+- Brak UI „rozstrzygnij konflikt”; przy dwóch urządzeniach online wygrywa późniejszy zapis.
+- Schemat: każda tabela użytkownika ma `updated_at` (wejście do spec migracji #6).
+
+### Realtime
+
+Supabase Realtime jest **opcją** po „hello sync” (live refresh gdy drugie urządzenie zapisze). Baseline fazy 2: zapis/odczyt request–response + ręczne / lifecycle refresh wystarcza.
+
+### Offline-write (poza MVP)
+
+Gdy trening/żywienie w trybie airplane stanie się wymaganiem: kolejka, idempotencja, tombstone’y, revisit konfliktów (możliwe reguły per typ encji) — **nowy ADR**, nie rozszerzanie „po cichu” tego dokumentu. Track: [#20](https://github.com/MarekBiolik/GymManager/issues/20).
+
+Kontrakt cache odczytu / hello sync (faza 2): [#19](https://github.com/MarekBiolik/GymManager/issues/19).
 
 ## Agregacje i historia
 

@@ -43,7 +43,7 @@ Wybieramy **B na dzień 1** (i przez scaffold + baseline auth/sync):
 
 ### Negatywne / koszty
 
-- Web **nie** współdzieli automatycznie use-case’ów ani sync engine z KMP — feature parity offline/sync na webie może odbiegać, dopóki OQ-03 i ewentualny revisit nie zmienią modelu.
+- Web **nie** współdzieli automatycznie use-case’ów ani sync engine z KMP — MVP sync to online-first po obu stronach ([ADR 0008](0008-sync-strategy-online-first.md)); parity **offline-write** web↔mobile może wymagać revisit A/C.
 - Ryzyko duplikacji reguł w TS, jeśli dyscyplina guardrailów się rozmyje.
 - Typy / DTO na webie pochodzą ze schematu Supabase (np. generowane typy), nie z modeli KMP — możliwy dryf nazw/kształtów; łagodzimy konwencją i migracjami jako źródłem prawdy schematu.
 
@@ -70,7 +70,7 @@ Szczegóły operacyjne: [clients](../architecture/clients.md), [shared-core](../
 Rozważamy ponownie KMP→JS/Wasm (A) lub hybrydę (C), gdy **co najmniej jeden** warunek jest spełniony:
 
 1. **Ból duplikacji** — ta sama reguła biznesowa musi być utrzymywana w Kotlin i TS i powoduje realne bugi albo systematyczny dryf (nie jednorazowy helper UX).
-2. **Parity offline/sync** — web ma mieć ten sam model offline/kolejki/konfliktów co mobile (po zamknięciu [OQ-03](../open-questions.md)), a utrzymanie dwóch silników jest droższe niż koszt toolchainu JS/Wasm.
+2. **Parity offline-write** — web ma mieć ten sam model kolejki/konfliktów co mobile po wprowadzeniu offline-write (dziś MVP: online-first, [ADR 0008](0008-sync-strategy-online-first.md) / [OQ-03](../open-questions.md) decided), a utrzymanie dwóch silników jest droższe niż koszt toolchainu JS/Wasm.
 3. **Toolchain dojrzały pod nas** — zielony, powtarzalny build `core` → JS lub Wasm wpinany w Vite, akceptowalny rozmiar bundla, i ścieżka danych zgodna z wybranym klientem Supabase — w praktyce sprawdzona spike’iem, nie założeniem.
 4. **Web jako powierzchnia krytyczna** — produktowo web dogania mobile w złożoności domeny i koszt B przewyższa koszt A/C.
 
