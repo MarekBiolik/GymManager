@@ -9,6 +9,8 @@ Jednoznaczne nazwy używane w docs, ADR, kodzie i schemacie. Nowe pojęcia dopis
 | **GymManager** | Nazwa projektu / super-aplikacji treningowej |
 | **Moduł** | Obszar produktu w jednej apce: żywienie, trening, pomiary |
 | **Konto** | Tożsamość Supabase Auth; służy do sync i izolacji danych, nie do profilu społecznościowego |
+| **IdP** | Identity Provider — tu Google oraz Sign in with Apple (iOS); decyzja: [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md) |
+| **PII** | Dane osobowe; w GymManager zbieramy minimum (email tylko w Auth z IdP, nie w `profiles`) |
 
 ## Żywienie
 

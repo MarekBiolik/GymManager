@@ -36,11 +36,12 @@ Zakres (do precyzowania przed startem):
 
 Zakres:
 
-- Finalna metoda logowania (PII minimum)
+- Implementacja logowania wg [ADR 0007](decisions/0007-auth-providers-minimum-pii.md) / [auth](architecture/auth.md) (spec zamknięty; tu kod + konfiguracja IdP)
+- Usuwanie konta (cascade / Edge Function) wg zarysu w auth.md
 - Strategia offline/cache i konflikty
 - Shared repositories w core + cienkie UI „hello sync”
 
-**Zależne open questions:** auth method, offline/sync. Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline z core dopiero przy revisit.
+**Zależne open questions:** offline/sync (OQ-03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline z core dopiero przy revisit.
 
 ---
 
