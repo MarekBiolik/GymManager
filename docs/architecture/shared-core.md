@@ -1,36 +1,36 @@
-# Wspólny core (Kotlin Multiplatform)
+# Shared core (Kotlin Multiplatform)
 
-## Rola
+## Role
 
-`core` to jedyne miejsce na:
+`core` is the only place for:
 
-- model domenowy (encje, value objects, reguły),
-- use-case'y / serwisy aplikacyjne,
-- kontrakty repozytoriów i ich implementacje wobec Supabase,
-- logikę sync / mapowanie DTO ↔ domena,
-- walidacje niezależne od UI.
+- domain model (entities, value objects, rules),
+- use cases / application services,
+- repository contracts and their Supabase implementations,
+- sync logic / DTO ↔ domain mapping,
+- UI-independent validation.
 
-Core **nie** zawiera widgetów, kolorów, nawigacji ani layoutu.
+Core does **not** contain widgets, colors, navigation, or layout.
 
-Na **webie** (dzień 1) core **nie** jest linkowany jako binary — patrz [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md). Wspólne niezmienniki krytyczne dla web + mobile egzekwuj w Postgres (RLS / CHECK), nie przez ukrytą duplikację w TS — konwencja i checklista: [postgres-invariants](postgres-invariants.md).
+On **web** (day 1) core is **not** linked as a binary — see [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md). Shared invariants critical for web + mobile are enforced in Postgres (RLS / CHECK), not via hidden TS duplication — convention and checklist: [postgres-invariants](postgres-invariants.md).
 
-## Targety kompilacji (zamierzone)
+## Compilation targets (intended)
 
-| Target | Konsumowany przez |
-|--------|-------------------|
+| Target | Consumed by |
+|--------|-------------|
 | Android (JVM/Android) | `apps/android` |
 | iOS (framework / XCFramework) | `apps/ios` (Swift) |
-| JS / Wasm | **nie w scope dnia 1** — web używa `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)); target możliwy dopiero po revisit |
+| JS / Wasm | **not in day-1 scope** — web uses `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)); target only after revisit |
 
-Android i iOS są ścieżką „pewną”. Web **nie** jest automatycznym konsumentem binary core.
+Android and iOS are the “sure” path. Web is **not** an automatic consumer of the core binary.
 
-## Granica (seam) core ↔ UI
+## Seam: core ↔ UI
 
 ```mermaid
 flowchart LR
-  UI["UI warstwa\nCompose / SwiftUI / React"]
-  Facade["Publiczne API core\n(use-case, stany, komendy)"]
-  Dom["Domena + repozytoria"]
+  UI["UI layer\nCompose / SwiftUI / React"]
+  Facade["Public core API\n(use cases, state, commands)"]
+  Dom["Domain + repositories"]
   Supa["Supabase"]
   UI -->|"Android / iOS"| Facade
   Facade --> Dom
@@ -38,37 +38,37 @@ flowchart LR
   UI -->|"Web: supabase-js\nADR 0006"| Supa
 ```
 
-**UI może:**
+**UI may:**
 
-- wywoływać publiczne API core (komendy, zapytania, obserwacja stanu) — **Android / iOS**,
-- na **webie**: wołać Supabase przez `supabase-js` zgodnie z [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md) (bez binary KMP),
-- mapować stan / wiersze na widoki,
-- obsługiwać platformowe uprawnienia i nawigację.
+- call the public core API (commands, queries, state observation) — **Android / iOS**,
+- on **web**: call Supabase via `supabase-js` per [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md) (no KMP binary),
+- map state / rows to views,
+- handle platform permissions and navigation.
 
-**UI nie powinno:**
+**UI should not:**
 
-- omijać RLS ani używać `service_role` w kliencie,
-- zawierać reguł typu „jak liczyć makro dnia” czy „kiedy sesja jest kompletna” (także w TS na webie),
-- budować równoległej „domeny” poza core (mobile) / poza uzgodnionymi constraintami DB (web),
-- znać zbędnych szczegółów schematu poza kontraktem potrzebnym do mapowania UI.
+- bypass RLS or use `service_role` in the client,
+- contain rules like “how to compute day macros” or “when a session is complete” (including in TS on web),
+- build a parallel “domain” outside core (mobile) / outside agreed DB constraints (web),
+- know unnecessary schema details beyond the contract needed for UI mapping.
 
-## Proponowany podział pakietów (zarys, faza 1)
+## Proposed package split (outline, phase 1)
 
 ```
 core/
-  domain/          # encje, reguły, błędy domenowe
-  application/     # use-case'y, porty
-  data/            # implementacje repo, DTO, supabase client
-  sync/            # cache odczytu / invalidacja (MVP ADR 0008); kolejka offline-write później
+  domain/          # entities, rules, domain errors
+  application/     # use cases, ports
+  data/            # repo implementations, DTOs, supabase client
+  sync/            # read cache / invalidation (MVP ADR 0008); offline-write queue later
 ```
 
-Moduł Gradle: pojedynczy `:core` w multi-project root (ew. późniejszy split na `:core:domain` / `:core:data` dopiero gdy zysk > koszt). Integracja i wersjonowanie: [ADR 0005](../decisions/0005-monorepo-tooling.md). Scaffold **nie** dodaje targetu JS/Wasm, dopóki ADR 0006 nie zostanie zrevisited.
+Gradle module: single `:core` in the multi-project root (optional later split into `:core:domain` / `:core:data` only when benefit > cost). Integration and versioning: [ADR 0005](../decisions/0005-monorepo-tooling.md). The scaffold does **not** add a JS/Wasm target until ADR 0006 is revisited.
 
-## Testowanie
+## Testing
 
-Core jest **głównym miejscem testów jednostkowych** — reguły domenowe i use-case'y bez UI. Patrz [testing](../conventions/testing.md).
+Core is the **primary place for unit tests** — domain rules and use cases without UI. See [testing](../conventions/testing.md).
 
-## Decyzja
+## Decision
 
-Uzasadnienie wyboru KMP: [ADR 0001](../decisions/0001-shared-core-kmp.md).  
-Interop web (bez KMP-JS na start): [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md).
+Rationale for KMP: [ADR 0001](../decisions/0001-shared-core-kmp.md).  
+Web interop (no KMP-JS at start): [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md).

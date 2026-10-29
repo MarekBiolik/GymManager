@@ -1,98 +1,98 @@
-# Roadmapa
+# Roadmap
 
-Fazy pracy. Każda faza kończy się aktualizacją dokumentacji (lub ADR), zanim idzie głęboko w kod.
+Work phases. Each phase ends with a documentation (or ADR) update before going deep into code.
 
-## Faza 0 — Fundamenty dokumentacji
+## Phase 0 — Documentation foundations
 
-**Cel:** zarys wizji, architektury, domeny, konwencji i listy otwartych pytań.
+**Goal:** outline vision, architecture, domain, conventions, and open questions.
 
-**Output:** katalog `docs/` (ten zestaw dokumentów).
+**Output:** the `docs/` tree (this document set).
 
-**Status:** done — ADR 0001–0003 (+ późniejsze 0004–0007 w iteracjach OQ); open-questions i konwencje bazowe istnieją.
-
----
-
-## Faza 1 — Scaffolding monorepo i infrastruktury
-
-**Cel:** puste, budujące się projekty + podpięty Supabase (`dev`) + CI szkielet.
-
-**Playbook (kolejność, done per krok, non-goals):** [plans/phase-1-scaffold-playbook.md](plans/phase-1-scaffold-playbook.md) — zamyka [#7](https://github.com/MarekBiolik/GymManager/issues/7).  
-**Implementacja kodu:** [#14](https://github.com/MarekBiolik/GymManager/issues/14) (nie ten dokument).
-
-Zakres:
-
-- Struktura wg [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, root scripts
-- Web wyłącznie `supabase-js` — **bez** KMP→JS/Wasm ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md))
-- Podpięcie Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); sekrety lokalne / GitHub Secrets; dumpi → [#9](https://github.com/MarekBiolik/GymManager/issues/9)
-- Pierwsza migracja schematu: **spec** [first-migration-profiles-rls](specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6)); **apply** = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (po OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md))
-- Szkielet CI na PR (Gradle core/android + pnpm web + testy core) — szczegóły w playbooku / [ci-cd](conventions/ci-cd.md)
-- Auth: **nie** pełny smoke OAuth w scaffoldzie; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12), login UI → faza 2
-
-**Done when (przed startem głębokiego kodu fazy 2):**
-
-1. Playbook zmergowany; [#14](https://github.com/MarekBiolik/GymManager/issues/14) zmergowane — drzewo buduje się lokalnie i na CI.
-2. `supabase/` + link do Cloud `dev`; brak sekretów w git.
-3. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [docs/specs/first-migration-profiles-rls.md](specs/first-migration-profiles-rls.md) zmergowany i migracja SQL 1:1 ze specem w `supabase/migrations/` + na `dev` ([#21](https://github.com/MarekBiolik/GymManager/issues/21)).
-4. Brak targetu JS/Wasm w `core`; web nie konsumuje binary KMP.
-5. Follow-upy dump (#9) / IdP (#12) otwarte świadomie — nie blokują zamknięcia samego layoutu; #6+#21 blokują „faza 1 complete”.
-
-**Zamknięte przed startem kodu scaffoldu:** OQ-05 → ADR 0004; OQ-04 → ADR 0005; OQ-01 → ADR 0006; OQ-03 → ADR 0008; playbook #7; spec migracji #6.  
-**Nie blokuje startu pustego #14:** apply SQL (#21) — treść schematu jest w specu; #14 trzyma `migrations/` puste do #21.
+**Status:** done — ADR 0001–0003 (+ later 0004–0007 in OQ iterations); open-questions and base conventions exist.
 
 ---
 
-## Faza 2 — Auth + sync baseline
+## Phase 1 — Monorepo and infrastructure scaffolding
 
-**Cel:** użytkownik loguje się, dane są izolowane RLS, podstawowy sync działa na wszystkich klientach.
+**Goal:** empty, building projects + attached Supabase (`dev`) + CI skeleton.
 
-Zakres:
+**Playbook (order, done per step, non-goals):** [plans/phase-1-scaffold-playbook.md](plans/phase-1-scaffold-playbook.md) — closes [#7](https://github.com/MarekBiolik/GymManager/issues/7).  
+**Code implementation:** [#14](https://github.com/MarekBiolik/GymManager/issues/14) (not this document).
 
-- Implementacja logowania wg [ADR 0007](decisions/0007-auth-providers-minimum-pii.md) / [auth](architecture/auth.md) (spec zamknięty; tu kod + konfiguracja IdP)
-- Usuwanie konta (cascade / Edge Function) wg zarysu w auth.md
-- Sync wg [ADR 0008](decisions/0008-sync-strategy-online-first.md): zapis online + cache odczytu + LWW; cienkie UI „hello sync”
-- Shared repositories w core (mobile) + równoważne wołania `supabase-js` (web)
+Scope:
 
-**Zależne open questions:** (brak blokujących OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline-write z core dopiero przy revisit / osobnym ADR.
+- Layout per [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, root scripts
+- Web uses `supabase-js` only — **no** KMP→JS/Wasm ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md))
+- Attach Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); local secrets / GitHub Secrets; dumps → [#9](https://github.com/MarekBiolik/GymManager/issues/9)
+- First schema migration: **spec** [first-migration-profiles-rls](specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6)); **apply** = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (after OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md))
+- CI skeleton on PR (Gradle core/android + pnpm web + core tests) — details in the playbook / [ci-cd](conventions/ci-cd.md)
+- Auth: **no** full OAuth smoke in the scaffold; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12), login UI → phase 2
 
----
+**Done when (before deep phase-2 code):**
 
-## Faza 3 — Moduł żywienia (MVP)
+1. Playbook merged; [#14](https://github.com/MarekBiolik/GymManager/issues/14) merged — tree builds locally and on CI.
+2. `supabase/` + link to Cloud `dev`; no secrets in git.
+3. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [docs/specs/first-migration-profiles-rls.md](specs/first-migration-profiles-rls.md) merged and SQL migration 1:1 with the spec in `supabase/migrations/` + on `dev` ([#21](https://github.com/MarekBiolik/GymManager/issues/21)).
+4. No JS/Wasm target in `core`; web does not consume a KMP binary.
+5. Dump (#9) / IdP (#12) follow-ups left open on purpose — they do not block closing layout alone; #6+#21 block “phase 1 complete”.
 
-**Cel:** własne produkty/posiłki, wpisy spożycia, historia, podstawowe agregacje.
-
-Może wykorzystać zewnętrzne źródło żywności (np. OpenFoodFacts) — decyzja osobnym ADR.
-
----
-
-## Faza 4 — Moduł treningu (MVP)
-
-**Cel:** ćwiczenia, sesje, serie, historia treningów.
-
----
-
-## Faza 5 — Moduł pomiarów (MVP)
-
-**Cel:** pomiary ciała w czasie, proste wykresy/agregacje (Postgres).
+**Closed before empty scaffold code starts:** OQ-05 → ADR 0004; OQ-04 → ADR 0005; OQ-01 → ADR 0006; OQ-03 → ADR 0008; playbook #7; migration spec #6.  
+**Does not block empty #14 start:** SQL apply (#21) — schema content is in the spec; #14 keeps `migrations/` empty until #21.
 
 ---
 
-## Faza 6 — Integracja UX „jedna apka”
+## Phase 2 — Auth + sync baseline
 
-**Cel:** spójna nawigacja między modułami, polish, App Store / Play Store / hosting web.
+**Goal:** user signs in, data is RLS-isolated, basic sync works on all clients.
+
+Scope:
+
+- Implement sign-in per [ADR 0007](decisions/0007-auth-providers-minimum-pii.md) / [auth](architecture/auth.md) (spec closed; here code + IdP config)
+- Account deletion (cascade / Edge Function) per the outline in auth.md
+- Sync per [ADR 0008](decisions/0008-sync-strategy-online-first.md): online writes + read cache + LWW; thin “hello sync” UI
+- Shared repositories in core (mobile) + equivalent `supabase-js` calls (web)
+
+**Dependent open questions:** (no blocking OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web stays on `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); offline-write parity with core only on revisit / a separate ADR.
 
 ---
 
-## Faza 7 — AI (później)
+## Phase 3 — Nutrition module (MVP)
 
-**Cel:** skille / agenci / workflow wokół ustabilizowanej infrastruktury i domeny.
+**Goal:** own products/meals, intake entries, history, basic aggregations.
 
-Świadomie **po** fazach 0–6. Nie projektujemy tu stacku AI.
+May use an external food source (e.g. OpenFoodFacts) — decision in a separate ADR.
 
 ---
 
-## Jak pracujemy z roadmapą
+## Phase 4 — Training module (MVP)
 
-1. Przed startem fazy: krótki plan + doprecyzowanie powiązanych punktów z [open-questions](open-questions.md).
-2. Decyzje trwałe → ADR.
-3. Kod dopiero po zaktualizowanej dokumentacji obszaru.
-4. Roadmapa nie jest kontraktem dat — to kolejność zależności.
+**Goal:** exercises, sessions, sets, workout history.
+
+---
+
+## Phase 5 — Measurements module (MVP)
+
+**Goal:** body measurements over time, simple charts/aggregations (Postgres).
+
+---
+
+## Phase 6 — UX integration “one app”
+
+**Goal:** coherent navigation between modules, polish, App Store / Play Store / web hosting.
+
+---
+
+## Phase 7 — AI (later)
+
+**Goal:** skills / agents / workflows around stabilized infrastructure and domain.
+
+Deliberately **after** phases 0–6. We do not design the AI stack here.
+
+---
+
+## How we work with the roadmap
+
+1. Before a phase starts: short plan + refine related items from [open-questions](open-questions.md).
+2. Durable decisions → ADR.
+3. Code only after the area’s documentation is updated.
+4. The roadmap is not a date contract — it is dependency order.

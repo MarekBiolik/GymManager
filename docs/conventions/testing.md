@@ -1,31 +1,31 @@
-# Testowanie
+# Testing
 
-## Priorytet
+## Priority
 
-1. **Unit testy w `core`** — reguły domenowe, walidacje, use-case'y (najwyższy ROI).
-2. **Testy migracji / RLS** — polityki nie wpuszczają cudzych wierszy (SQL lub testy integracyjne Supabase).
-3. **Testy UI** — selektywnie na krytyczne flow (login, zapis wpisu); nie na każdy ekran na start.
+1. **Unit tests in `core`** — domain rules, validation, use cases (highest ROI).
+2. **Migration / RLS tests** — policies reject other users’ rows (SQL or Supabase integration tests).
+3. **UI tests** — selectively on critical flows (login, save entry); not every screen at the start.
 
-## Zasady
+## Rules
 
-- Nową regułę biznesową w core = test w tym samym PR.
-- Testy nie wołają produkcyjnego Supabase; używamy lokalnego / mocków / project staging.
-- Flaky test = bug; nie ignorujemy `skip` na stałe bez issue.
+- New business rule in core = test in the same PR.
+- Tests do not call production Supabase; use local / mocks / staging project.
+- Flaky test = bug; do not leave permanent `skip` without an issue.
 
-## Per warstwa (kierunek narzędzi)
+## Per layer (tooling direction)
 
-| Warstwa | Kierunek |
-|---------|----------|
-| core (KMP) | `kotlin.test` / JUnit w commonTest |
-| Android UI | Compose testing — później |
-| iOS UI | XCTest / snapshot — później |
-| Web | Vitest + Testing Library — później |
-| RLS | Testy z dwoma JWT użytkowników |
+| Layer | Direction |
+|-------|-----------|
+| core (KMP) | `kotlin.test` / JUnit in commonTest |
+| Android UI | Compose testing — later |
+| iOS UI | XCTest / snapshot — later |
+| Web | Vitest + Testing Library — later |
+| RLS | Tests with two user JWTs |
 
 ## Coverage
 
-Nie ustawiamy sztywnego % na start. Wymagamy testów dla: auth session handling, sync conflict helpers (gdy powstaną), wyliczeń makro/agregacji domenowych.
+No hard % target at the start. Require tests for: auth session handling, sync conflict helpers (when they exist), domain macro/aggregation calculations.
 
-## Manualne
+## Manual
 
-Przed release sklepu: smoke na realnym urządzeniu iOS + Android + przeglądarka (login, CRUD jednej encji, wylogowanie).
+Before store release: smoke on a real iOS + Android device + browser (login, CRUD one entity, logout).

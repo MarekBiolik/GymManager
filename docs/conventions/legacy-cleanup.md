@@ -1,32 +1,32 @@
-# Los artefaktów prototypu
+# Prototype artifact disposition
 
-## Stan faktyczny (iteracja 1)
+## Actual state (iteration 1)
 
-W repozytorium git na `master` jest zacommitowany praktycznie tylko `.gitignore`. Na dysku roboczym pozostały **nieźródłowe** resztki starego prototypu (tracker żywienia: React/Vite + Node + SQLite + OpenFoodFacts):
+On git `master` essentially only `.gitignore` was committed. The working tree still had **non-source** leftovers from the old prototype (nutrition tracker: React/Vite + Node + SQLite + OpenFoodFacts):
 
-| Ścieżka | Co to jest | Decyzja |
-|---------|------------|---------|
-| `web/dist/` | Zbudowany frontend (HTML/JS/CSS) | **Usunąć** przy sprzątaniu fazy 1; nie commitować |
-| `web/node_modules/` | Zależności npm bez `package.json` w drzewie źródeł | **Usunąć**; nie commitować |
-| `web/src/` | Pusty / bez plików źródeł | **Usunąć** katalog razem ze starym `web/` albo zastąpić nowym `apps/web/` |
-| `server/` | Katalog bez źródeł | **Usunąć** |
-| `data/gymmanager.db` (+ `-wal`, `-shm`) | Lokalna baza SQLite prototypu | **Zachować tymczasowo** poza gitem jako referencję; przed usunięciem: opcjonalny eksport schematu/danych do `docs/legacy/` lub pliku SQL; potem skasować |
-| `.gitignore` | Istniejący | **Zachować i uzupełnić** pod monorepo (faza 1) |
+| Path | What it is | Decision |
+|------|------------|----------|
+| `web/dist/` | Built frontend (HTML/JS/CSS) | **Delete** during phase-1 cleanup; do not commit |
+| `web/node_modules/` | npm deps without `package.json` in the source tree | **Delete**; do not commit |
+| `web/src/` | Empty / no source files | **Delete** the directory with old `web/` or replace with new `apps/web/` |
+| `server/` | Directory without sources | **Delete** |
+| `data/gymmanager.db` (+ `-wal`, `-shm`) | Local prototype SQLite DB | **Keep temporarily** outside git as reference; before delete: optional schema/data export to `docs/legacy/` or a SQL file; then remove |
+| `.gitignore` | Existing | **Keep and extend** for the monorepo (phase 1) |
 
-## Zasady
+## Rules
 
-1. Nic z powyższych artefaktów **nie wchodzi** do historii git jako „kod produkcyjny”.
-2. Nowy web żyje w `apps/web/`, nie w starym `web/`.
-3. SQLite nie jest backendem docelowym — docelowo Postgres (Supabase).
-4. OpenFoodFacts może wrócić jako integracja — osobna decyzja ([OQ-07](../open-questions.md)), nie przez wskrzeszanie starego serwera.
+1. None of the above artifacts **enter** git history as “production code”.
+2. New web lives in `apps/web/`, not old `web/`.
+3. SQLite is not the target backend — target is Postgres (Supabase).
+4. OpenFoodFacts may return as an integration — separate decision ([OQ-07](../open-questions.md)), not by resurrecting the old server.
 
-## Checklist wykonania
+## Execution checklist
 
-- [x] `.gitignore` pokrywa `node_modules/`, `dist/`, `*.db`, `.env*` (już na `master`)
-- [ ] Opcjonalnie: zrzut schematu `gymmanager.db` → `docs/legacy/prototype-schema.sql` (pominięte — baza usunięta bez eksportu)
-- [x] Usunięto `web/` (w tym `dist`, `node_modules`, puste `src`), `server/`, `data/gymmanager.db*`
-- [x] Sprzątanie lokalne wykonane przy porządkowaniu brancha po iteracji docs
+- [x] `.gitignore` covers `node_modules/`, `dist/`, `*.db`, `.env*` (already on `master`)
+- [ ] Optionally: dump `gymmanager.db` schema → `docs/legacy/prototype-schema.sql` (skipped — DB removed without export)
+- [x] Removed `web/` (including `dist`, `node_modules`, empty `src`), `server/`, `data/gymmanager.db*`
+- [x] Local cleanup done when tidying the branch after the docs iteration
 
-## Status OQ
+## OQ status
 
-[OQ-06](../open-questions.md) — **decided**; artefakty prototypu usunięte z working tree (nie były w git).
+[OQ-06](../open-questions.md) — **decided**; prototype artifacts removed from the working tree (were never in git).

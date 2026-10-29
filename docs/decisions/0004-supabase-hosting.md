@@ -1,41 +1,41 @@
-# ADR 0004 — Hosting Supabase i backupy
+# ADR 0004 — Supabase hosting and backups
 
 - **Status:** accepted
-- **Data:** 2026-10-29
-- **Decydenci:** Marek (+ sesja zamykania OQ-05)
+- **Date:** 2026-10-29
+- **Decision makers:** Marek (+ OQ-05 closing session)
 
-## Kontekst
+## Context
 
-[ADR 0002](0002-backend-supabase.md) wybrał Supabase jako BaaS, ale nie rozstrzygnął **gdzie** go hostujemy ani jak chronimy dane. Solo maintainer trackera fitness: niski budżet utrzymania, brak opsów, dane osobiste (historia posiłków/treningów) warte odzyskania, ale na start nie jest to multi-tenant SaaS z SLA.
+[ADR 0002](0002-backend-supabase.md) chose Supabase as BaaS but did not decide **where** we host it or how we protect data. Solo fitness-tracker maintainer: low maintenance budget, no ops team, personal data (meal/workout history) worth recovering, but this is not multi-tenant SaaS with an SLA at the start.
 
-Siły: koszt (idealnie $0 na start), zero VPS/patchowania, exit path przez SQL, sensowna ścieżka upgrade gdy dane staną się „nie mogę stracić”, jasny model sekretów przed scaffoldingiem.
+Forces: cost (ideally $0 to start), zero VPS/patching, exit via SQL, sensible upgrade path when data becomes “I cannot lose this”, clear secrets model before scaffolding.
 
-## Decyzja
+## Decision
 
-1. **Hosting:** **Supabase Cloud**, plan **Free** na start. Upgrade do **Pro** (~$25/mies.) gdy potrzebujemy automatycznych daily backupów, braku pauzy projektu albo więcej zasobów — zanim dane produkcyjne będą nie do odtworzenia z pamięci.
-2. **Środowiska na start:** jeden projekt Cloud = **`dev`** (scaffolding + osobiste użycie). Opcjonalnie lokalny stack (`supabase start`) do pracy nad migracjami offline. Osobne **`staging` / `prod`** odkładamy do publicznej bety / wielu użytkowników.
-3. **Sekrety:** URL projektu + klucz `anon` mogą być w klientach (ochrona = RLS). `service_role` i inne sekrety **nigdy** w repo ani w apkach — tylko lokalny `.env*` (gitignore) i GitHub Secrets w CI.
-4. **Backupy (Free):** brak dostępnych automatycznych backupów dashboardowych. Polityka: okresowy logiczny dump (`supabase db dump` / `pg_dump`) poza Cloud + dump przed ryzykowną migracją. Po upgrade do Pro: daily backups (7 dni) + opcjonalnie PITR.
+1. **Hosting:** **Supabase Cloud**, **Free** plan at the start. Upgrade to **Pro** (~$25/mo) when we need automatic daily backups, no project pause, or more resources — before production data cannot be reconstructed from memory.
+2. **Environments at start:** one Cloud project = **`dev`** (scaffolding + personal use). Optionally local stack (`supabase start`) for offline migration work. Separate **`staging` / `prod`** deferred until public beta / many users.
+3. **Secrets:** project URL + `anon` key may live in clients (protection = RLS). `service_role` and other secrets **never** in the repo or apps — only local `.env*` (gitignore) and GitHub Secrets in CI.
+4. **Backups (Free):** no available automatic dashboard backups. Policy: periodic logical dump (`supabase db dump` / `pg_dump`) outside Cloud + dump before a risky migration. After Pro upgrade: daily backups (7 days) + optional PITR.
 
-## Alternatywy rozważone
+## Alternatives considered
 
-1. **Supabase Cloud Free → Pro (wybrane)** — zero ops, darmowy start, oficjalne Auth/API, exit przez Postgres dump. Wady: pauza Free po ~1 tygodniu bezczynności; brak dostępnych auto-backupów na Free; limit 2 aktywnych projektów Free.
-2. **Od razu Cloud Pro** — daily backups i brak pauzy od dnia 1. Odrzucone na start: niepotrzebny koszt, dopóki nie ma danych wartych płatnego RPO.
-3. **Self-host na VPS (Docker)** — pełna kontrola, brak pauzy. Odrzucone na start: patching, TLS, backupy, upgrade’y stacku = ops, którego solo nie chcemy przed MVP.
-4. **Dwa projekty Cloud od razu (dev + prod)** — czystszy podział. Odrzucone na start: Free ma limit aktywnych projektów; staging/prod dodamy przy publicznej becie (wtedy zwykle Pro na prod).
+1. **Supabase Cloud Free → Pro (chosen)** — zero ops, free start, official Auth/API, exit via Postgres dump. Cons: Free pause after ~1 week idle; no available auto-backups on Free; Free limit of 2 active projects.
+2. **Cloud Pro immediately** — daily backups and no pause from day 1. Rejected at start: unnecessary cost until data is worth a paid RPO.
+3. **Self-host on VPS (Docker)** — full control, no pause. Rejected at start: patching, TLS, backups, stack upgrades = ops we do not want before MVP.
+4. **Two Cloud projects immediately (dev + prod)** — cleaner split. Rejected at start: Free active-project limit; staging/prod when public beta (usually Pro for prod then).
 
-## Konsekwencje
+## Consequences
 
-- Pozytywne: decyzja gotowa pod fazę 1; niski koszt; słabszy lock-in (SQL); jasna ścieżka upgrade i przyszłego split środowisk.
-- Negatywne / koszty: na Free trzeba **samemu** dumpować; projekt Free może zostać wstrzymany przy bezczynności — po pauzie trzeba go odpauzować przed pracą; limit 2 projektów Free.
-- Doprecyzować później: checklista provisioningu projektu + drill restore przy scaffoldzie; split staging/prod przy becie; PITR gdy RPO < 1 dzień stanie się wymaganiem.
-- Follow-upy: [#9 runbook dump/restore](https://github.com/MarekBiolik/GymManager/issues/9), [#10 split staging/prod](https://github.com/MarekBiolik/GymManager/issues/10).
+- Positive: decision ready for phase 1; low cost; weaker lock-in (SQL); clear upgrade and future env-split path.
+- Negative / costs: on Free we must dump **ourselves**; Free project may pause when idle — unpause before work; Free 2-project limit.
+- Refine later: project provisioning checklist + restore drill at scaffold; staging/prod split at beta; PITR when RPO < 1 day becomes a requirement.
+- Follow-ups: [#9 dump/restore runbook](https://github.com/MarekBiolik/GymManager/issues/9), [#10 staging/prod split](https://github.com/MarekBiolik/GymManager/issues/10).
 
-## Powiązane
+## Related
 
 - [OQ-05](../open-questions.md) (decided)
-- [data-and-sync](../architecture/data-and-sync.md) — sekcja Hosting i backupy
-- [auth](../architecture/auth.md) — klucze / sekrety
+- [data-and-sync](../architecture/data-and-sync.md) — Hosting and backups section
+- [auth](../architecture/auth.md) — keys / secrets
 - [tech-stack](../architecture/tech-stack.md)
 - [ci-cd](../conventions/ci-cd.md)
 - [ADR 0002](0002-backend-supabase.md)

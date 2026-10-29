@@ -1,54 +1,54 @@
-# Wizja produktu
+# Product vision
 
-## Co to jest
+## What this is
 
-**GymManager** to osobista super-aplikacja treningowa: jedno konto, jedno miejsce na wszystko „około treningowe”. Użytkownik śledzi żywienie, treningi i pomiary ciała; dane są jego własne i synchronizują się między urządzeniami.
+**GymManager** is a personal training super-app: one account, one place for everything training-related. The user tracks nutrition, workouts, and body measurements; the data is theirs and syncs across devices.
 
-Produkt celowo nie jest skomplikowany funkcjonalnie. Ambicja leży po stronie **profesjonalnego tworzenia, utrzymania i rozwoju** — wspólny core, jasne granice, dokumentowane decyzje, przewidywalny rozwój.
+The product is intentionally not feature-heavy. The ambition is **professional build, maintenance, and evolution** — a shared core, clear boundaries, documented decisions, and predictable growth.
 
-## Platformy
+## Platforms
 
-| Platforma | Forma | Uwagi |
-|-----------|--------|--------|
-| Android | Aplikacja natywna | Jetpack Compose |
-| iOS | Aplikacja natywna | SwiftUI; wymaga Apple Developer Program |
-| Web | Aplikacja webowa | React + TypeScript; używana na PC/laptopie |
+| Platform | Form | Notes |
+|----------|------|--------|
+| Android | Native app | Jetpack Compose |
+| iOS | Native app | SwiftUI; requires Apple Developer Program |
+| Web | Web app | React + TypeScript; used on PC/laptop |
 
-Przełączanie między obszarami (żywienie / trening / pomiary) to detal UI/UX — poza zakresem pierwszej iteracji dokumentacyjnej.
+Switching between areas (nutrition / training / measurements) is a UI/UX detail — out of scope for the first documentation iteration.
 
-## Moduły produktowe (zarys)
+## Product modules (outline)
 
-1. **Żywienie** — własne posiłki/produkty, wpisy spożycia, historia (rok+), makro/kalorie. Inspiracja: FitAtu / trackery żywieniowe.
-2. **Trening** — ćwiczenia, sesje, serie, historia treningów.
-3. **Pomiary** — waga i inne pomiary ciała w czasie, wykresy/agregacje.
+1. **Nutrition** — own meals/foods, intake entries, history (1+ year), macros/calories. Inspired by FitAtu / food trackers.
+2. **Training** — exercises, sessions, sets, workout history.
+3. **Measurements** — weight and other body metrics over time, charts/aggregations.
 
-Docelowo wszystko treningowe żyje w **jednej** aplikacji. Szczegóły UX nawigacji między modułami — później.
+Ultimately everything training-related lives in **one** app. Module navigation UX details come later.
 
-## Cele (goals)
+## Goals
 
-- Bezpieczne, łatwe w utrzymaniu logowanie — użytkownik ma swoje dane apki po zmianie urządzenia.
-- Minimum zbieranych informacji o użytkowniku (PII); konto służy głównie do sync i izolacji danych.
-- Wspólna logika domenowa w jednym miejscu (Kotlin Multiplatform), natywne UI per platforma.
-- Backend łatwy w utrzymaniu: Supabase (Postgres + Auth + RLS).
-- Dokumentacja i ADR-y jako fundament przed kodem.
+- Safe, easy-to-maintain sign-in — the user keeps their app data after changing devices.
+- Minimum collected user information (PII); the account mainly enables sync and data isolation.
+- Shared domain logic in one place (Kotlin Multiplatform), native UI per platform.
+- Easy-to-maintain backend: Supabase (Postgres + Auth + RLS).
+- Documentation and ADRs as the foundation before code.
 
-## Non-goals (na teraz)
+## Non-goals (for now)
 
-- Warstwa AI (skille, agenci, workflow) — **świadomie odłożona** na fazę po infrastrukturze.
-- Społeczność, feed, social features.
-- Coaching / plany dla innych użytkowników / multi-tenant B2B.
-- Marketplace suplementów / e-commerce.
-- Pełna lokalizacja wielojęzyczna (może wrócić później).
-- Finalny polish UI/UX i branding — najpierw fundamenty i scaffolding.
+- AI layer (skills, agents, workflows) — **deliberately deferred** until after infrastructure.
+- Community, feed, social features.
+- Coaching / plans for other users / multi-tenant B2B.
+- Supplement marketplace / e-commerce.
+- Full multi-language localization (may return later).
+- Final UI/UX polish and branding — foundations and scaffolding first.
 
-## Użytkownik docelowy (zarys)
+## Target user (outline)
 
-Osoba trenująca, która chce trzymać historię żywienia, treningów i pomiarów w jednym miejscu, na telefonie i na komputerze, bez oddawania danych „na zawsze” do zamkniętego ekosystemu.
+Someone who trains and wants nutrition, workout, and measurement history in one place, on phone and computer, without permanently locking data into a closed ecosystem.
 
-## Relacja do starego prototypu
+## Relation to the old prototype
 
-Wcześniej istniał lokalny prototyp (web React/Vite + serwer Node + SQLite + OpenFoodFacts). Źródła zniknęły; zostały artefakty. Traktujemy projekt jako **czysty restart „on top”**. Decyzja o losie pozostałości: [legacy-cleanup](conventions/legacy-cleanup.md).
+A local prototype existed earlier (web React/Vite + Node server + SQLite + OpenFoodFacts). Sources disappeared; artifacts remained. We treat the project as a **clean restart “on top”**. Disposition of leftovers: [legacy-cleanup](conventions/legacy-cleanup.md).
 
-## Status dokumentu
+## Document status
 
-Zatwierdzony jako fundament iteracji 1. Szczegóły modułów, modelu danych i auth — do doprecyzowania w kolejnych planach (patrz [roadmap](roadmap.md) i [open-questions](open-questions.md)).
+Approved as the foundation for iteration 1. Module details, data model, and auth — to be refined in later plans (see [roadmap](roadmap.md) and [open-questions](open-questions.md)).

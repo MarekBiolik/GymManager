@@ -1,44 +1,43 @@
-# Standardy kodu
+# Coding standards
 
-Konwencje bazowe. Konkretne wersje linterów i formatters — przy scaffoldingu (faza 1).
+Base conventions. Concrete linter and formatter versions — at scaffolding (phase 1).
 
-## Zasady ogólne
+## General rules
 
-1. **Logika domenowa tylko w `core`** — UI nie duplikuje reguł biznesowych. Web: cienka TS + `supabase-js`, bez równoległej domeny ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
-2. **Jawne nazwy** — zgodne ze [słownikiem](../domain/glossary.md); unikamy skrótów typu `usr`, `sess2`.
-3. **Małe PR-y** — jedna intencja; scaffolding oddzielnie od feature.
-4. **Sekrety** — nigdy w repo; `service_role` nigdy w klientach.
-5. **Dokumentacja** — zmiana architektury = ADR lub aktualizacja `docs/` w tym samym PR.
+1. **Domain logic only in `core`** — UI does not duplicate business rules. Web: thin TS + `supabase-js`, no parallel domain ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
+2. **Explicit names** — aligned with the [glossary](../domain/glossary.md); avoid abbreviations like `usr`, `sess2`.
+3. **Small PRs** — one intent; scaffolding separate from features.
+4. **Secrets** — never in the repo; `service_role` never in clients.
+5. **Documentation** — architecture change = ADR or `docs/` update in the same PR.
 
 ## Kotlin (core + Android)
 
-- Idiomatyczny Kotlin; preferuj immutable data / value types w domenie.
-- Publiczne API `core` możliwie wąskie (facade / use-case), reszta `internal`.
-- Coroutines do I/O; unikaj blokowania wątku UI.
-- Formatter/linter: ktlint lub spotless (do wyboru w fazie 1).
+- Idiomatic Kotlin; prefer immutable data / value types in the domain.
+- Public `core` API as narrow as practical (facade / use case), rest `internal`.
+- Coroutines for I/O; avoid blocking the UI thread.
+- Formatter/linter: ktlint or Spotless (choose in phase 1).
 
 ## Swift (iOS)
 
-- SwiftUI + czytelne `View` bez logiki biznesowej.
-- Model UI oddzielony od typów domenowych core (mapowanie na brzegu).
-- SwiftFormat / SwiftLint — do włączenia w fazie 1.
+- SwiftUI + readable `View`s without business logic.
+- UI model separated from core domain types (mapping at the edge).
+- SwiftFormat / SwiftLint — enable in phase 1.
 
 ## TypeScript / React (web)
 
 - TypeScript strict.
-- Funkcyjne komponenty; dane przez `supabase-js` (nie przez binary KMP) — [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md).
-
+- Functional components; data via `supabase-js` (not via KMP binary) — [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md).
 - ESLint + Prettier.
-- Brak `any` bez komentarza uzasadniającego.
+- No `any` without a justifying comment.
 
 ## SQL / Supabase
 
-- Każda tabela użytkownika: `user_id` + polityki RLS w tej samej migracji.
-- Nazwy tabel: `snake_case`, liczba mnoga (`food_entries`, `measurements`).
-- Migracje tylko do przodu; zakaz ręcznego dryfu schematu prod.
-- Wspólne niezmienniki web + mobile → Postgres (RLS / CHECK), nie równoległa domena TS — [postgres-invariants](../architecture/postgres-invariants.md).
+- Every user table: `user_id` + RLS policies in the same migration.
+- Table names: `snake_case`, plural (`food_entries`, `measurements`).
+- Migrations forward-only; no manual prod schema drift.
+- Shared web + mobile invariants → Postgres (RLS / CHECK), not a parallel TS domain — [postgres-invariants](../architecture/postgres-invariants.md).
 
-## Komentarze
+## Comments
 
-- Komentarz wyjaśnia **dlaczego**, nie co widać w kodzie.
-- TODO z ID (`OQ-NN` lub issue), nie gołe `TODO: fix later`.
+- A comment explains **why**, not what the code already shows.
+- TODOs with an id (`OQ-NN` or issue), not bare `TODO: fix later`.

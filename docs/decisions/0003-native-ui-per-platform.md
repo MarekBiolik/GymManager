@@ -1,38 +1,38 @@
-# ADR 0003 — Natywne UI per platforma
+# ADR 0003 — Native UI per platform
 
 - **Status:** accepted
-- **Data:** 2026-10-29
-- **Decydenci:** Marek (+ sesja planowania architektury)
+- **Date:** 2026-10-29
+- **Decision makers:** Marek (+ architecture planning session)
 
-## Kontekst
+## Context
 
-Cel platformowy: Android + iOS + web. Właściciel produktu preferuje model „wspólny core, a każda platforma implementuje to, co musi” — maksymalnie natywne UI (SwiftUI, Jetpack Compose, React na webie), zamiast jednego cross-platform frameworka UI.
+Platform goal: Android + iOS + web. The product owner prefers “shared core, and each platform implements what it must” — maximally native UI (SwiftUI, Jetpack Compose, React on web), instead of one cross-platform UI framework.
 
-Świadomy trade-off: **utrzymanie trzech UI** przy niezbyt skomplikowanej apce jest droższe niż Expo/Flutter, ale spójne z wybraną filozofią i jakością natywną.
+Conscious trade-off: **maintaining three UIs** for a moderately complex app costs more than Expo/Flutter, but matches the chosen philosophy and native quality.
 
-## Decyzja
+## Decision
 
-Każda platforma ma **własną warstwę UI**:
+Each platform has its **own UI layer**:
 
 - Android → Jetpack Compose (Kotlin)
 - iOS → SwiftUI (Swift)
 - Web → React + TypeScript
 
-Logika biznesowa nie jest reimplementowana w UI — trafia do core ([ADR 0001](0001-shared-core-kmp.md)).
+Business logic is not reimplemented in UI — it goes to core ([ADR 0001](0001-shared-core-kmp.md)).
 
-## Alternatywy rozważone
+## Alternatives considered
 
-1. **Jeden UI cross-platform (Expo RN / Flutter)** — mniej pracy UI, szybszy feature parity. Odrzucone świadomie na rzecz natywności i modelu core+native.
-2. **Tylko web + PWA** — najtaniej, bez App Store. Odrzucone jako jedyna forma: chcemy natywnych aplikacji mobilnych.
-3. **Natywne UI per platforma** — wybrane mimo potrójnego kosztu UI.
+1. **One cross-platform UI (Expo RN / Flutter)** — less UI work, faster feature parity. Rejected deliberately for nativeness and the core+native model.
+2. **Web + PWA only** — cheapest, no App Store. Rejected as the only form: we want native mobile apps.
+3. **Native UI per platform** — chosen despite triple UI cost.
 
-## Konsekwencje
+## Consequences
 
-- Pozytywne: pełny dostęp do platformowych API i look-and-feel; jasny podział odpowiedzialności z core.
-- Negatywne: każdy ekran/feature UI ×3; dłuższy time-to-feature; trzeba silnej dyscypliny „logika tylko w core”.
-- Później: design system per platforma lub wspólne wytyczne UX; OQ-08 (nawigacja modułów); scaffolding `apps/*`.
+- Positive: full access to platform APIs and look-and-feel; clear ownership split with core.
+- Negative: every screen/UI feature ×3; longer time-to-feature; need strong “logic only in core” discipline.
+- Later: design system per platform or shared UX guidelines; OQ-08 (module navigation); scaffold `apps/*`.
 
-## Powiązane
+## Related
 
 - [clients](../architecture/clients.md)
 - [ADR 0001](0001-shared-core-kmp.md)

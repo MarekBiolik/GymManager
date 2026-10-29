@@ -1,174 +1,174 @@
-# Dane i synchronizacja
+# Data and synchronization
 
 ## Source of truth
 
-**PostgreSQL (Supabase)** jest jedynym źródłem prawdy dla danych użytkownika. Lokalny cache na urządzeniu jest optymalizacją UX (szybkość / odczyt bez sieci), **nie** drugą prawdą. Decyzja: [ADR 0008](../decisions/0008-sync-strategy-online-first.md) (zamyka [OQ-03](../open-questions.md)).
+**PostgreSQL (Supabase)** is the only source of truth for user data. A local cache on the device is a UX optimization (speed / offline read), **not** a second truth. Decision: [ADR 0008](../decisions/0008-sync-strategy-online-first.md) (closes [OQ-03](../open-questions.md)).
 
-Tożsamość zapisów: `user_id` = konto Supabase Auth ([ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)); izolacja przez RLS.
+Record identity: `user_id` = Supabase Auth account ([ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)); isolation via RLS.
 
-## Zarys schematu
+## Schema outline
 
-Pełniejszy model domenowy: [data-model](../domain/data-model.md). Na poziomie bazy (kierunek):
+Fuller domain model: [data-model](../domain/data-model.md). At the database level (direction):
 
-| Obszar | Przykładowe tabele | Uwagi |
-|--------|-------------------|--------|
-| Tożsamość | `profiles` (opcjonalnie, 1:1 z `auth.users`) | Minimum PII |
-| Żywienie | `foods`, `food_entries` | Własne produkty + wpisy spożycia |
-| Trening | `exercises`, `workouts` / `sessions`, `sets` | Historia sesji |
-| Pomiary | `measurements` | Waga i inne metryki w czasie |
-| Wspólne | `tags` (opcjonalnie) | Etykiety cross-cutting |
+| Area | Example tables | Notes |
+|------|----------------|--------|
+| Identity | `profiles` (optional, 1:1 with `auth.users`) | Minimum PII |
+| Nutrition | `foods`, `food_entries` | Own products + intake entries |
+| Training | `exercises`, `workouts` / `sessions`, `sets` | Session history |
+| Measurements | `measurements` | Weight and other metrics over time |
+| Shared | `tags` (optional) | Cross-cutting labels |
 
-Wszystkie tabele użytkownika mają `user_id` (UUID → `auth.users`) i polityki **RLS**: użytkownik widzi/edytuje tylko swoje wiersze. Wspólne niezmienniki web + mobile (RLS / CHECK vs core/TS): [postgres-invariants](postgres-invariants.md).
+All user tables have `user_id` (UUID → `auth.users`) and **RLS** policies: the user sees/edits only their rows. Shared web + mobile invariants (RLS / CHECK vs core/TS): [postgres-invariants](postgres-invariants.md).
 
 ## Row Level Security (RLS)
 
-``mermaid
+```mermaid
 flowchart LR
-  Client["Klient + JWT"]
+  Client["Client + JWT"]
   API["Supabase API"]
   RLS["RLS policies"]
   DB["Postgres rows"]
   Client --> API --> RLS --> DB
-``
+```
 
-- Klucz `anon` w kliencie jest OK — bezpieczeństwo opiera się na RLS + JWT, nie na ukrywaniu URL.
-- Klucz `service_role` **nigdy** w aplikacjach klienckich ani w publicznym repo.
-- Nowe tabele: migracja SQL **razem** z politykami RLS (konwencja CI).
+- The `anon` key in the client is OK — security rests on RLS + JWT, not on hiding the URL.
+- The `service_role` key **never** in client apps or the public repo.
+- New tables: SQL migration **together** with RLS policies (CI convention).
 
 ## Sync (MVP — ADR 0008)
 
-Decyzja: **online-first + lokalny cache odczytu**. Szczegóły i alternatywy: [ADR 0008](../decisions/0008-sync-strategy-online-first.md).
+Decision: **online-first + local read cache**. Details and alternatives: [ADR 0008](../decisions/0008-sync-strategy-online-first.md).
 
 ### Model
 
 ```mermaid
 flowchart LR
-  UI["UI klienta"]
-  Cache["Cache odczytu"]
+  UI["Client UI"]
+  Cache["Read cache"]
   API["Supabase API + RLS"]
   PG["Postgres SoT"]
-  UI -->|odczyt online| API
+  UI -->|online read| API
   API --> PG
-  API -->|odśwież| Cache
-  UI -->|odczyt offline| Cache
-  UI -->|zapis tylko online| API
+  API -->|refresh| Cache
+  UI -->|offline read| Cache
+  UI -->|write online only| API
 ```
 
-| Element | MVP | Później |
-|---------|-----|---------|
-| Source of truth | Postgres | bez zmian |
-| Odczyt | Sieć + cache; offline → cache | ewent. szerszy pre-fetch |
-| Zapis / update / delete | Tylko online | Kolejka offline-write (osobny ADR) |
-| Konflikty | LWW na wiersz (`updated_at`) — **jedna reguła** dla żywienia / treningu / pomiarów / `profiles` | Merge per typ encji jeśli LWW boli |
-| Realtime | Opcjonalne odświeżanie UI | Nadal nie jako jedyny silnik sync |
-| Tombstone / soft-delete | Nie (hard delete) | Przy offline-write |
+| Element | MVP | Later |
+|---------|-----|--------|
+| Source of truth | Postgres | unchanged |
+| Read | Network + cache; offline → cache | optionally broader pre-fetch |
+| Write / update / delete | Online only | Offline-write queue (separate ADR) |
+| Conflicts | LWW per row (`updated_at`) — **one rule** for nutrition / training / measurements / `profiles` | Merge per entity type if LWW hurts |
+| Realtime | Optional UI refresh | Still not the only sync engine |
+| Tombstone / soft-delete | No (hard delete) | With offline-write |
 
-### Zachowanie offline
+### Offline behavior
 
-- **Odczyt:** pokaż ostatnio zcache’owane dane; pusty cache → pusty stan + informacja o braku sieci.
-- **Zapis:** zablokowany z komunikatem; **bez** cichej kolejki w MVP.
-- **Sesja:** bez ważnego JWT brak dostępu do danych chronionych (patrz [auth](auth.md)).
+- **Read:** show last cached data; empty cache → empty state + offline notice.
+- **Write:** blocked with a message; **no** silent queue in MVP.
+- **Session:** without a valid JWT, no access to protected data (see [auth](auth.md)).
 
-### Klienci
+### Clients
 
-| Klient | Ścieżka danych | Cache |
-|--------|----------------|-------|
-| Android / iOS | KMP repozytoria → `supabase-kt` | Cache odczytu w core (cienki helper; nie pełna kolejka) |
-| Web | `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) | Cienki cache w pamięci / storage przeglądarki; **bez** równoległej domeny sync w TS |
+| Client | Data path | Cache |
+|--------|-----------|--------|
+| Android / iOS | KMP repositories → `supabase-kt` | Read cache in core (thin helper; not a full queue) |
+| Web | `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) | Thin in-memory / browser storage cache; **no** parallel sync domain in TS |
 
-Oba ścieżki piszą do **tego samego** Postgresa pod tym samym `user_id` — parity offline-write web↔mobile **nie** jest celem MVP (warunek revisit ADR 0006 pozostaje na później).
+Both paths write to the **same** Postgres under the same `user_id` — web↔mobile offline-write parity is **not** an MVP goal (ADR 0006 revisit criteria remain for later).
 
-### Konflikty (MVP)
+### Conflicts (MVP)
 
-- **Reguła:** last-write-wins na **cały wiersz** według `updated_at`.
-- **Świadomie jedna reguła** dla wszystkich typów encji na start — bez osobnych polityk food vs set vs measurement.
-- Brak UI „rozstrzygnij konflikt”; przy dwóch urządzeniach online wygrywa późniejszy zapis.
-- Schemat: każda tabela użytkownika ma `updated_at` (wejście do spec migracji #6).
+- **Rule:** last-write-wins on the **entire row** by `updated_at`.
+- **Deliberately one rule** for all entity types at start — no separate food vs set vs measurement policies.
+- No “resolve conflict” UI; with two online devices, the later write wins.
+- Schema: every user table has `updated_at` (input to migration spec #6).
 
 ### Realtime
 
-Supabase Realtime jest **opcją** po „hello sync” (live refresh gdy drugie urządzenie zapisze). Baseline fazy 2: zapis/odczyt request–response + ręczne / lifecycle refresh wystarcza.
+Supabase Realtime is an **option** after “hello sync” (live refresh when another device writes). Phase-2 baseline: request–response read/write + manual / lifecycle refresh is enough.
 
-### Offline-write (poza MVP)
+### Offline-write (beyond MVP)
 
-Gdy trening/żywienie w trybie airplane stanie się wymaganiem: kolejka, idempotencja, tombstone’y, revisit konfliktów (możliwe reguły per typ encji) — **nowy ADR**, nie rozszerzanie „po cichu” tego dokumentu. Track: [#20](https://github.com/MarekBiolik/GymManager/issues/20).
+When airplane-mode training/nutrition becomes a requirement: queue, idempotency, tombstones, conflict revisit (possible per-entity rules) — **new ADR**, not silent expansion of this document. Track: [#20](https://github.com/MarekBiolik/GymManager/issues/20).
 
-Kontrakt cache odczytu / hello sync (faza 2): [#19](https://github.com/MarekBiolik/GymManager/issues/19).
+Read-cache / hello-sync contract (phase 2): [#19](https://github.com/MarekBiolik/GymManager/issues/19).
 
-## Agregacje i historia
+## Aggregations and history
 
-Tracker z rokiem+ historii (kalorie/dzień, trendy wagi, objętość treningu) naturalnie korzysta z **SQL** (widoki, `GROUP BY`, okna). To jeden z powodów wyboru Postgresa ([ADR 0002](../decisions/0002-backend-supabase.md)).
+A tracker with 1+ year of history (calories/day, weight trends, training volume) naturally uses **SQL** (views, `GROUP BY`, windows). That is one reason for choosing Postgres ([ADR 0002](../decisions/0002-backend-supabase.md)).
 
-Agregacje ciężkie można materializować później (np. codzienne sumy) — nie w iteracji 1.
+Heavy aggregations can be materialized later (e.g. daily sums) — not in iteration 1.
 
 ## Storage
 
-Pliki (np. zdjęcia opakowań / postęp) → Supabase Storage + RLS na bucketach. Na razie opcjonalne; model plików dopiszemy przy potrzebie modułu.
+Files (e.g. package photos / progress) → Supabase Storage + bucket RLS. Optional for now; file model when a module needs it.
 
-## Migracje
+## Migrations
 
-- Katalog `supabase/migrations/` (faza 1 — [playbook](../plans/phase-1-scaffold-playbook.md)).
-- Treść pierwszej migracji: [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6); OQ-03 → [ADR 0008](../decisions/0008-sync-strategy-online-first.md)). Draft SQL w `docs/specs/sql/` = **NOT APPLIED**. Nie wymyślać schematu ad hoc w PR scaffoldu (#14). Apply 1:1 → [#21](https://github.com/MarekBiolik/GymManager/issues/21).
-- Każda zmiana schematu = migracja w PR.
-- Zakaz „ręcznej” zmiany prod bez migracji.
+- Directory `supabase/migrations/` (phase 1 — [playbook](../plans/phase-1-scaffold-playbook.md)).
+- First migration content: [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6); OQ-03 → [ADR 0008](../decisions/0008-sync-strategy-online-first.md)). Draft SQL in `docs/specs/sql/` = **NOT APPLIED**. Do not invent schema ad hoc in the scaffold PR (#14). Apply 1:1 → [#21](https://github.com/MarekBiolik/GymManager/issues/21).
+- Every schema change = migration in a PR.
+- No “manual” prod changes without a migration.
 
-## Hosting i backupy
+## Hosting and backups
 
-Decyzja: [ADR 0004](../decisions/0004-supabase-hosting.md) (zamyka [OQ-05](../open-questions.md)).
+Decision: [ADR 0004](../decisions/0004-supabase-hosting.md) (closes [OQ-05](../open-questions.md)).
 
 ### Hosting
 
-| Element | Na start | Upgrade path |
+| Element | At start | Upgrade path |
 |---------|----------|--------------|
-| Platforma | **Supabase Cloud** | — |
-| Plan | **Free** | **Pro** gdy: potrzebujemy dostępnych daily backupów, braku pauzy projektu, więcej DB/storage, albo dane „nie do odtworzenia z pamięci” |
-| Self-host | Nie | Opcja exit (Postgres dump → inny hosting), nie cel operacyjny |
+| Platform | **Supabase Cloud** | — |
+| Plan | **Free** | **Pro** when: we need available daily backups, no project pause, more DB/storage, or data that cannot be reconstructed from memory |
+| Self-host | No | Exit option (Postgres dump → other hosting), not an operational goal |
 
-### Środowiska
+### Environments
 
-| Środowisko | Na start | Uwagi |
-|------------|----------|--------|
-| `dev` | **Jeden** projekt Cloud | Scaffolding, migracje, osobiste użycie trackera |
-| `local` | Opcjonalnie `supabase start` | Praca nad schematem offline; nie zastępuje `dev` jako źródła prawdy sync |
-| `staging` / `prod` | **Później** | Osobne projekty przy publicznej becie / wielu użytkownikach; prod zwykle na Pro |
+| Environment | At start | Notes |
+|-------------|----------|--------|
+| `dev` | **One** Cloud project | Scaffolding, migrations, personal tracker use |
+| `local` | Optionally `supabase start` | Offline schema work; does not replace `dev` as sync source of truth |
+| `staging` / `prod` | **Later** | Separate projects for public beta / many users; prod usually on Pro |
 
-Free: max 2 aktywne projekty; pauza po ~1 tygodniu bezczynności — odpauzować przed pracą.
+Free: max 2 active projects; pause after ~1 week idle — unpause before work.
 
-### Sekrety
+### Secrets
 
-| Sekret | Gdzie wolno | Gdzie zakaz |
-|--------|-------------|-------------|
-| Project URL + `anon` | Klienci, lokalny `.env*` | Commitowanie nie jest „wyciekiem RLS”, ale **nie** commitujemy `.env*` — URL/klucze per środowisko trzymamy poza gitem |
-| `service_role` | Wyłącznie lokalny admin / przyszły zaufany backend; GitHub Secrets w CI jeśli kiedyś potrzebne | Aplikacje klienckie, publiczne repo, logi CI |
-| OAuth client secrets (Google/Apple) | Dashboard Supabase Auth + (gdy trzeba) GitHub Secrets | Repo, klienci |
+| Secret | Allowed where | Forbidden where |
+|--------|---------------|-----------------|
+| Project URL + `anon` | Clients, local `.env*` | Committing is not an “RLS leak”, but we **do not** commit `.env*` — per-env URL/keys stay out of git |
+| `service_role` | Local admin only / future trusted backend; GitHub Secrets in CI if ever needed | Client apps, public repo, CI logs |
+| OAuth client secrets (Google/Apple) | Supabase Auth dashboard + (when needed) GitHub Secrets | Repo, clients |
 
-Zasady:
+Rules:
 
-1. `.env`, `.env.local`, `.env.*.local` — w `.gitignore` (już na `master`).
-2. W dokumentacji i PR-ach: placeholdery (`YOUR_PROJECT_URL`), nigdy prawdziwe wartości.
-3. CI: GitHub Secrets; żadnych sekretów w logach builda — [ci-cd](../conventions/ci-cd.md).
+1. `.env`, `.env.local`, `.env.*.local` — in `.gitignore` (already on `master`).
+2. In docs and PRs: placeholders (`YOUR_PROJECT_URL`), never real values.
+3. CI: GitHub Secrets; no secrets in build logs — [ci-cd](../conventions/ci-cd.md).
 
-### Polityka backupów / restore
+### Backup / restore policy
 
-**Free (obecny plan):**
+**Free (current plan):**
 
-- Dashboard **nie udostępnia** automatycznych daily backupów do restore (to Pro+).
-- **Okresowy dump logiczy** poza Cloud: `supabase db dump` (lub równoważny `pg_dump`) — minimum przed ryzykowaną migracją i regularnie gdy w `dev` są dane warte odzyskania.
-- Dump + pliki migracji w git = ścieżka odtworzenia schematu; dump z danymi = odtworzenie zawartości.
-- Po pauzie Free: odpauzowanie w dashboardzie; dane projektu pozostają, ale bez własnych dumpów nie mamy niezależnej kopii.
+- The dashboard does **not** expose automatic daily backups for restore (that is Pro+).
+- **Periodic logical dump** outside Cloud: `supabase db dump` (or equivalent `pg_dump`) — minimum before a risky migration and regularly when `dev` holds data worth recovering.
+- Dump + migration files in git = schema recovery path; dump with data = content recovery.
+- After Free pause: unpause in the dashboard; project data remains, but without our own dumps we have no independent copy.
 
-**Po upgrade do Pro:**
+**After upgrade to Pro:**
 
-- Daily backups (retencja 7 dni) w Dashboard → Database → Backups.
-- PITR (add-on) dopiero gdy RPO < ~1 dzień stanie się wymaganiem.
+- Daily backups (7-day retention) in Dashboard → Database → Backups.
+- PITR (add-on) only when RPO < ~1 day becomes a requirement.
 
-**Restore (poziom scaffold):**
+**Restore (scaffold level):**
 
-1. Preferuj odtworzenie schematem z `supabase/migrations/` + ponowne załadowanie danych z dumpa.
-2. Na Pro: restore z daily backup w dashboardzie według dokumentacji Supabase.
-3. Drill restore (ćwiczenie na pustym projekcie) — follow-up [#9](https://github.com/MarekBiolik/GymManager/issues/9); nie blokuje decyzji hostingu.
-4. Split `staging` / `prod` — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) przed publiczną betą.
+1. Prefer restore via schema from `supabase/migrations/` + reload data from dump.
+2. On Pro: restore from daily backup in the dashboard per Supabase docs.
+3. Restore drill (practice on an empty project) — follow-up [#9](https://github.com/MarekBiolik/GymManager/issues/9); does not block the hosting decision.
+4. `staging` / `prod` split — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) before public beta.
 
 ### Exit path
 
-Dane w standardowym Postgresie → eksport SQL / dump → inny Postgres lub self-host Supabase. Auth/API Supabase to warstwa do przepisania przy pełnym wyjściu; sam model danych nie jest zamknięty w proprietarnym store.
+Data in standard Postgres → SQL export / dump → another Postgres or self-hosted Supabase. Supabase Auth/API is a rewrite layer on full exit; the data model itself is not locked in a proprietary store.

@@ -1,19 +1,19 @@
 # Git workflow
 
-## Gałęzie
+## Branches
 
-| Gałąź | Rola |
-|-------|------|
-| `master` (lub później `main`) | Stabilna linia; chroniona gdy pojawi się CI |
-| `feat/…`, `fix/…`, `docs/…`, `chore/…` | Krótkie gałęzie robocze |
+| Branch | Role |
+|--------|------|
+| `master` (or later `main`) | Stable line; protected when CI exists |
+| `feat/…`, `fix/…`, `docs/…`, `chore/…` | Short-lived work branches |
 
-Na start solo: krótkie gałęzie + PR do `master` nawet przy jednym autorze — historia i review docs zostają czytelne.
+At start (solo): short branches + PR to `master` even with one author — history and docs review stay readable.
 
-## Commity
+## Commits
 
-- Impersonalny tryb rozkazujący, po angielsku lub po polsku — **wybierz jeden styl i trzymaj się go** (rekomendacja: angielski, konwencja Conventional Commits).
+- Imperative mood, **English** Conventional Commits (see `english-public-artifacts` Cursor rule).
 
-Przykłady:
+Examples:
 
 ```
 docs: add architecture overview and ADRs 0001-0003
@@ -22,21 +22,21 @@ fix(auth): refresh session before sync
 chore: remove prototype web/dist artifacts
 ```
 
-- Jedna intencja na commit.
-- Nie commituj `node_modules`, buildów, lokalnych `.env`, baz z danymi osobowymi.
+- One intent per commit.
+- Do not commit `node_modules`, builds, local `.env`, or databases with personal data.
 
-## Pull requesty
+## Pull requests
 
-- Opis: **dlaczego** + jak przetestować.
-- Checklist: czy potrzebny ADR / update `docs/` / migracja RLS.
-- Nie merguj tajemnic ani wygenerowanych artefaktów.
+- Description: **why** + how to test.
+- Checklist: whether an ADR / `docs/` update / RLS migration is needed.
+- Do not merge secrets or generated artifacts.
 
-## Tagowanie / release
+## Tagging / release
 
-Do czasu osobnej publikacji biblioteki: **core jest source-linked** (ten sam commit co klienci); opcjonalny `core/VERSION` przy tagach produktu. Numery store (Android / iOS) i deploy web są niezależne. SemVer + rejestr dla core — dopiero gdy zajdzie potrzeba. Szczegóły: [ADR 0005](../decisions/0005-monorepo-tooling.md).
+Until a separate library publish: **core is source-linked** (same commit as clients); optional `core/VERSION` at product tags. Store numbers (Android / iOS) and web deploy are independent. SemVer + registry for core — only when needed. Details: [ADR 0005](../decisions/0005-monorepo-tooling.md).
 
-## Zakazy
+## Forbidden
 
-- `git push --force` na `master` bez jawnej decyzji.
-- Commit `--no-verify` bez powodu.
-- Amend wypchniętego commitu bez uzgodnienia.
+- `git push --force` on `master` without an explicit decision.
+- Commit `--no-verify` without a reason.
+- Amend a pushed commit without agreement.

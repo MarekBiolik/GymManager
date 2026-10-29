@@ -1,29 +1,29 @@
-# ADR NNNN — Tytuł decyzji
+# ADR NNNN — Decision title
 
 - **Status:** proposed | accepted | superseded | deprecated
-- **Data:** YYYY-MM-DD
-- **Decydenci:** …
+- **Date:** YYYY-MM-DD
+- **Decision makers:** …
 
-## Kontekst
+## Context
 
-Jaki problem rozwiązujemy? Jakie siły działają (utrzymanie, koszt, czas, jakość natywna, PII…)?
+What problem are we solving? What forces apply (maintenance, cost, time, native quality, PII…)?
 
-## Decyzja
+## Decision
 
-Co wybieramy, w 1–3 zdaniach.
+What we choose, in 1–3 sentences.
 
-## Alternatywy rozważone
+## Alternatives considered
 
-1. **Opcja A** — zalety / wady
-2. **Opcja B** — zalety / wady
+1. **Option A** — pros / cons
+2. **Option B** — pros / cons
 3. …
 
-## Konsekwencje
+## Consequences
 
-- Pozytywne:
-- Negatywne / koszty:
-- Co trzeba doprecyzować później:
+- Positive:
+- Negative / costs:
+- What to refine later:
 
-## Powiązane
+## Related
 
-- Linki do docs, OQ, innych ADR
+- Links to docs, OQs, other ADRs

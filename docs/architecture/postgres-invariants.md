@@ -1,52 +1,52 @@
-# Wspólne niezmienniki Postgres (web + mobile)
+# Shared Postgres invariants (web + mobile)
 
-Konwencja operacyjna po [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md): web (`supabase-js`) i mobile (KMP `core`) **nie** dzielą binary domeny. Reguły, które muszą być prawdziwe dla **obu** klientów, egzekwujemy w **Postgres** (RLS, CHECK, FK, ewentualnie trigger) — nie przez równoległą domenę TypeScript.
+Operational convention after [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md): web (`supabase-js`) and mobile (KMP `core`) do **not** share a domain binary. Rules that must hold for **both** clients are enforced in **Postgres** (RLS, CHECK, FK, optionally trigger) — not via a parallel TypeScript domain.
 
-To **nie** jest nowy ADR: decyzja „wspólne niezmienniki → DB” jest w ADR 0006. Tu: gdzie stawiać regułę, przykłady i checklista migracji (faza 1–2).
+This is **not** a new ADR: the “shared invariants → DB” decision is in ADR 0006. Here: where to place a rule, examples, and a migration checklist (phases 1–2).
 
-Zarys tabel: [data-model](../domain/data-model.md). Sync / SoT: [data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md). **Brak** założenia KMP→JS/Wasm.
+Table outline: [data-model](../domain/data-model.md). Sync / SoT: [data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md). **No** assumption of KMP→JS/Wasm.
 
-## Zasada w jednym zdaniu
+## Rule in one sentence
 
-| Pytanie | Odpowiedź |
-|---------|-----------|
-| Czy reguła musi bronić **bezpieczeństwa / integralności** także gdy klient jest złośliwy lub buggy? | **Postgres** (RLS / constraint / trigger) |
-| Czy reguła jest bogata, kontekstowa albo potrzebna **przed** round-tripem (mobile UX, offline-read)? | **KMP core** (Android / iOS); na webie **nie** reimplementuj jako „domain services” |
-| Czy to tylko komunikat formularza przed submit? | Lekka walidacja UX w UI / cienkiej TS — **lustrzana** względem DB lub core, nigdy jedyne źródło prawdy |
+| Question | Answer |
+|----------|--------|
+| Must the rule defend **security / integrity** even when the client is malicious or buggy? | **Postgres** (RLS / constraint / trigger) |
+| Is the rule rich, contextual, or needed **before** a round-trip (mobile UX, offline-read)? | **KMP core** (Android / iOS); on web **do not** reimplement as “domain services” |
+| Is it only a form message before submit? | Light UX validation in UI / thin TS — **mirroring** DB or core, never the sole source of truth |
 
 ```mermaid
 flowchart TD
-  Rule["Nowa reguła domenowa"]
-  Q1{"Wymagana dla web + mobile\ni krytyczna dla integralności / izolacji?"}
-  Q2{"Bogata / offline / tylko mobile UX?"}
+  Rule["New domain rule"]
+  Q1{"Required for web + mobile\nand critical for integrity / isolation?"}
+  Q2{"Rich / offline / mobile-only UX?"}
   PG["Postgres:\nRLS, CHECK, FK, trigger"]
   Core["KMP core\n(Android / iOS)"]
-  UX["Lekka walidacja UX\n(Compose / SwiftUI / TS)"]
+  UX["Light UX validation\n(Compose / SwiftUI / TS)"]
   Rule --> Q1
-  Q1 -->|tak| PG
-  Q1 -->|nie| Q2
-  Q2 -->|tak| Core
-  Q2 -->|tylko feedback formularza| UX
-  PG -.->|"opcjonalnie lustro"| UX
-  Core -.->|"opcjonalnie lustro"| UX
+  Q1 -->|yes| PG
+  Q1 -->|no| Q2
+  Q2 -->|yes| Core
+  Q2 -->|form feedback only| UX
+  PG -.->|"optional mirror"| UX
+  Core -.->|"optional mirror"| UX
 ```
 
-## Co MUSI żyć w Postgres
+## What MUST live in Postgres
 
-Egzekwowane przez bazę niezależnie od klienta (`supabase-js` lub `supabase-kt`). Migracja SQL = źródło prawdy schematu.
+Enforced by the database regardless of client (`supabase-js` or `supabase-kt`). SQL migration = schema source of truth.
 
-### 1. Izolacja `user_id` (RLS) — zawsze
+### 1. `user_id` isolation (RLS) — always
 
-Każda tabela użytkownika:
+Every user table:
 
-- kolumna `user_id` (UUID → `auth.users` / `profiles.id` — jak w [data-model](../domain/data-model.md)),
+- `user_id` column (UUID → `auth.users` / `profiles.id` — as in [data-model](../domain/data-model.md)),
 - `ENABLE ROW LEVEL SECURITY`,
-- polityki **SELECT / INSERT / UPDATE / DELETE** w **tej samej** migracji co `CREATE TABLE` ([coding-standards](../conventions/coding-standards.md)).
+- **SELECT / INSERT / UPDATE / DELETE** policies in the **same** migration as `CREATE TABLE` ([coding-standards](../conventions/coding-standards.md)).
 
-Wzorzec (kierunek; dokładny SQL w specu migracji [#6](https://github.com/MarekBiolik/GymManager/issues/6)):
+Pattern (direction; exact SQL in migration spec [#6](https://github.com/MarekBiolik/GymManager/issues/6)):
 
 ```sql
--- przykład polityki (szkic)
+-- example policy (sketch)
 CREATE POLICY food_entries_select_own ON food_entries
   FOR SELECT USING (auth.uid() = user_id);
 
@@ -61,112 +61,112 @@ CREATE POLICY food_entries_delete_own ON food_entries
   FOR DELETE USING (auth.uid() = user_id);
 ```
 
-**Nie** polegamy na tym, że TS lub Kotlin „zawsze ustawi `user_id` poprawnie”. Klient może wysłać cudzy UUID — RLS musi odrzucić.
+We do **not** rely on TS or Kotlin “always setting `user_id` correctly”. The client may send someone else’s UUID — RLS must reject it.
 
-### 2. Integralność wiersza (CHECK / NOT NULL / FK)
+### 2. Row integrity (CHECK / NOT NULL / FK)
 
-Proste, lokalne reguły kształtu danych — wspólne dla web i mobile:
+Simple, local data-shape rules — shared for web and mobile:
 
-| Rodzaj | Przykład | Mechanizm |
-|--------|----------|-----------|
-| Wymagane pola | `name` niepuste, `metric` niepusty | `NOT NULL` |
-| Zakres liczb | `value > 0`, `amount > 0`, `reps >= 0`, `weight >= 0` | `CHECK` |
-| Enum-y stabilne | `metric IN (...)` albo osobna tabela słownika | `CHECK` lub FK |
-| Spójność czasów | `ended_at IS NULL OR ended_at >= started_at` | `CHECK` |
-| Ownership referencji | `food_entries.food_id` → `foods` tego samego usera | FK + (gdy potrzeba) trigger / policy |
-| Sync MVP | `created_at`, `updated_at` timestamptz | kolumny + trigger `updated_at` lub jawny SET ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
+| Kind | Example | Mechanism |
+|------|---------|-----------|
+| Required fields | non-empty `name`, non-empty `metric` | `NOT NULL` |
+| Numeric range | `value > 0`, `amount > 0`, `reps >= 0`, `weight >= 0` | `CHECK` |
+| Stable enums | `metric IN (...)` or a dictionary table | `CHECK` or FK |
+| Time consistency | `ended_at IS NULL OR ended_at >= started_at` | `CHECK` |
+| Reference ownership | `food_entries.food_id` → same user’s `foods` | FK + (when needed) trigger / policy |
+| Sync MVP | `created_at`, `updated_at` timestamptz | columns + `updated_at` trigger or explicit SET ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
 
-### 3. Trigger — tylko gdy constraint nie wystarczy
+### 3. Trigger — only when a constraint is not enough
 
-Używaj triggera, gdy:
+Use a trigger when:
 
-- trzeba **wymusić** `updated_at = now()` przy UPDATE (jedna ścieżka dla obu klientów),
-- trzeba zablokować zmianę `user_id` po INSERT,
-- ownership cross-table nie da się wyrazić samym FK (np. `sets.session_id` musi należeć do tego samego `user_id`).
+- you must **force** `updated_at = now()` on UPDATE (one path for both clients),
+- you must block changing `user_id` after INSERT,
+- cross-table ownership cannot be expressed with FK alone (e.g. `sets.session_id` must belong to the same `user_id`).
 
-Unikaj triggerów z bogatą logiką biznesową („kompletność sesji”, polityki żywieniowe) — to kandydat do KMP albo późniejszego SQL widoku/agregacji, nie ukrytej domeny w PL/pgSQL na dzień 1.
+Avoid triggers with rich business logic (“session completeness”, nutrition policies) — candidates for KMP or a later SQL view/aggregation, not a hidden PL/pgSQL domain on day 1.
 
-## Co może żyć poza Postgres
+## What may live outside Postgres
 
 ### KMP `core` (Android / iOS)
 
-- Use-case’y, orkiestracja repozytoriów, mapowanie DTO ↔ domena.
-- Walidacje bogate / wielo-krokowe (np. „sesja kompletna”, reguły agregacji przed zapisem wielu wierszy).
-- Cache odczytu / invalidacja ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) — **nie** druga SoT.
-- Komunikaty błędów domenowych pod UI natywne.
+- Use cases, repository orchestration, DTO ↔ domain mapping.
+- Rich / multi-step validation (e.g. “session complete”, aggregation rules before writing many rows).
+- Read cache / invalidation ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) — **not** a second SoT.
+- Domain error messages for native UI.
 
-Core **nie** zastępuje RLS. Nawet poprawny core musi pisać przez JWT + RLS.
+Core does **not** replace RLS. Even correct core must write through JWT + RLS.
 
-### Cienka warstwa web (TS)
+### Thin web layer (TS)
 
-**Wolno:** routing, stan UI, typy ze schematu, mapowanie wierszy → widok, lekka walidacja formularza lustrzana względem CHECK/RLS.
+**Allowed:** routing, UI state, schema types, row → view mapping, light form validation mirroring CHECK/RLS.
 
-**Nie wolno:** pakietu „domain services” równoległego do core; traktowania walidacji tylko-w-TS jako security boundary; omijania RLS ([clients](clients.md), [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
+**Not allowed:** a “domain services” package parallel to core; treating TS-only validation as a security boundary; bypassing RLS ([clients](clients.md), [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
 
-### UI (wszystkie platformy)
+### UI (all platforms)
 
-Formatowanie, jednostki prezentacyjne, disable przycisku zapisu offline (MVP), lokalne drafty formularza **przed** submit — bez trwałego commit poza Postgres w MVP.
+Formatting, presentation units, disable write button offline (MVP), local form drafts **before** submit — without durable commit outside Postgres in MVP.
 
-## Przykłady: `food_entries` i `measurements`
+## Examples: `food_entries` and `measurements`
 
-Encje jak w [data-model](../domain/data-model.md). Poniżej **podział odpowiedzialności**, nie finalny SQL (ten idzie do [#6](https://github.com/MarekBiolik/GymManager/issues/6) / migracji modułów).
+Entities as in [data-model](../domain/data-model.md). Below is a **responsibility split**, not final SQL (that goes to [#6](https://github.com/MarekBiolik/GymManager/issues/6) / module migrations).
 
 ### `food_entries`
 
-| Reguła | Gdzie | Dlaczego |
-|--------|-------|----------|
-| Wiersz widoczny/edytowalny tylko dla właściciela | **RLS** na `user_id` | Krytyczne web + mobile; klient niezaufany |
-| `amount > 0` (lub `>= 0` jeśli dozwolone zero) | **CHECK** | Prosty niezmiennik wspólny |
-| `eaten_at` NOT NULL | **NOT NULL** | Integralność historii |
-| Snapshot makro w momencie wpisu (kolumny NOT NULL wg decyzji migracji) | **schemat + CHECK** zakresów (≥ 0) | Oba klienty muszą zapisać spójny snapshot |
-| `food_id` NULL albo wskazuje `foods` tego usera | **FK** + RLS na `foods`; ewent. trigger ownership | Zapobiega podpięciu cudzego produktu |
-| Komunikat „podaj ilość” przed submit | UX (Compose / SwiftUI / TS) | Lustro CHECK; nie jedyna ochrona |
-| Policzenie „czy dzień jest kompletny żywieniowo” | **Nie w DB na start**; ewent. później widok SQL / use-case core | Reguła produktowa, nie security |
+| Rule | Where | Why |
+|------|-------|-----|
+| Row visible/editable only by owner | **RLS** on `user_id` | Critical for web + mobile; untrusted client |
+| `amount > 0` (or `>= 0` if zero allowed) | **CHECK** | Simple shared invariant |
+| `eaten_at` NOT NULL | **NOT NULL** | History integrity |
+| Macro snapshot at entry time (NOT NULL columns per migration decision) | **schema + CHECK** ranges (≥ 0) | Both clients must write a coherent snapshot |
+| `food_id` NULL or points to same user’s `foods` | **FK** + RLS on `foods`; optionally ownership trigger | Prevents attaching someone else’s product |
+| “Enter amount” message before submit | UX (Compose / SwiftUI / TS) | Mirrors CHECK; not the only protection |
+| “Is the nutrition day complete?” | **Not in DB at start**; optionally later SQL view / core use case | Product rule, not security |
 
 ### `measurements`
 
-| Reguła | Gdzie | Dlaczego |
-|--------|-------|----------|
-| Izolacja per user | **RLS** | Jak wyżej |
-| `value > 0` | **CHECK** | Wspólny niezmiennik |
-| `metric` z dozwolonego zbioru (`body_weight_kg`, `waist_cm`, …) | **CHECK** lub FK do słownika | Ten sam zestaw na web i mobile bez duplikacji enumów w TS+Kotlin jako SoT |
-| `measured_at` NOT NULL | **NOT NULL** | Oś czasu pomiarów |
-| Formatowanie `kg` vs `lb` w UI | UI / preferencje `profiles` | Prezentacja; kanoniczna wartość w DB w uzgodnionej jednostce |
-| Trend / rolling average | Zapytanie SQL / widok (później); nie logika tylko-w-TS | SoT = Postgres ([data-and-sync](data-and-sync.md)) |
+| Rule | Where | Why |
+|------|-------|-----|
+| Per-user isolation | **RLS** | As above |
+| `value > 0` | **CHECK** | Shared invariant |
+| `metric` from allowed set (`body_weight_kg`, `waist_cm`, …) | **CHECK** or FK to dictionary | Same set on web and mobile without TS+Kotlin enums as SoT |
+| `measured_at` NOT NULL | **NOT NULL** | Measurement timeline |
+| `kg` vs `lb` formatting in UI | UI / `profiles` preferences | Presentation; canonical DB value in agreed unit |
+| Trend / rolling average | SQL query / view (later); not TS-only logic | SoT = Postgres ([data-and-sync](data-and-sync.md)) |
 
-### Wzorzec dla kolejnych tabel (`sets`, `sessions`, …)
+### Pattern for later tables (`sets`, `sessions`, …)
 
-1. RLS + `user_id` w tej samej migracji.
-2. CHECK/NOT NULL dla lokalnych niezmienników liczbowych i czasowych.
-3. Ownership FK / trigger, jeśli dziecko musi należeć do tego samego usera co rodzic.
-4. Bogate reguły sesji treningowej → KMP; na webie tylko to, co już broni DB, plus lustro UX.
+1. RLS + `user_id` in the same migration.
+2. CHECK/NOT NULL for local numeric and time invariants.
+3. Ownership FK / trigger if a child must belong to the same user as the parent.
+4. Rich training-session rules → KMP; on web only what DB already defends, plus UX mirror.
 
-## Checklista migracji (faza 1–2)
+## Migration checklist (phases 1–2)
 
-Przy każdej nowej tabeli użytkownika w `supabase/migrations/` (i w [specu pierwszej migracji](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6)):
+For every new user table in `supabase/migrations/` (and in the [first migration spec](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6)):
 
-- [ ] `user_id` (lub `profiles.id` 1:1) + FK do Auth / profiles
+- [ ] `user_id` (or 1:1 `profiles.id`) + FK to Auth / profiles
 - [ ] `created_at`, `updated_at` timestamptz ([ADR 0008](../decisions/0008-sync-strategy-online-first.md))
-- [ ] RLS włączone + 4 polityki (select/insert/update/delete) lub równoważny zestaw
-- [ ] INSERT `WITH CHECK` wymusza `auth.uid() = user_id` (brak „ufamy body”)
-- [ ] UPDATE nie pozwala zmienić właściciela (`USING` + `WITH CHECK`)
-- [ ] CHECK / NOT NULL dla prostych niezmienników z tej noty / data-model
-- [ ] Indeksy startowe pod typowe zapytania (`(user_id, eaten_at)`, `(user_id, measured_at)`, …)
-- [ ] Brak założenia, że web dostanie walidację z KMP — jeśli reguła jest wspólna i krytyczna, jest w SQL
-- [ ] Opis w PR migracji: które reguły są w DB, które świadomie tylko w core (jeśli jakieś)
+- [ ] RLS enabled + 4 policies (select/insert/update/delete) or equivalent set
+- [ ] INSERT `WITH CHECK` forces `auth.uid() = user_id` (no “trust the body”)
+- [ ] UPDATE does not allow changing owner (`USING` + `WITH CHECK`)
+- [ ] CHECK / NOT NULL for simple invariants from this note / data-model
+- [ ] Starting indexes for typical queries (`(user_id, eaten_at)`, `(user_id, measured_at)`, …)
+- [ ] No assumption that web gets validation from KMP — if a rule is shared and critical, it is in SQL
+- [ ] PR description: which rules are in DB, which deliberately only in core (if any)
 
-## Antywzorce
+## Anti-patterns
 
-1. **Domena TS równoległa do core** — agregacje biznesowe, polityki żywieniowe, „kompletność sesji” tylko w `apps/web`.
-2. **Walidacja tylko w kliencie** — CHECK pominięty, bo „formularz i tak pilnuje”.
-3. **RLS „na później”** — tabela bez polityk w pierwszej migracji.
-4. **Ukryte założenie KMP-JS** — scaffold lub docs sugerujące, że web „dostanie core za darmo” bez revisit ADR 0006.
-5. **Trigger zamiast CHECK** — gdy wystarczy prosty warunek wiersza.
+1. **TS domain parallel to core** — business aggregations, nutrition policies, “session completeness” only in `apps/web`.
+2. **Client-only validation** — CHECK skipped because “the form already guards it”.
+3. **RLS “later”** — table without policies in the first migration.
+4. **Hidden KMP-JS assumption** — scaffold or docs suggesting web “gets core for free” without revisiting ADR 0006.
+5. **Trigger instead of CHECK** — when a simple row condition would suffice.
 
-## Powiązane
+## Related
 
-- [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md) — decyzja web bez KMP-JS; preferencja Postgres dla wspólnych niezmienników
+- [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md) — web without KMP-JS; prefer Postgres for shared invariants
 - [clients](clients.md), [shared-core](shared-core.md), [data-and-sync](data-and-sync.md)
 - [data-model](../domain/data-model.md), [coding-standards](../conventions/coding-standards.md) (SQL)
-- Spec pierwszej migracji: [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6))
+- First migration spec: [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6))
 - Apply SQL: [#21](https://github.com/MarekBiolik/GymManager/issues/21)

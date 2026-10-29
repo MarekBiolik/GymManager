@@ -1,42 +1,42 @@
 # CI/CD
 
-Szkielet zasad. Konkrety jobów i kolejność włączania: [playbook fazy 1](../plans/phase-1-scaffold-playbook.md) (krok F) — implementacja w [#14](https://github.com/MarekBiolik/GymManager/issues/14).
+Principle skeleton. Concrete jobs and enablement order: [phase-1 playbook](../plans/phase-1-scaffold-playbook.md) (step F) — implementation in [#14](https://github.com/MarekBiolik/GymManager/issues/14).
 
-## Cele CI na PR
+## CI goals on PR
 
-Zgodnie z [ADR 0005](../decisions/0005-monorepo-tooling.md) pipeline łączy **osobne toolchainy** (Gradle, pnpm, ewentualnie Xcode), nie jeden orchestrator monorepo. **Bez** builda KMP→JS/Wasm ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
+Per [ADR 0005](../decisions/0005-monorepo-tooling.md) the pipeline joins **separate toolchains** (Gradle, pnpm, optionally Xcode), not one monorepo orchestrator. **No** KMP→JS/Wasm build ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
 
-1. Build `core` przez Gradle (przynajmniej target Android/JVM; iOS / XCFramework gdy runner macOS dostępny — nie wymagane day one na Linux).
-2. Lint / format check (Kotlin via Gradle; TS via pnpm; Swift gdy możliwe).
-3. Unit testy `core` (Gradle) — task musi istnieć nawet jeśli suite jest puste.
-4. Walidacja migracji Supabase (dry-run / `supabase db lint`) — gdy w repo jest ≥1 migracja.
-5. Build web przez pnpm (`apps/web` + Vite).
+1. Build `core` via Gradle (at least Android/JVM target; iOS / XCFramework when a macOS runner is available — not required day one on Linux).
+2. Lint / format check (Kotlin via Gradle; TS via pnpm; Swift when possible).
+3. Unit tests for `core` (Gradle) — the task must exist even if the suite is empty.
+4. Supabase migration validation (dry-run / `supabase db lint`) — when the repo has ≥1 migration.
+5. Web build via pnpm (`apps/web` + Vite).
 
-PR nie przechodzi przy padającym buildzie `core`, `apps/android` lub `apps/web`, ani przy padających testach core. Root scripts powinny wystawiać te same komendy lokalnie i w CI.
+A PR fails when `core`, `apps/android`, or `apps/web` build fails, or when core tests fail. Root scripts should expose the same commands locally and in CI.
 
-## CD (kierunek)
+## CD (direction)
 
-| Artefakt | Dystrybucja |
-|----------|-------------|
-| Web | Hosting statyczny (np. Cloudflare Pages / Vercel / Supabase hosting) — wybór później |
-| Android | Play Console (wewnętrzny track najpierw) |
+| Artifact | Distribution |
+|----------|--------------|
+| Web | Static hosting (e.g. Cloudflare Pages / Vercel / Supabase hosting) — choose later |
+| Android | Play Console (internal track first) |
 | iOS | TestFlight → App Store (Apple Developer) |
-| Supabase | Migracje aplikowane na staging, potem prod; nigdy „klik w dashboard” jako źródło prawdy |
+| Supabase | Migrations applied to staging, then prod; never “click in dashboard” as source of truth |
 
-## Sekrety
+## Secrets
 
-- W CI: secrets store (np. GitHub Secrets).
-- Na start: jeden projekt Supabase Cloud = `dev` ([ADR 0004](../decisions/0004-supabase-hosting.md)). Osobne `staging` / `prod` przy publicznej becie.
-- `service_role` tylko w Secrets / lokalnym adminie — nigdy w klientach ani logach.
-- Żadnych sekretów w logach builda.
+- In CI: secrets store (e.g. GitHub Secrets).
+- At start: one Supabase Cloud project = `dev` ([ADR 0004](../decisions/0004-supabase-hosting.md)). Separate `staging` / `prod` at public beta.
+- `service_role` only in Secrets / local admin — never in clients or logs.
+- No secrets in build logs.
 
 ## OTA / hotfix
 
-Na razie brak. Ewentualne szybkie poprawki web łatwiejsze niż mobile (review store).
+None for now. Fast web fixes are easier than mobile (store review).
 
-## Definition of done dla pipeline (faza 1)
+## Pipeline definition of done (phase 1)
 
-- [ ] Workflow na PR (GitHub Actions): Gradle (`core` + `apps/android`) + testy `core` + pnpm build `apps/web`; lint gdy narzędzia są w repo
-- [ ] Brak joba wymagającego KMP-JS/Wasm
-- [ ] Branch protection na `master` gdy CI istnieje i jest zielone
-- [ ] Dokumentacja tych samych checków lokalnie (root scripts + playbook krok D/F)
+- [ ] Workflow on PR (GitHub Actions): Gradle (`core` + `apps/android`) + `core` tests + pnpm build `apps/web`; lint when tools are in the repo
+- [ ] No job requiring KMP-JS/Wasm
+- [ ] Branch protection on `master` when CI exists and is green
+- [ ] Same checks documented locally (root scripts + playbook steps D/F)

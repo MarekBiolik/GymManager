@@ -1,31 +1,31 @@
-# ADR 0001 — Wspólny core: Kotlin Multiplatform
+# ADR 0001 — Shared core: Kotlin Multiplatform
 
 - **Status:** accepted
-- **Data:** 2026-10-29
-- **Decydenci:** Marek (+ sesja planowania architektury)
+- **Date:** 2026-10-29
+- **Decision makers:** Marek (+ architecture planning session)
 
-## Kontekst
+## Context
 
-Aplikacja ma działać na Androidzie, iOS i webie. Chcemy profesjonalnego utrzymania: logika domenowa (żywienie, trening, pomiary, sync) nie może być kopiowana w trzech UI. Preferowany model: **wspólny core + natywne UI per platforma** (nie jeden cross-platform UI).
+The app must run on Android, iOS, and web. We want professional maintenance: domain logic (nutrition, training, measurements, sync) must not be copied across three UIs. Preferred model: **shared core + native UI per platform** (not one cross-platform UI).
 
-## Decyzja
+## Decision
 
-Budujemy wspólny moduł **`core` w Kotlin Multiplatform (KMP)** z regułami domenowymi, use-case'ami i dostępem do danych (Supabase). Android i iOS konsumują core natywnie; web na dzień 1 **nie** linkuje binary KMP — `supabase-js` + cienka TS ([ADR 0006](0006-web-supabase-js-without-kmp-js.md), zamyka OQ-01).
+We build a shared **`core` module in Kotlin Multiplatform (KMP)** with domain rules, use cases, and data access (Supabase). Android and iOS consume core natively; on day 1 web does **not** link a KMP binary — `supabase-js` + thin TS ([ADR 0006](0006-web-supabase-js-without-kmp-js.md), closes OQ-01).
 
-## Alternatywy rozważone
+## Alternatives considered
 
-1. **Expo / React Native (+ web)** — jeden UI na wszystkie platformy, mocny DX TypeScript. Odrzucone: mniej natywne UI; niespójne z wybranym modelem „core + native UI”.
-2. **Flutter** — jeden UI, dojrzały multiplatform. Odrzucone: Dart zamiast Kotlin/Swift/TS; porzuca natywne UI per platforma.
-3. **Tylko backend jako „core” (chudzi klienci bez shared lib)** — proste, ale reguły offline i współdzielona walidacja wracają do duplikacji albo uzależniają UX od sieci.
-4. **Kotlin Multiplatform** — wybrany: jeden język core bliski Androidowi, oficjalne wsparcie iOS, ścieżka JS/Wasm dla web (z ryzykiem).
+1. **Expo / React Native (+ web)** — one UI for all platforms, strong TypeScript DX. Rejected: less native UI; inconsistent with the chosen “core + native UI” model.
+2. **Flutter** — one UI, mature multiplatform. Rejected: Dart instead of Kotlin/Swift/TS; abandons native UI per platform.
+3. **Backend-only “core” (thin clients without a shared lib)** — simple, but offline rules and shared validation return to duplication or tie UX to the network.
+4. **Kotlin Multiplatform** — chosen: one core language close to Android, official iOS support, JS/Wasm path for web (with risk).
 
-## Konsekwencje
+## Consequences
 
-- Pozytywne: jedna implementacja reguł; testy jednostkowe w core; Android integruje się najtaniej.
-- Negatywne: trzeba utrzymać toolchain KMP + bindingi Swift; web bez shared binary wymaga dyscypliny domenowej (ADR 0006).
-- Później: scaffolding `core/`, publiczne API use-case'ów; revisit KMP-JS tylko wg kryteriów ADR 0006.
+- Positive: one rules implementation; unit tests in core; Android integrates cheapest.
+- Negative: must maintain the KMP toolchain + Swift bindings; web without a shared binary needs domain discipline (ADR 0006).
+- Later: scaffold `core/`, public use-case APIs; revisit KMP-JS only per ADR 0006 criteria.
 
-## Powiązane
+## Related
 
 - [shared-core](../architecture/shared-core.md)
 - [ADR 0003](0003-native-ui-per-platform.md)

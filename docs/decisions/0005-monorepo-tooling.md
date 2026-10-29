@@ -1,64 +1,64 @@
-# ADR 0005 — Monorepo: layout, tooling i wersjonowanie core
+# ADR 0005 — Monorepo: layout, tooling, and core versioning
 
 - **Status:** accepted
-- **Data:** 2026-10-29
-- **Decydenci:** Marek (+ sesja zamykania OQ-04)
+- **Date:** 2026-10-29
+- **Decision makers:** Marek (+ OQ-04 closing session)
 
-## Kontekst
+## Context
 
-Repozytorium ma trzymać **jeden produkt** na trzech klientach (iOS, Android, web) ze wspólnym core KMP ([ADR 0001](0001-shared-core-kmp.md), [ADR 0003](0003-native-ui-per-platform.md)). Trzeba ustalić:
+The repository holds **one product** on three clients (iOS, Android, web) with a shared KMP core ([ADR 0001](0001-shared-core-kmp.md), [ADR 0003](0003-native-ui-per-platform.md)). We must decide:
 
-1. jak dzielimy katalogi i buildy (Gradle vs Node),
-2. czy dodajemy osobny orchestrator monorepo (Nx / Turborepo),
-3. jak wersjonujemy `core` względem klientów (store builds, web deploy).
+1. how we split directories and builds (Gradle vs Node),
+2. whether we add a separate monorepo orchestrator (Nx / Turborepo),
+3. how we version `core` relative to clients (store builds, web deploy).
 
-Złe narzędzie = podwójne systemy buildu bez jasnej granicy albo przedwczesna złożoność (Nx na trzy ekosystemy). Brak decyzji o wersjonowaniu utrudnia CI i release w fazie 1/6.
+A bad tool = dual build systems without a clear boundary, or premature complexity (Nx across three ecosystems). No versioning decision complicates CI and release in phases 1/6.
 
-## Decyzja
+## Decision
 
-**Hybrydowe monorepo bez Nx/Turborepo:**
+**Hybrid monorepo without Nx/Turborepo:**
 
-1. **Gradle multi-project** obejmuje `core/` (KMP) oraz `apps/android/` (Compose). iOS konsumuje artefakt KMP (XCFramework / lokalny SPM) budowany z tego samego Gradle; projekt Xcode żyje w `apps/ios/`.
-2. **`apps/web/`** to osobny workspace **pnpm** + Vite + React/TS — poza drzewem Gradle. Web → Supabase przez `supabase-js`, **bez** KMP→JS/Wasm ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)); bez równoległej domeny TS.
-3. **Root** trzyma cienkie skrypty orkiestracji (`package.json` / Makefile / skrypty w `scripts/`) wywołujące Gradle, pnpm i CLI Supabase — bez drugiego „meta-buildera”.
-4. **Wersjonowanie `core`:** do czasu osobnej publikacji biblioteki core jest **source-linked w tym samym commicie** co klienci (zależność projektowa Gradle / lokalny framework). SemVer dla core + ewentualna publikacja Maven/SPM — dopiero gdy pojawi się potrzeba zewnętrznego konsumenta lub niezależnego cyklu release; do tego wystarczy plik `core/VERSION` (lub `gradle.properties`) synchronizowany przy tagach release produktu. Numery buildów store (Android `versionCode`, iOS `CFBundleVersion`) i deploy web są **niezależne** od SemVer core.
+1. **Gradle multi-project** covers `core/` (KMP) and `apps/android/` (Compose). iOS consumes the KMP artifact (XCFramework / local SPM) built from the same Gradle; the Xcode project lives in `apps/ios/`.
+2. **`apps/web/`** is a separate **pnpm** workspace + Vite + React/TS — outside the Gradle tree. Web → Supabase via `supabase-js`, **without** KMP→JS/Wasm ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)); no parallel TS domain.
+3. **Root** holds thin orchestration scripts (`package.json` / Makefile / `scripts/`) calling Gradle, pnpm, and Supabase CLI — no second “meta-builder”.
+4. **`core` versioning:** until a separate library publish, core is **source-linked in the same commit** as clients (Gradle project dependency / local framework). SemVer for core + optional Maven/SPM publish — only when an external consumer or independent release cycle appears; until then a `core/VERSION` file (or `gradle.properties`) synced at product release tags is enough. Store build numbers (Android `versionCode`, iOS `CFBundleVersion`) and web deploys are **independent** of core SemVer.
 
-Docelowe drzewo i odpowiedzialności: [overview](../architecture/overview.md). Stack narzędzi: [tech-stack](../architecture/tech-stack.md).
+Target tree and ownership: [overview](../architecture/overview.md). Tool stack: [tech-stack](../architecture/tech-stack.md).
 
-## Alternatywy rozważone
+## Alternatives considered
 
-1. **Jedno mega-Gradle (w tym web przez plugin)** — jeden tool. Odrzucone: webowy DX (Vite, ESLint, pnpm) słabo pasuje do Gradle; koszt utrzymania pluginów bez zysku.
-2. **Nx / Turborepo nad całym repo** — cache tasków, graf zależności. Odrzucone na start: trzy toolchainy (Gradle, Xcode, Node); Nx/Turbo realnie pomagają głównie w JS. Można rozważyć **później tylko dla `apps/web` + paczek TS**, jeśli web urośnie.
-3. **Polyrepo** (osobne repo na core / każdy klient) — czyste granice wersji. Odrzucone: solo/mały zespół, częste zmiany cross-cutting, ADR i scaffolding w jednym miejscu są ważniejsze niż niezależne release'y.
-4. **Publikacja core do Maven Central / prywatnego rejestru od dnia 1** — twarde SemVer. Odrzucone jako przedwczesne: jeden produkt, jeden commit; source-link jest prostszy do CI i lokalnego DX.
-5. **Hybryda Gradle (core+Android) + pnpm (web) + root scripts** — wybrane: naturalne dla KMP/Android, standardowe dla React, minimalna orkiestracja.
+1. **One mega-Gradle (including web via plugin)** — one tool. Rejected: web DX (Vite, ESLint, pnpm) fits Gradle poorly; plugin maintenance cost without gain.
+2. **Nx / Turborepo over the whole repo** — task cache, dependency graph. Rejected at start: three toolchains (Gradle, Xcode, Node); Nx/Turbo mainly help JS. May consider **later only for `apps/web` + TS packages** if web grows.
+3. **Polyrepo** (separate repos for core / each client) — clean version boundaries. Rejected: solo/small team, frequent cross-cutting changes; ADRs and scaffolding in one place matter more than independent releases.
+4. **Publish core to Maven Central / private registry from day 1** — hard SemVer. Rejected as premature: one product, one commit; source-link is simpler for CI and local DX.
+5. **Hybrid Gradle (core+Android) + pnpm (web) + root scripts** — chosen: natural for KMP/Android, standard for React, minimal orchestration.
 
-## Konsekwencje
+## Consequences
 
-- Pozytywne: jasny podział toolchainów; Android i core dzielą jeden Gradle; web zachowuje dojrzały DX; root scripts wystarczą do „build all” / CI; brak vendor lock-in w Nx.
-- Negatywne / koszty: dwa (trzy z Xcode) systemy buildu do nauczenia; skrypty root trzeba utrzymywać ręcznie; iOS wymaga kroku eksportu frameworka z Gradle przed/obok Xcode.
-- Później: revisit KMP→JS/Wasm tylko wg warunków w ADR 0006; SemVer/publikacja core tylko gdy zajdzie potrzeba; ewentualnie Turborepo wyłącznie pod web.
-- Playbook scaffoldu: [phase-1-scaffold-playbook](../plans/phase-1-scaffold-playbook.md) ([issue #7](https://github.com/MarekBiolik/GymManager/issues/7)); implementacja [#14](https://github.com/MarekBiolik/GymManager/issues/14).
+- Positive: clear toolchain split; Android and core share one Gradle; web keeps mature DX; root scripts suffice for “build all” / CI; no Nx vendor lock-in.
+- Negative / costs: two (three with Xcode) build systems to learn; root scripts maintained by hand; iOS needs a framework-export step from Gradle before/alongside Xcode.
+- Later: revisit KMP→JS/Wasm only per ADR 0006 conditions; SemVer/publish core only when needed; optionally Turborepo under web only.
+- Scaffold playbook: [phase-1-scaffold-playbook](../plans/phase-1-scaffold-playbook.md) ([issue #7](https://github.com/MarekBiolik/GymManager/issues/7)); implementation [#14](https://github.com/MarekBiolik/GymManager/issues/14).
 
-### Scope pierwszej implementacji scaffold (faza 1) vs później
+### First scaffold implementation scope (phase 1) vs later
 
-| W scope pierwszego scaffoldu | Świadomie później |
-|------------------------------|-------------------|
-| Root: `settings.gradle.kts` / wrapper, skrypty `build`/`test`/`lint` | Nx / Turborepo |
-| `core/` jako moduł KMP (**tylko** Android + iOS targets; **bez** JS/Wasm) | Target JS/Wasm / publikacja core do rejestru |
-| `apps/android/` zależny od `:core` | Niezależne wersjonowanie core vs klientów |
-| `apps/ios/` Xcode project + instrukcja podpięcia frameworka | Pełny SPM package distribution |
-| `apps/web/` pnpm + Vite + `supabase-js` (bez binary KMP) | Monorepo JS z wieloma paczkami; konsumpcja core z weba |
-| `supabase/` CLI config + miejsce na migracje | Multi-environment release automation |
-| `docs/` (już istnieje) | — |
-| `core/VERSION` lub wpis w `gradle.properties` (placeholder) | Store release / tag policy (faza 6) |
+| In first scaffold scope | Deliberately later |
+|-------------------------|--------------------|
+| Root: `settings.gradle.kts` / wrapper, `build`/`test`/`lint` scripts | Nx / Turborepo |
+| `core/` as KMP module (**only** Android + iOS targets; **no** JS/Wasm) | JS/Wasm target / publish core to a registry |
+| `apps/android/` depending on `:core` | Independent core vs client versioning |
+| `apps/ios/` Xcode project + framework wiring instructions | Full SPM package distribution |
+| `apps/web/` pnpm + Vite + `supabase-js` (no KMP binary) | Multi-package JS monorepo; consuming core from web |
+| `supabase/` CLI config + place for migrations | Multi-environment release automation |
+| `docs/` (already exists) | — |
+| `core/VERSION` or `gradle.properties` entry (placeholder) | Store release / tag policy (phase 6) |
 
-## Powiązane
+## Related
 
-- [overview — struktura repo](../architecture/overview.md)
+- [overview — repo structure](../architecture/overview.md)
 - [tech-stack](../architecture/tech-stack.md)
 - [shared-core](../architecture/shared-core.md)
 - [clients](../architecture/clients.md)
 - [OQ-04](../open-questions.md) (decided)
 - [ADR 0001](0001-shared-core-kmp.md), [ADR 0003](0003-native-ui-per-platform.md)
-- [roadmap — faza 1](../roadmap.md)
+- [roadmap — phase 1](../roadmap.md)

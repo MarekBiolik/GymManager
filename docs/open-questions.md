@@ -1,80 +1,80 @@
-# Otwarte pytania
+# Open questions
 
-Obszary świadomie **nie rozstrzygnięte** w iteracji 1. Każdy punkt powinien zostać zamknięty osobną iteracją (plan + ADR lub aktualizacja docs) przed głębokim kodowaniem.
+Areas deliberately **undecided** in iteration 1. Each item should be closed in a separate iteration (plan + ADR or docs update) before deep coding.
 
-Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
+Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 
 ---
 
-## OQ-01 — Interop web ↔ wspólny core (KMP)
+## OQ-01 — Web ↔ shared core (KMP) interop
 
 **Status:** decided — [ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)  
-**Dlaczego ważne:** KMP naturalnie spina Android i iOS; web (JS/Wasm) jest trudniejszy. Złe rozwiązanie = duplikacja logiki domenowej albo kruchy interop.
+**Why it matters:** KMP naturally ties Android and iOS together; web (JS/Wasm) is harder. A bad choice = duplicated domain logic or fragile interop.
 
-**Decyzja (dzień 1):** opcja **B** — web → `supabase-js` + cienka TS; **bez** KMP→JS/Wasm w scaffoldzie. Guardraile i warunki revisit: ADR 0006 + [clients](architecture/clients.md) / [shared-core](architecture/shared-core.md). Operacyjny podział reguł DB vs core/TS: [postgres-invariants](architecture/postgres-invariants.md) (issue #17).
+**Decision (day 1):** option **B** — web → `supabase-js` + thin TS; **no** KMP→JS/Wasm in the scaffold. Guardrails and revisit criteria: ADR 0006 + [clients](architecture/clients.md) / [shared-core](architecture/shared-core.md). Operational split of DB vs core/TS rules: [postgres-invariants](architecture/postgres-invariants.md) (issue #17).
 
-**Opcje (rozważone):**
+**Options (considered):**
 
-1. Core skompilowany do JS/Wasm, konsumowany przez React/TS.
-2. Web gada wprost do Supabase przez `supabase-js`; cienka logika w TS (ryzyko duplikacji względem core) — **wybrane na start**.
-3. Hybryda: domena/walidacje w shared (jeśli możliwe), networking web osobno.
+1. Core compiled to JS/Wasm, consumed by React/TS.
+2. Web talks directly to Supabase via `supabase-js`; thin logic in TS (duplication risk vs core) — **chosen for start**.
+3. Hybrid: domain/validation in shared (if feasible), web networking separate.
 
 ---
 
-## OQ-02 — Metoda logowania i minimum PII
+## OQ-02 — Sign-in method and minimum PII
 
 **Status:** decided — [ADR 0007](decisions/0007-auth-providers-minimum-pii.md), [auth](architecture/auth.md)  
-**Decyzja:** Google (Android/iOS/web) + Sign in with Apple na iOS; minimum PII (`profiles` bez email/imienia); zarys usuwania konta w auth.md. Poza MVP: magic link, anon+linkowanie, email+hasło.
+**Decision:** Google (Android/iOS/web) + Sign in with Apple on iOS; minimum PII (`profiles` without email/name); account-deletion outline in auth.md. Beyond MVP: magic link, anon+linking, email+password.
 
 ---
 
-## OQ-03 — Strategia offline / sync / konflikty
+## OQ-03 — Offline / sync / conflict strategy
 
 **Status:** decided — [ADR 0008](decisions/0008-sync-strategy-online-first.md), [data-and-sync](architecture/data-and-sync.md)  
-**Decyzja:** online-first + lokalny cache odczytu; SoT = Postgres; zapis tylko online w MVP; konflikty = LWW na wiersz (`updated_at`), jedna reguła dla wszystkich typów encji; Realtime opcjonalne; offline-write później.  
-**Schemat (`updated_at`, RLS):** [spec pierwszej migracji](specs/first-migration-profiles-rls.md) (#6); apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21).
+**Decision:** online-first + local read cache; SoT = Postgres; writes online-only in MVP; conflicts = LWW per row (`updated_at`), one rule for all entity types; Realtime optional; offline-write later.  
+**Schema (`updated_at`, RLS):** [first migration spec](specs/first-migration-profiles-rls.md) (#6); apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 
 ---
 
-## OQ-04 — Narzędzia monorepo i wersjonowanie
+## OQ-04 — Monorepo tooling and versioning
 
 **Status:** decided — [ADR 0005](decisions/0005-monorepo-tooling.md), [overview](architecture/overview.md)  
-**Decyzja (skrót):** Gradle multi-project dla `core` + `apps/android` (export frameworka dla iOS); `apps/web` na pnpm/Vite poza Gradle; orkiestracja = cienkie skrypty root (bez Nx/Turborepo); core source-linked w tym samym commicie, SemVer/publikacja później.
+**Decision (summary):** Gradle multi-project for `core` + `apps/android` (framework export for iOS); `apps/web` on pnpm/Vite outside Gradle; orchestration = thin root scripts (no Nx/Turborepo); core source-linked in the same commit, SemVer/publish later.
 
 ---
 
-## OQ-05 — Hosting Supabase i backupy
+## OQ-05 — Supabase hosting and backups
 
-**Status:** decided — [ADR 0004](decisions/0004-supabase-hosting.md), [data-and-sync](architecture/data-and-sync.md#hosting-i-backupy)  
-**Decyzja:** Supabase Cloud Free na start → Pro gdy potrzeba auto-backupów / braku pauzy; jeden projekt `dev` (+ opcjonalnie local CLI); sekrety poza repo; na Free okresowe `db dump`.
+**Status:** decided — [ADR 0004](decisions/0004-supabase-hosting.md), [data-and-sync](architecture/data-and-sync.md#hosting-and-backups)  
+**Decision:** Supabase Cloud Free to start → Pro when auto-backups / no-pause are needed; one `dev` project (+ optional local CLI); secrets outside the repo; on Free, periodic `db dump`.
 
 ---
 
-## OQ-06 — Los artefaktów prototypu
+## OQ-06 — Prototype artifact disposition
 
 **Status:** decided — [legacy-cleanup](conventions/legacy-cleanup.md)  
-**Artefakty:** `web/`, `server/`, `data/gymmanager.db*` — **usunięte** z working tree (nie były trackowane w git). Eksport schematu SQLite pominięty.
+**Artifacts:** `web/`, `server/`, `data/gymmanager.db*` — **removed** from the working tree (were never git-tracked). SQLite schema export skipped.
 
 ---
 
-## OQ-07 — Źródło danych żywnościowych
+## OQ-07 — Food data source
 
 **Status:** open  
-**Kontekst:** stary prototyp używał OpenFoodFacts. Czy wracamy do OFF, własnej bazy produktów użytkownika only, czy hybryda?
+**Context:** the old prototype used OpenFoodFacts. Do we return to OFF, user-owned foods only, or a hybrid?
 
-**Zamyka:** przed fazą 3 (moduł żywienia).
+**Closes by:** before phase 3 (nutrition module).
 
 ---
 
-## OQ-08 — UI/UX przełączania modułów
+## OQ-08 — Module-switching UI/UX
 
 **Status:** open  
-**Kontekst:** jedna aplikacja, kilka obszarów. Nawigacja (tabs, drawer, „mode switch”) — detal na fazę 6; nie blokuje fundamentów.
+**Context:** one app, several areas. Navigation (tabs, drawer, “mode switch”) — detail for phase 6; does not block foundations.
 
 ---
 
-## Jak dodawać nowe pytania
+## How to add new questions
 
-1. Nadaj ID `OQ-NN`.
-2. Status `open`, krótki kontekst, opcje jeśli znane, faza zamknięcia.
-3. Po decyzji: status `decided` + link do ADR lub sekcji docs.
+1. Assign id `OQ-NN`.
+2. Status `open`, short context, options if known, closing phase.
+3. After decision: status `decided` + link to ADR or docs section.

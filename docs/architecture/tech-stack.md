@@ -1,78 +1,78 @@
-# Stack technologiczny
+# Tech stack
 
-Wersje konkretnych bibliotek zostaną przypięte przy scaffoldingu (faza 1). Poniżej — wybór technologii i rola.
+Concrete library versions will be pinned at scaffolding (phase 1). Below — technology choices and roles.
 
-## Wspólny core
+## Shared core
 
-| Technologia | Rola |
-|-------------|------|
-| Kotlin Multiplatform (KMP) | Wspólny kod domeny, danych, sync |
-| Kotlin Coroutines / Flow | Asynchroniczność i strumienie stanu |
-| kotlinx.serialization | Serializacja modeli |
-| supabase-kt (community) | Klient Supabase z core (Android/iOS; web bez KMP-JS — [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) |
+| Technology | Role |
+|------------|------|
+| Kotlin Multiplatform (KMP) | Shared domain, data, and sync code |
+| Kotlin Coroutines / Flow | Async and state streams |
+| kotlinx.serialization | Model serialization |
+| supabase-kt (community) | Supabase client from core (Android/iOS; web without KMP-JS — [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) |
 
-Szczegóły granic: [shared-core](shared-core.md). Decyzja: [ADR 0001](../decisions/0001-shared-core-kmp.md).
+Boundary details: [shared-core](shared-core.md). Decision: [ADR 0001](../decisions/0001-shared-core-kmp.md).
 
 ## Android
 
-| Technologia | Rola |
-|-------------|------|
-| Kotlin | Język aplikacji |
+| Technology | Role |
+|------------|------|
+| Kotlin | App language |
 | Jetpack Compose | UI |
 | Android Gradle Plugin | Build |
-| core (KMP) jako zależność | Logika |
+| core (KMP) as dependency | Logic |
 
 ## iOS
 
-| Technologia | Rola |
-|-------------|------|
-| Swift | Język aplikacji |
+| Technology | Role |
+|------------|------|
+| Swift | App language |
 | SwiftUI | UI |
 | Xcode | Build / signing |
-| core jako XCFramework / SPM z KMP | Logika |
+| core as XCFramework / SPM from KMP | Logic |
 
-Wymaga konta **Apple Developer Program** (publikacja App Store).
+Requires an **Apple Developer Program** account (App Store publishing).
 
 ## Web
 
-| Technologia | Rola |
-|-------------|------|
-| TypeScript | Język |
+| Technology | Role |
+|------------|------|
+| TypeScript | Language |
 | React | UI |
 | Vite | Tooling / build |
-| supabase-js | Jedyny klient Supabase w `apps/web` na dzień 1 ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) |
+| supabase-js | Only Supabase client in `apps/web` on day 1 ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) |
 
-## Backend / dane
+## Backend / data
 
-| Technologia | Rola |
-|-------------|------|
+| Technology | Role |
+|------------|------|
 | Supabase | BaaS: Auth, Postgres, RLS, Realtime, Storage |
-| PostgreSQL | Relacyjna baza (historia, agregacje, FK) |
-| Supabase Auth | Logowanie (kierunek: Google + Apple na iOS) |
-| SQL migrations w `supabase/` | Schemat jako kod |
+| PostgreSQL | Relational DB (history, aggregations, FK) |
+| Supabase Auth | Sign-in (direction: Google + Apple on iOS) |
+| SQL migrations in `supabase/` | Schema as code |
 
-Decyzja backendu: [ADR 0002](../decisions/0002-backend-supabase.md).
-Hosting / środowiska / backupy: [ADR 0004](../decisions/0004-supabase-hosting.md) (Cloud Free → Pro; szczegóły w [data-and-sync](data-and-sync.md#hosting-i-backupy)).
+Backend decision: [ADR 0002](../decisions/0002-backend-supabase.md).  
+Hosting / environments / backups: [ADR 0004](../decisions/0004-supabase-hosting.md) (Cloud Free → Pro; details in [data-and-sync](data-and-sync.md#hosting-and-backups)).
 
-## Narzędzia projektowe
+## Project tooling
 
-Decyzja: [ADR 0005](../decisions/0005-monorepo-tooling.md).
+Decision: [ADR 0005](../decisions/0005-monorepo-tooling.md).
 
-| Obszar | Wybór | Uwagi |
-|--------|-------|--------|
-| Monorepo | Hybryda: **Gradle** (`core` + `apps/android`) + **pnpm** (`apps/web`) + Xcode (`apps/ios`) | Bez Nx/Turborepo na start |
-| Orkiestracja | Cienkie skrypty w root (`package.json` / `scripts/`) | Wywołują Gradle, pnpm, Supabase CLI |
-| Wersjonowanie core | Source-linked (ten sam commit); `core/VERSION` lub `gradle.properties` | SemVer/publikacja rejestru — później, gdy potrzeba |
-| Wersjonowanie klientów | Niezależne numery store / deploy web | Nie muszą = SemVer core |
-| CI | Build core + klienci + lint; migracje na PR | [ci-cd](../conventions/ci-cd.md) |
-| Testy | Unit w core; UI testy per klient później | [testing](../conventions/testing.md) |
-| Formatowanie | ktlint / Spotless (Kotlin); ESLint+Prettier (web); SwiftFormat (iOS) | Przypięcie wersji w scaffoldzie fazy 1 |
-| Menedżer paczek JS | **pnpm** (+ `pnpm-workspace.yaml`) | Workspace = `apps/web` na start |
+| Area | Choice | Notes |
+|------|--------|--------|
+| Monorepo | Hybrid: **Gradle** (`core` + `apps/android`) + **pnpm** (`apps/web`) + Xcode (`apps/ios`) | No Nx/Turborepo at start |
+| Orchestration | Thin root scripts (`package.json` / `scripts/`) | Invoke Gradle, pnpm, Supabase CLI |
+| Core versioning | Source-linked (same commit); `core/VERSION` or `gradle.properties` | SemVer/registry publish — later when needed |
+| Client versioning | Independent store / web deploy numbers | Need not equal core SemVer |
+| CI | Build core + clients + lint; migrations on PR | [ci-cd](../conventions/ci-cd.md) |
+| Tests | Unit in core; UI tests per client later | [testing](../conventions/testing.md) |
+| Formatting | ktlint / Spotless (Kotlin); ESLint+Prettier (web); SwiftFormat (iOS) | Pin versions in phase-1 scaffold |
+| JS package manager | **pnpm** (+ `pnpm-workspace.yaml`) | Workspace = `apps/web` at start |
 
-## Świadomie nie wybrano (na teraz)
+## Deliberately not chosen (for now)
 
-- Flutter / React Native jako główny UI — odrzucone na rzecz natywnego UI ([ADR 0003](../decisions/0003-native-ui-per-platform.md)).
-- Firebase / Firestore — gorszy fit do agregacji i silniejszy lock-in.
-- Własny backend Node od zera — za dużo utrzymania na start.
-- KMP→JS/Wasm dla web na dzień 1 — odłożone; web = `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
-- Warstwa AI — faza 7 roadmapy.
+- Flutter / React Native as primary UI — rejected in favor of native UI ([ADR 0003](../decisions/0003-native-ui-per-platform.md)).
+- Firebase / Firestore — worse fit for aggregations and stronger lock-in.
+- Custom Node backend from scratch — too much maintenance at the start.
+- KMP→JS/Wasm for web on day 1 — deferred; web = `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
+- AI layer — roadmap phase 7.

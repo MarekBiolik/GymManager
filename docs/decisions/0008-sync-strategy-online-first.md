@@ -1,78 +1,78 @@
-# ADR 0008 — Strategia sync: online-first + read cache (MVP)
+# ADR 0008 — Sync strategy: online-first + read cache (MVP)
 
 - **Status:** accepted
-- **Data:** 2026-10-29
-- **Decydenci:** Marek (+ sesja zamykania OQ-03)
+- **Date:** 2026-10-29
+- **Decision makers:** Marek (+ OQ-03 closing session)
 
-## Kontekst
+## Context
 
-Tracker fitness potrzebuje **tych samych danych** na Androidzie, iOS i webie po logowaniu ([ADR 0007](0007-auth-providers-minimum-pii.md)). Backend to Postgres przez Supabase ([ADR 0002](0002-backend-supabase.md)). Siły: solo maintenance, szybki baseline fazy 2 („hello sync”), unikanie złożoności kolejek offline i zegarów na starcie, przy zachowaniu ścieżki do offline-write gdy siłownia bez zasięgu stanie się realnym bólem.
+A fitness tracker needs the **same data** on Android, iOS, and web after sign-in ([ADR 0007](0007-auth-providers-minimum-pii.md)). Backend is Postgres via Supabase ([ADR 0002](0002-backend-supabase.md)). Forces: solo maintenance, fast phase-2 baseline (“hello sync”), avoiding offline queues and clock complexity at the start, while keeping a path to offline-write when gym-without-signal becomes real pain.
 
-Opcje z [OQ-03](../open-questions.md) / wcześniejszego zarysu w data-and-sync: online-only, online-first + cache odczytu, local-first + kolejka zapisów, Realtime między urządzeniami.
+Options from [OQ-03](../open-questions.md) / earlier data-and-sync outline: online-only, online-first + read cache, local-first + write queue, Realtime between devices.
 
-Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)) — wspólna prawda musi żyć w **Postgres + RLS**, nie w drugiej lokalnej bazie jako SoT.
+Web does not share a sync engine with KMP ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)) — shared truth must live in **Postgres + RLS**, not in a second local DB as SoT.
 
-## Decyzja
+## Decision
 
-1. **Source of truth:** **PostgreSQL (Supabase)**. Każdy udany zapis klienta ląduje w Postgresie (przez RLS + JWT `user_id` = konto Auth z ADR 0007). Lokalny store **nie** jest drugą prawdą.
-2. **MVP baseline:** **online-first + lokalny cache odczytu**. Odczyt: sieć gdy dostępna, inaczej świeży cache (stale-while-revalidate / „pokaż ostatnio pobrane”). Zapis: **tylko gdy online** — request do API; przy braku sieci UI blokuje zapis z jasnym komunikatem (bez cichej kolejki).
-3. **Offline-write (kolejka, optimistic UI z trwałym lokalnym commit):** **poza MVP** — follow-up gdy moduły (zwłaszcza trening w siłowni) tego wymagają; wtedy osobny ADR/revisit konfliktów.
-4. **Konflikty (MVP):** jedna reguła dla wszystkich typów encji użytkownika (żywienie / trening / pomiary / `profiles`): **last-write-wins (LWW) na wiersz** wg `updated_at` (timestamptz z serwera / uzgodnionego zegara zapisu). Brak merge per-pole na start. Przy online-first konflikty są rzadkie (głównie dwa urządzenia online naraz); LWW wystarcza.
-5. **Realtime Supabase:** **opcjonalne** w fazie 2+ do odświeżania UI gdy drugie urządzenie zapisze — nie wymagane do akceptacji „hello sync”. Subskrypcje tylko dla tabel użytkownika, zawsze przez RLS.
-6. **Klienci:** mobile — repozytoria w KMP czytają/piszą Supabase (`supabase-kt`) + cache odczytu w core; web — to samo zachowanie przez `supabase-js` + cienki cache przeglądarki/pamięci, **bez** równoległej domeny sync w TS ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)).
-7. **Usuwanie:** MVP = **hard delete** wiersza w Postgresie + invalidacja cache. Tombstone / soft-delete pod sync offline — dopiero przy offline-write.
+1. **Source of truth:** **PostgreSQL (Supabase)**. Every successful client write lands in Postgres (via RLS + JWT `user_id` = Auth account from ADR 0007). Local store is **not** a second truth.
+2. **MVP baseline:** **online-first + local read cache**. Read: network when available, otherwise fresh cache (stale-while-revalidate / “show last fetched”). Write: **only when online** — API request; when offline, UI blocks write with a clear message (no silent queue).
+3. **Offline-write (queue, optimistic UI with durable local commit):** **beyond MVP** — follow-up when modules (especially gym training) require it; then a separate ADR/conflict revisit.
+4. **Conflicts (MVP):** one rule for all user entity types (nutrition / training / measurements / `profiles`): **last-write-wins (LWW) per row** by `updated_at` (timestamptz from server / agreed write clock). No per-field merge at start. With online-first, conflicts are rare (mainly two devices online at once); LWW is enough.
+5. **Supabase Realtime:** **optional** in phase 2+ to refresh UI when another device writes — not required to accept “hello sync”. Subscriptions only for user tables, always through RLS.
+6. **Clients:** mobile — KMP repositories read/write Supabase (`supabase-kt`) + read cache in core; web — same behavior via `supabase-js` + thin browser/memory cache, **without** a parallel sync domain in TS ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)).
+7. **Deletion:** MVP = **hard delete** of the Postgres row + cache invalidation. Tombstone / soft-delete for offline sync — only with offline-write.
 
-## Alternatywy rozważone
+## Alternatives considered
 
-1. **Online-first + read cache (wybrane)** — prosty model mentalny; SoT = Postgres; spójne z web bez KMP; wystarcza do multi-device po zalogowaniu. Wady: brak zapisu w siłowni bez sieci.
-2. **Czyste online-only (bez cache)** — jeszcze prostsze. Odrzucone jako baseline UX: zbędne spinnery przy każdym wejściu w historię; cache odczytu to mały koszt.
-3. **Local-first + kolejka zapisów** — najlepszy UX offline. Odrzucone na MVP: kolejka, idempotencja, konflikty, zegary, tombstone’y, parity web↔mobile — za drogie przed działającym auth/RLS/hello sync.
-4. **Merge per typ encji od dnia 1** (np. scalanie serii w sesji) — precyzyjniejsze. Odrzucone na start: brak dowodu, że LWW boli; jedna reguła mniej kodu i mniej dryfu web/mobile.
-5. **Realtime jako obowiązkowy silnik sync** — live wszędzie. Odrzucone jako wymóg MVP: pull/refresh + zapis REST wystarcza; Realtime = opt-in ulepszenie.
+1. **Online-first + read cache (chosen)** — simple mental model; SoT = Postgres; consistent with web without KMP; enough for multi-device after sign-in. Cons: no write in the gym without network.
+2. **Pure online-only (no cache)** — even simpler. Rejected as UX baseline: unnecessary spinners on every history open; read cache is small cost.
+3. **Local-first + write queue** — best offline UX. Rejected for MVP: queue, idempotency, conflicts, clocks, tombstones, web↔mobile parity — too expensive before working auth/RLS/hello sync.
+4. **Per-entity merge from day 1** (e.g. merging sets in a session) — more precise. Rejected at start: no proof LWW hurts; one rule means less code and less web/mobile drift.
+5. **Realtime as mandatory sync engine** — live everywhere. Rejected as MVP requirement: pull/refresh + REST write is enough; Realtime = opt-in improvement.
 
-## Konsekwencje
+## Consequences
 
-### Pozytywne
+### Positive
 
-- Faza 2 może zbudować „hello sync” bez silnika offline.
-- Jedna SoT i jedna reguła konfliktów — łatwe do opisania w pierwszej migracji (`updated_at`, RLS).
-- Spójne z tożsamością ADR 0007 i ścieżką web ADR 0006 (oba klienty piszą do tego samego Postgresa).
-- Jasny trigger revisit: realny ból zapisu offline.
+- Phase 2 can build “hello sync” without an offline engine.
+- One SoT and one conflict rule — easy to describe in the first migration (`updated_at`, RLS).
+- Consistent with ADR 0007 identity and ADR 0006 web path (both clients write to the same Postgres).
+- Clear revisit trigger: real offline-write pain.
 
-### Negatywne / koszty
+### Negative / costs
 
-- W siłowni bez zasięgu użytkownik **nie** zapisze treningu / posiłku w MVP.
-- Dwa urządzenia edytujące ten sam wiersz online → ciche LWW (ostatni `updated_at` wygrywa); brak UI „resolve conflict”.
-- Cache odczytu może pokazać dane nieaktualne do następnego udanego fetch — UI powinno to tolerować (np. wskaźnik „offline / ostatnia aktualizacja”).
-- Pakiet `core/sync/` na start to **cienki** helper cache/invalidacji, nie pełna kolejka — nazwa katalogu nie obiecuje offline-write.
+- In a gym without signal the user **cannot** save a workout / meal in MVP.
+- Two devices editing the same row online → silent LWW (latest `updated_at` wins); no “resolve conflict” UI.
+- Read cache may show stale data until the next successful fetch — UI should tolerate that (e.g. “offline / last updated” indicator).
+- The `core/sync/` package at start is a **thin** cache/invalidation helper, not a full queue — the directory name does not promise offline-write.
 
-### Wymagania schematu (wejście do #6)
+### Schema requirements (input to #6)
 
-- Każda tabela użytkownika: `user_id`, `created_at`, `updated_at` (timestamptz).
-- Zapisy aktualizują `updated_at` (trigger lub jawny SET w kliencie — decyzja przy migracji).
-- Brak obowiązkowych kolumn tombstone w MVP.
+- Every user table: `user_id`, `created_at`, `updated_at` (timestamptz).
+- Writes update `updated_at` (trigger or explicit SET in the client — decided at migration).
+- No mandatory tombstone columns in MVP.
 
-### Zachowanie offline (MVP) — skrót
+### Offline behavior (MVP) — summary
 
-| Operacja | Online | Offline |
-|----------|--------|---------|
-| Odczyt listy / szczegółu | Fetch → odśwież cache | Pokaż cache; jeśli pusty — pusty stan + „brak sieci” |
-| Zapis / update / delete | API + RLS; przy sukcesie update cache | **Odrzuć** z komunikatem; nie kolejkuj |
-| Logowanie / odświeżenie sesji | Jak auth.md | Bez ważnej sesji brak dostępu do danych chronionych |
+| Operation | Online | Offline |
+|-----------|--------|---------|
+| Read list / detail | Fetch → refresh cache | Show cache; if empty — empty state + “no network” |
+| Write / update / delete | API + RLS; on success update cache | **Reject** with message; do not queue |
+| Sign-in / session refresh | Per auth.md | Without a valid session, no access to protected data |
 
-### Poza MVP (świadomie później)
+### Beyond MVP (deliberately later)
 
-- Kolejka zapisów offline + idempotentne requesty
-- Optimistic UI z lokalnym commit przed ACK serwera
-- Merge / CRDT / per-encja conflict UI
-- Obowiązkowy Realtime jako bus sync
-- Wspólny silnik offline web+mobile (warunek revisit ADR 0006)
+- Offline write queue + idempotent requests
+- Optimistic UI with local commit before server ACK
+- Merge / CRDT / per-entity conflict UI
+- Mandatory Realtime as sync bus
+- Shared offline engine for web+mobile (ADR 0006 revisit condition)
 
-## Powiązane
+## Related
 
-- Zamyka [OQ-03](../open-questions.md)
+- Closes [OQ-03](../open-questions.md)
 - [data-and-sync](../architecture/data-and-sync.md)
 - [ADR 0002](0002-backend-supabase.md), [ADR 0006](0006-web-supabase-js-without-kmp-js.md), [ADR 0007](0007-auth-providers-minimum-pii.md)
 - [data-model](../domain/data-model.md), [auth](../architecture/auth.md), [postgres-invariants](../architecture/postgres-invariants.md)
-- [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [spec pierwszej migracji](../specs/first-migration-profiles-rls.md) — profiles + RLS + `updated_at`; apply [#21](https://github.com/MarekBiolik/GymManager/issues/21)
-- Follow-upy: [#19 kontrakt read-cache / hello sync](https://github.com/MarekBiolik/GymManager/issues/19), [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)
+- [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [first migration spec](../specs/first-migration-profiles-rls.md) — profiles + RLS + `updated_at`; apply [#21](https://github.com/MarekBiolik/GymManager/issues/21)
+- Follow-ups: [#19 read-cache / hello sync contract](https://github.com/MarekBiolik/GymManager/issues/19), [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)

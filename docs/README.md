@@ -1,61 +1,61 @@
-# GymManager — dokumentacja
+# GymManager — documentation
 
-Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, domeny i konwencji; kod jest wtórny względem decyzji zapisanych tutaj.
+Project documentation index. These documents are the source of truth for architecture, domain, and conventions; code is secondary to the decisions recorded here.
 
-## Start tutaj
+## Start here
 
-1. [Wizja produktu](00-vision.md) — co budujemy, zakres, non-goals
-2. [Roadmapa](roadmap.md) — fazy pracy i kiedy precyzujemy poszczególne obszary
-3. [Otwarte pytania](open-questions.md) — obszary do doprecyzowania w kolejnych iteracjach
+1. [Product vision](00-vision.md) — what we build, scope, non-goals
+2. [Roadmap](roadmap.md) — work phases and when each area gets refined
+3. [Open questions](open-questions.md) — areas to refine in later iterations
 
-## Plany (playbooki faz)
+## Plans (phase playbooks)
 
-- [Faza 1 — playbook scaffoldu monorepo](plans/phase-1-scaffold-playbook.md) — kolejność, done criteria, CI, Supabase `dev`; implementacja = issue #14
+- [Phase 1 — monorepo scaffold playbook](plans/phase-1-scaffold-playbook.md) — order, done criteria, CI, Supabase `dev`; implementation = issue #14
 
-## Architektura
+## Architecture
 
-- [Przegląd](architecture/overview.md) — high-level, diagram, struktura repo
-- [Stack technologiczny](architecture/tech-stack.md)
-- [Wspólny core (KMP)](architecture/shared-core.md)
-- [Klienci](architecture/clients.md) — iOS / Android / web
-- [Dane i sync](architecture/data-and-sync.md)
-- [Wspólne niezmienniki Postgres](architecture/postgres-invariants.md) — RLS / CHECK vs core/TS (po ADR 0006)
-- [Autentykacja](architecture/auth.md)
+- [Overview](architecture/overview.md) — high-level, diagram, repo layout
+- [Tech stack](architecture/tech-stack.md)
+- [Shared core (KMP)](architecture/shared-core.md)
+- [Clients](architecture/clients.md) — iOS / Android / web
+- [Data and sync](architecture/data-and-sync.md)
+- [Shared Postgres invariants](architecture/postgres-invariants.md) — RLS / CHECK vs core/TS (after ADR 0006)
+- [Authentication](architecture/auth.md)
 
-## Decyzje (ADR)
+## Decisions (ADR)
 
-- [Szablon ADR](decisions/adr-template.md)
-- [ADR 0001 — Wspólny core: Kotlin Multiplatform](decisions/0001-shared-core-kmp.md)
+- [ADR template](decisions/adr-template.md)
+- [ADR 0001 — Shared core: Kotlin Multiplatform](decisions/0001-shared-core-kmp.md)
 - [ADR 0002 — Backend: Supabase](decisions/0002-backend-supabase.md)
-- [ADR 0003 — Natywne UI per platforma](decisions/0003-native-ui-per-platform.md)
-- [ADR 0004 — Hosting Supabase i backupy](decisions/0004-supabase-hosting.md)
-- [ADR 0005 — Monorepo: layout, tooling i wersjonowanie core](decisions/0005-monorepo-tooling.md)
-- [ADR 0006 — Web: supabase-js bez KMP→JS/Wasm](decisions/0006-web-supabase-js-without-kmp-js.md)
-- [ADR 0007 — Providery logowania i minimum PII](decisions/0007-auth-providers-minimum-pii.md)
-- [ADR 0008 — Strategia sync: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
+- [ADR 0003 — Native UI per platform](decisions/0003-native-ui-per-platform.md)
+- [ADR 0004 — Supabase hosting and backups](decisions/0004-supabase-hosting.md)
+- [ADR 0005 — Monorepo: layout, tooling, and core versioning](decisions/0005-monorepo-tooling.md)
+- [ADR 0006 — Web: supabase-js without KMP→JS/Wasm](decisions/0006-web-supabase-js-without-kmp-js.md)
+- [ADR 0007 — Auth providers and minimum PII](decisions/0007-auth-providers-minimum-pii.md)
+- [ADR 0008 — Sync strategy: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
 
-## Domena
+## Domain
 
-- [Słownik pojęć](domain/glossary.md)
-- [Model danych (zarys)](domain/data-model.md)
+- [Glossary](domain/glossary.md)
+- [Data model (outline)](domain/data-model.md)
 
-## Specyfikacje (SQL / migracje — draft)
+## Specifications (SQL / migrations — draft)
 
-- [Pierwsza migracja: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL w `docs/specs/sql/` (**NOT APPLIED**)
+- [First migration: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL in `docs/specs/sql/` (**NOT APPLIED**)
 
-## Konwencje
+## Conventions
 
-- [Standardy kodu](conventions/coding-standards.md)
+- [Coding standards](conventions/coding-standards.md)
 - [Git workflow](conventions/git-workflow.md)
-- [Testowanie](conventions/testing.md)
+- [Testing](conventions/testing.md)
 - [CI/CD](conventions/ci-cd.md)
 
 ## Legacy / cleanup
 
-- [Los artefaktów prototypu](conventions/legacy-cleanup.md)
+- [Prototype artifact disposition](conventions/legacy-cleanup.md)
 
-## Zasady pracy z dokumentacją
+## Documentation working rules
 
-- Nowe decyzje architektoniczne → ADR w `docs/decisions/`.
-- Niejasności i odroczone tematy → `open-questions.md`, nie „rozwiązywanie w kodzie po cichu”.
-- Doprecyzowanie obszaru = osobna iteracja (plan + aktualizacja docs), potem scaffolding/kod.
+- New architectural decisions → ADR in `docs/decisions/`.
+- Ambiguities and deferred topics → `open-questions.md`, not silent fixes in code.
+- Refining an area = a separate iteration (plan + docs update), then scaffolding/code.

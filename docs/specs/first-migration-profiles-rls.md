@@ -1,84 +1,84 @@
-# Spec: pierwsza migracja schematu (profiles + baseline RLS)
+# Spec: first schema migration (profiles + baseline RLS)
 
-**Status:** SPEC ONLY — **nie zastosowana** na Cloud `dev` ani lokalnie.  
+**Status:** SPEC ONLY — **not applied** on Cloud `dev` or locally.  
 **Issue:** [#6](https://github.com/MarekBiolik/GymManager/issues/6)  
-**Apply (1:1 z tego specu):** [#21](https://github.com/MarekBiolik/GymManager/issues/21) (po [#14](https://github.com/MarekBiolik/GymManager/issues/14) — katalog `supabase/`)  
-**Draft SQL:** [sql/0001_profiles_baseline_rls.sql](sql/0001_profiles_baseline_rls.sql) — oznaczony `NOT APPLIED`
+**Apply (1:1 with this spec):** [#21](https://github.com/MarekBiolik/GymManager/issues/21) (after [#14](https://github.com/MarekBiolik/GymManager/issues/14) — `supabase/` directory)  
+**Draft SQL:** [sql/0001_profiles_baseline_rls.sql](sql/0001_profiles_baseline_rls.sql) — marked `NOT APPLIED`
 
-Ten dokument jest **jedynym źródłem prawdy** dla treści pierwszej migracji. Scaffold (#14) nie wymyśla schematu; #21 kopiuje SQL do `supabase/migrations/` bez dryfu.
+This document is the **sole source of truth** for the first migration’s content. Scaffold (#14) does not invent schema; #21 copies SQL into `supabase/migrations/` without drift.
 
-## Cele
+## Goals
 
-1. Minimalny `profiles` (1:1 z `auth.users`, minimum PII — [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)).
-2. Baseline pod sync: `updated_at` + LWW na wiersz ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
-3. RLS per użytkownik na każdej tabeli.
-4. 1 tabela domenowa (`measurements`) do smoke RLS / hello-sync — bez pełnego modelu żywienia/treningu.
+1. Minimal `profiles` (1:1 with `auth.users`, minimum PII — [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)).
+2. Sync baseline: `updated_at` + LWW per row ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
+3. Per-user RLS on every table.
+4. One domain table (`measurements`) for RLS / hello-sync smoke — without the full nutrition/training model.
 
 ## Non-goals
 
-| Poza zakresem | Gdzie |
-|---------------|--------|
+| Out of scope | Where |
+|--------------|--------|
 | Apply / `supabase db push` | [#21](https://github.com/MarekBiolik/GymManager/issues/21) |
-| Pusty scaffold monorepo | [#14](https://github.com/MarekBiolik/GymManager/issues/14) |
-| Auth UI / IdP Google+Apple | [#12](https://github.com/MarekBiolik/GymManager/issues/12), faza 2 |
-| Pełne usuwanie konta (Edge Function, UI) | [#13](https://github.com/MarekBiolik/GymManager/issues/13); tu tylko `ON DELETE CASCADE` |
-| `foods`, `food_entries`, `exercises`, `sessions`, `sets`, `tags` | fazy 3–5; ten sam wzorzec RLS + `updated_at` |
-| Tombstone / soft-delete | poza MVP ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
-| Storage buckets | później |
+| Empty monorepo scaffold | [#14](https://github.com/MarekBiolik/GymManager/issues/14) |
+| Auth UI / Google+Apple IdP | [#12](https://github.com/MarekBiolik/GymManager/issues/12), phase 2 |
+| Full account deletion (Edge Function, UI) | [#13](https://github.com/MarekBiolik/GymManager/issues/13); here only `ON DELETE CASCADE` |
+| `foods`, `food_entries`, `exercises`, `sessions`, `sets`, `tags` | phases 3–5; same RLS + `updated_at` pattern |
+| Tombstone / soft-delete | beyond MVP ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
+| Storage buckets | later |
 
-## Decyzje schematu (zamknięte w tym specu)
+## Schema decisions (closed in this spec)
 
-| Temat | Decyzja |
-|-------|---------|
-| PK | `uuid` (`gen_random_uuid()`); nie ULID |
-| Czas | `timestamptz`, domyślnie `now()` |
-| `updated_at` | Trigger `BEFORE UPDATE` ustawia `now()` — jedna konwencja; klient **może** też wysłać wartość, ale serwer nadpisuje przy UPDATE |
-| LWW | Klient porównuje / wybiera wiersz z późniejszym `updated_at` ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)); brak merge per-pole |
-| Soft-delete | Brak; hard delete |
+| Topic | Decision |
+|-------|----------|
+| PK | `uuid` (`gen_random_uuid()`); not ULID |
+| Time | `timestamptz`, default `now()` |
+| `updated_at` | `BEFORE UPDATE` trigger sets `now()` — one convention; client **may** also send a value, but the server overwrites on UPDATE |
+| LWW | Client compares / picks the row with later `updated_at` ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)); no per-field merge |
+| Soft-delete | None; hard delete |
 | `profiles` ↔ Auth | `profiles.id` = `auth.users.id`, FK `ON DELETE CASCADE` |
-| Auto-profil | Trigger `AFTER INSERT ON auth.users` → wiersz w `profiles` |
-| Tabele domenowe | tylko `measurements` (smoke); `user_id` → `auth.users(id)` `ON DELETE CASCADE` |
-| RLS | włączone; polityki `SELECT/INSERT/UPDATE/DELETE` tylko dla własnych wierszy |
-| Grant | `authenticated` — CRUD; brak grantów `anon` na tabele użytkownika |
+| Auto-profile | Trigger `AFTER INSERT ON auth.users` → `profiles` row |
+| Domain tables | only `measurements` (smoke); `user_id` → `auth.users(id)` `ON DELETE CASCADE` |
+| RLS | enabled; `SELECT/INSERT/UPDATE/DELETE` policies only for own rows |
+| Grant | `authenticated` — CRUD; no `anon` grants on user tables |
 
-## Tabele
+## Tables
 
 ### `public.profiles`
 
-Rekord aplikacji 1:1 z kontem Auth. Zgodność: [glossary](../domain/glossary.md), [data-model](../domain/data-model.md), [auth](../architecture/auth.md).
+App record 1:1 with the Auth account. Alignment: [glossary](../domain/glossary.md), [data-model](../domain/data-model.md), [auth](../architecture/auth.md).
 
-| Kolumna | Typ | Constraints | Uwagi |
-|---------|-----|-------------|--------|
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|--------|
 | `id` | `uuid` | PK, FK → `auth.users(id)` ON DELETE CASCADE | = JWT `sub` / `auth.uid()` |
-| `preferred_units` | `text` | NOT NULL, DEFAULT `'kg'`, CHECK (`kg` \| `lb`) | preferencja UI, nie PII |
+| `preferred_units` | `text` | NOT NULL, DEFAULT `'kg'`, CHECK (`kg` \| `lb`) | UI preference, not PII |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` | |
 | `updated_at` | `timestamptz` | NOT NULL, DEFAULT `now()` | LWW |
 
-**Zakaz kolumn:** email, display name, avatar, imię, płeć, data urodzenia, telefon, adres.
+**Forbidden columns:** email, display name, avatar, name, gender, date of birth, phone, address.
 
-Indeksy: tylko PK (wystarczy dla 1:1).
+Indexes: PK only (enough for 1:1).
 
 ### `public.measurements`
 
-Pomiar ciała — [glossary — Measurement](../domain/glossary.md). Wystarcza do weryfikacji RLS + sync bez czekania na fazę 5.
+Body measurement — [glossary — Measurement](../domain/glossary.md). Enough to verify RLS + sync without waiting for phase 5.
 
-| Kolumna | Typ | Constraints | Uwagi |
-|---------|-----|-------------|--------|
+| Column | Type | Constraints | Notes |
+|--------|------|-------------|--------|
 | `id` | `uuid` | PK, DEFAULT `gen_random_uuid()` | |
-| `user_id` | `uuid` | NOT NULL, FK → `auth.users(id)` ON DELETE CASCADE | izolacja RLS |
-| `metric` | `text` | NOT NULL | np. `body_weight_kg`, `waist_cm` |
+| `user_id` | `uuid` | NOT NULL, FK → `auth.users(id)` ON DELETE CASCADE | RLS isolation |
+| `metric` | `text` | NOT NULL | e.g. `body_weight_kg`, `waist_cm` |
 | `value` | `numeric` | NOT NULL | |
-| `measured_at` | `timestamptz` | NOT NULL | kiedy pomiar |
+| `measured_at` | `timestamptz` | NOT NULL | when measured |
 | `created_at` | `timestamptz` | NOT NULL, DEFAULT `now()` | |
 | `updated_at` | `timestamptz` | NOT NULL, DEFAULT `now()` | LWW |
 
-Indeks startowy: `(user_id, measured_at DESC)` — listy historii per użytkownik.
+Starting index: `(user_id, measured_at DESC)` — per-user history lists.
 
-CHECK na `metric` **nie** w tej migracji (katalog metryk rozrośnie się w fazie 5).
+CHECK on `metric` is **not** in this migration (metric catalog grows in phase 5).
 
-## Trigger `updated_at`
+## `updated_at` trigger
 
-Jedna funkcja (security definer nie jest wymagany):
+One function (security definer not required):
 
 ```sql
 CREATE OR REPLACE FUNCTION public.set_updated_at()
@@ -92,11 +92,11 @@ END;
 $$;
 ```
 
-Podpięta `BEFORE UPDATE` na `profiles` i `measurements`.
+Attached `BEFORE UPDATE` on `profiles` and `measurements`.
 
-## Trigger auto-`profiles`
+## Auto-`profiles` trigger
 
-Po rejestracji Auth tworzy pusty profil (preferencje = default `kg`):
+After Auth registration creates an empty profile (preferences = default `kg`):
 
 ```sql
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -116,35 +116,35 @@ CREATE TRIGGER on_auth_user_created
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 ```
 
-Uwaga implementacyjna (#21): w starszych wersjach Postgres/Supabase składnia to `EXECUTE PROCEDURE`; CLI wygeneruje właściwą formę — zachować semantykę.
+Implementation note (#21): older Postgres/Supabase versions use `EXECUTE PROCEDURE`; the CLI will emit the right form — keep the semantics.
 
-## Polityki RLS
+## RLS policies
 
-RLS **włączone** na obu tabelach. Wzorzec: `auth.uid()` musi być równy właścicielowi wiersza.
+RLS **enabled** on both tables. Pattern: `auth.uid()` must equal the row owner.
 
 ### `profiles`
 
-| Operacja | Nazwa (propozycja) | Wyrażenie |
-|----------|-------------------|-----------|
+| Operation | Name (proposal) | Expression |
+|-----------|-----------------|------------|
 | SELECT | `profiles_select_own` | `USING (id = auth.uid())` |
 | INSERT | `profiles_insert_own` | `WITH CHECK (id = auth.uid())` |
 | UPDATE | `profiles_update_own` | `USING` + `WITH CHECK (id = auth.uid())` |
 | DELETE | `profiles_delete_own` | `USING (id = auth.uid())` |
 
-INSERT z klienta jest rzadki (trigger Auth); polityka i tak istnieje, żeby nie blokować świadomego upsertu przy edge case.
+Client INSERT is rare (Auth trigger); the policy still exists so a deliberate upsert is not blocked in edge cases.
 
 ### `measurements`
 
-| Operacja | Nazwa (propozycja) | Wyrażenie |
-|----------|-------------------|-----------|
+| Operation | Name (proposal) | Expression |
+|-----------|-----------------|------------|
 | SELECT | `measurements_select_own` | `USING (user_id = auth.uid())` |
 | INSERT | `measurements_insert_own` | `WITH CHECK (user_id = auth.uid())` |
 | UPDATE | `measurements_update_own` | `USING` + `WITH CHECK (user_id = auth.uid())` |
 | DELETE | `measurements_delete_own` | `USING (user_id = auth.uid())` |
 
-**Zasada dla przyszłych tabel użytkownika:** te same cztery polityki na `user_id` (lub `id` dla `profiles`), migracja **razem** z RLS — [data-and-sync](../architecture/data-and-sync.md#row-level-security-rls).
+**Rule for future user tables:** the same four policies on `user_id` (or `id` for `profiles`), migration **together** with RLS — [data-and-sync](../architecture/data-and-sync.md#row-level-security-rls).
 
-## Diagram (zakres tej migracji)
+## Diagram (this migration’s scope)
 
 ```mermaid
 erDiagram
@@ -167,29 +167,29 @@ erDiagram
   }
 ```
 
-## Smoke po apply (#21) — checklista
+## Smoke after apply (#21) — checklist
 
-Nie część tego PR (docs only). Po wdrożeniu SQL na `dev`:
+Not part of this PR (docs only). After SQL is deployed on `dev`:
 
-1. Utwórz użytkownika testowego (Dashboard Auth lub OAuth gdy #12 gotowe).
-2. Potwierdź automatyczny wiersz w `profiles` (`id` = user, `preferred_units` = `kg`).
-3. Jako ten JWT: INSERT/SELECT/UPDATE/DELETE własnego `measurements` — OK.
-4. Jako inny JWT: brak wierszy pierwszego użytkownika (SELECT puste; UPDATE/DELETE 0 rows).
-5. UPDATE `profiles.preferred_units` → `updated_at` zmienia się przez trigger.
-6. Usuń użytkownika w Auth → CASCADE usuwa `profiles` + `measurements`.
+1. Create a test user (Auth Dashboard or OAuth when #12 is ready).
+2. Confirm automatic `profiles` row (`id` = user, `preferred_units` = `kg`).
+3. As that JWT: INSERT/SELECT/UPDATE/DELETE own `measurements` — OK.
+4. As another JWT: no first user’s rows (SELECT empty; UPDATE/DELETE 0 rows).
+5. UPDATE `profiles.preferred_units` → `updated_at` changes via trigger.
+6. Delete user in Auth → CASCADE removes `profiles` + `measurements`.
 
-## Mapowanie na playbook / fazę 1
+## Mapping to playbook / phase 1
 
-| Artefakt | Rola |
+| Artifact | Role |
 |----------|------|
-| Ten spec + draft SQL | Output [#6](https://github.com/MarekBiolik/GymManager/issues/6) |
-| [phase-1 playbook](../plans/phase-1-scaffold-playbook.md) | #14 może iść bez apply; treść migracji = tu; apply = #21 |
-| [#21](https://github.com/MarekBiolik/GymManager/issues/21) | Skopiuj draft → `supabase/migrations/…sql`, apply na `dev`, CI lint |
+| This spec + draft SQL | Output of [#6](https://github.com/MarekBiolik/GymManager/issues/6) |
+| [phase-1 playbook](../plans/phase-1-scaffold-playbook.md) | #14 may proceed without apply; migration content = here; apply = #21 |
+| [#21](https://github.com/MarekBiolik/GymManager/issues/21) | Copy draft → `supabase/migrations/…sql`, apply on `dev`, CI lint |
 
-## Powiązane
+## Related
 
 - [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md)
-- [postgres-invariants](../architecture/postgres-invariants.md) — checklista RLS / CHECK przy migracjach
+- [postgres-invariants](../architecture/postgres-invariants.md) — RLS / CHECK checklist for migrations
 - [auth](../architecture/auth.md), [data-and-sync](../architecture/data-and-sync.md)
 - [data-model](../domain/data-model.md), [glossary](../domain/glossary.md)
-- [roadmap — faza 1](../roadmap.md)
+- [roadmap — phase 1](../roadmap.md)
