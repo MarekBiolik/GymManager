@@ -24,7 +24,7 @@ Zakres:
 - Struktura wg [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, root scripts
 - Web wyłącznie `supabase-js` — **bez** KMP→JS/Wasm ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md))
 - Podpięcie Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); sekrety lokalne / GitHub Secrets; dumpi → [#9](https://github.com/MarekBiolik/GymManager/issues/9)
-- Pierwsza migracja schematu wg specu [#6](https://github.com/MarekBiolik/GymManager/issues/6) (profiles + baseline RLS; #6 odblokowane po OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md) / [#5](https://github.com/MarekBiolik/GymManager/issues/5))
+- Pierwsza migracja schematu: **spec** [first-migration-profiles-rls](specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6)); **apply** = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (po OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md))
 - Szkielet CI na PR (Gradle core/android + pnpm web + testy core) — szczegóły w playbooku / [ci-cd](conventions/ci-cd.md)
 - Auth: **nie** pełny smoke OAuth w scaffoldzie; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12), login UI → faza 2
 
@@ -32,12 +32,12 @@ Zakres:
 
 1. Playbook zmergowany; [#14](https://github.com/MarekBiolik/GymManager/issues/14) zmergowane — drzewo buduje się lokalnie i na CI.
 2. `supabase/` + link do Cloud `dev`; brak sekretów w git.
-3. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) zmergowany i migracja SQL zgodna ze specem w repo + na `dev` ([#21](https://github.com/MarekBiolik/GymManager/issues/21)).
+3. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [docs/specs/first-migration-profiles-rls.md](specs/first-migration-profiles-rls.md) zmergowany i migracja SQL 1:1 ze specem w `supabase/migrations/` + na `dev` ([#21](https://github.com/MarekBiolik/GymManager/issues/21)).
 4. Brak targetu JS/Wasm w `core`; web nie konsumuje binary KMP.
 5. Follow-upy dump (#9) / IdP (#12) otwarte świadomie — nie blokują zamknięcia samego layoutu; #6+#21 blokują „faza 1 complete”.
 
-**Zamknięte przed startem kodu scaffoldu:** OQ-05 → ADR 0004; OQ-04 → ADR 0005; OQ-01 → ADR 0006; OQ-03 → ADR 0008; playbook #7.  
-**Nie blokuje startu pustego #14:** treść #6 (nadal OPEN) — sync OQ-03 już decided.
+**Zamknięte przed startem kodu scaffoldu:** OQ-05 → ADR 0004; OQ-04 → ADR 0005; OQ-01 → ADR 0006; OQ-03 → ADR 0008; playbook #7; spec migracji #6.  
+**Nie blokuje startu pustego #14:** apply SQL (#21) — treść schematu jest w specu; #14 trzyma `migrations/` puste do #21.
 
 ---
 
