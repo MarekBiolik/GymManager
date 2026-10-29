@@ -12,15 +12,17 @@
 
 Core **nie** zawiera widgetów, kolorów, nawigacji ani layoutu.
 
+Na **webie** (dzień 1) core **nie** jest linkowany jako binary — patrz [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md). Wspólne niezmienniki krytyczne dla web + mobile egzekwuj w Postgres (RLS / CHECK), nie przez ukrytą duplikację w TS.
+
 ## Targety kompilacji (zamierzone)
 
 | Target | Konsumowany przez |
 |--------|-------------------|
 | Android (JVM/Android) | `apps/android` |
 | iOS (framework / XCFramework) | `apps/ios` (Swift) |
-| JS / Wasm | `apps/web` — **warunkowo**, patrz [OQ-01](../open-questions.md) |
+| JS / Wasm | **nie w scope dnia 1** — web używa `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)); target możliwy dopiero po revisit |
 
-Android i iOS są ścieżką „pewną”. Web jest otwartym ryzykiem interop.
+Android i iOS są ścieżką „pewną”. Web **nie** jest automatycznym konsumentem binary core.
 
 ## Granica (seam) core ↔ UI
 
@@ -30,22 +32,25 @@ flowchart LR
   Facade["Publiczne API core\n(use-case, stany, komendy)"]
   Dom["Domena + repozytoria"]
   Supa["Supabase"]
-  UI --> Facade
+  UI -->|"Android / iOS"| Facade
   Facade --> Dom
   Dom --> Supa
+  UI -->|"Web: supabase-js\nADR 0006"| Supa
 ```
 
 **UI może:**
 
-- wywoływać publiczne API core (komendy, zapytania, obserwacja stanu),
-- mapować stan domenowy na widoki,
+- wywoływać publiczne API core (komendy, zapytania, obserwacja stanu) — **Android / iOS**,
+- na **webie**: wołać Supabase przez `supabase-js` zgodnie z [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md) (bez binary KMP),
+- mapować stan / wiersze na widoki,
 - obsługiwać platformowe uprawnienia i nawigację.
 
 **UI nie powinno:**
 
-- pisać SQL / wołać Supabase z pominięciem polityki projektu (wyjątek web możliwy dopiero po zamknięciu OQ-01),
-- zawierać reguł typu „jak liczyć makro dnia” czy „kiedy sesja jest kompletna”,
-- znać szczegółów RLS / schematu tabel.
+- omijać RLS ani używać `service_role` w kliencie,
+- zawierać reguł typu „jak liczyć makro dnia” czy „kiedy sesja jest kompletna” (także w TS na webie),
+- budować równoległej „domeny” poza core (mobile) / poza uzgodnionymi constraintami DB (web),
+- znać zbędnych szczegółów schematu poza kontraktem potrzebnym do mapowania UI.
 
 ## Proponowany podział pakietów (zarys, faza 1)
 
@@ -57,7 +62,7 @@ core/
   sync/            # kolejka offline, reconciler (po OQ-03)
 ```
 
-Moduł Gradle: pojedynczy `:core` w multi-project root (ew. późniejszy split na `:core:domain` / `:core:data` dopiero gdy zysk > koszt). Integracja i wersjonowanie: [ADR 0005](../decisions/0005-monorepo-tooling.md).
+Moduł Gradle: pojedynczy `:core` w multi-project root (ew. późniejszy split na `:core:domain` / `:core:data` dopiero gdy zysk > koszt). Integracja i wersjonowanie: [ADR 0005](../decisions/0005-monorepo-tooling.md). Scaffold **nie** dodaje targetu JS/Wasm, dopóki ADR 0006 nie zostanie zrevisited.
 
 ## Testowanie
 
@@ -65,4 +70,5 @@ Core jest **głównym miejscem testów jednostkowych** — reguły domenowe i us
 
 ## Decyzja
 
-Uzasadnienie wyboru KMP: [ADR 0001](../decisions/0001-shared-core-kmp.md).
+Uzasadnienie wyboru KMP: [ADR 0001](../decisions/0001-shared-core-kmp.md).  
+Interop web (bez KMP-JS na start): [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md).

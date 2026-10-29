@@ -10,7 +10,7 @@ Aplikacja ma działać na Androidzie, iOS i webie. Chcemy profesjonalnego utrzym
 
 ## Decyzja
 
-Budujemy wspólny moduł **`core` w Kotlin Multiplatform (KMP)** z regułami domenowymi, use-case'ami i dostępem do danych (Supabase). Android i iOS konsumują core natywnie; sposób konsumpcji na webie pozostaje otwarty ([OQ-01](../open-questions.md)).
+Budujemy wspólny moduł **`core` w Kotlin Multiplatform (KMP)** z regułami domenowymi, use-case'ami i dostępem do danych (Supabase). Android i iOS konsumują core natywnie; web na dzień 1 **nie** linkuje binary KMP — `supabase-js` + cienka TS ([ADR 0006](0006-web-supabase-js-without-kmp-js.md), zamyka OQ-01).
 
 ## Alternatywy rozważone
 
@@ -22,11 +22,11 @@ Budujemy wspólny moduł **`core` w Kotlin Multiplatform (KMP)** z regułami dom
 ## Konsekwencje
 
 - Pozytywne: jedna implementacja reguł; testy jednostkowe w core; Android integruje się najtaniej.
-- Negatywne: trzeba utrzymać toolchain KMP + bindingi Swift; web interop to realne ryzyko (OQ-01).
-- Później: scaffolding `core/`, publiczne API use-case'ów, decyzja web.
+- Negatywne: trzeba utrzymać toolchain KMP + bindingi Swift; web bez shared binary wymaga dyscypliny domenowej (ADR 0006).
+- Później: scaffolding `core/`, publiczne API use-case'ów; revisit KMP-JS tylko wg kryteriów ADR 0006.
 
 ## Powiązane
 
 - [shared-core](../architecture/shared-core.md)
 - [ADR 0003](0003-native-ui-per-platform.md)
-- [OQ-01](../open-questions.md)
+- [ADR 0006](0006-web-supabase-js-without-kmp-js.md) (OQ-01)

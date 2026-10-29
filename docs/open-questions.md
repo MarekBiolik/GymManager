@@ -8,16 +8,16 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 
 ## OQ-01 — Interop web ↔ wspólny core (KMP)
 
-**Status:** open  
+**Status:** decided — [ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)  
 **Dlaczego ważne:** KMP naturalnie spina Android i iOS; web (JS/Wasm) jest trudniejszy. Złe rozwiązanie = duplikacja logiki domenowej albo kruchy interop.
 
-**Opcje (zarys):**
+**Decyzja (dzień 1):** opcja **B** — web → `supabase-js` + cienka TS; **bez** KMP→JS/Wasm w scaffoldzie. Guardraile i warunki revisit: ADR 0006 + [clients](architecture/clients.md) / [shared-core](architecture/shared-core.md).
+
+**Opcje (rozważone):**
 
 1. Core skompilowany do JS/Wasm, konsumowany przez React/TS.
-2. Web gada wprost do Supabase przez `supabase-js`; cienka logika w TS (ryzyko duplikacji względem core).
+2. Web gada wprost do Supabase przez `supabase-js`; cienka logika w TS (ryzyko duplikacji względem core) — **wybrane na start**.
 3. Hybryda: domena/walidacje w shared (jeśli możliwe), networking web osobno.
-
-**Zamyka:** przed lub w fazie 1 (scaffolding) / najpóźniej fazie 2.
 
 ---
 
