@@ -141,6 +141,7 @@ Area env + skill packages are tracked under the [Issue map](#issue-map).
 | Android (Compose) | `.cursor/skills/android-compose/` (env: `references/env-checklist.md`) |
 | Web (React) | `.cursor/skills/web-react/` (env: `references/env-checklist.md`) |
 | iOS (SwiftUI, build-spec) | `.cursor/skills/ios-swiftui/` (env: `references/env-checklist.md`; runtime → #49) |
+| UI / UX | `.cursor/skills/ui-ux/` (contracts/a11y; design system ≠ done early) |
 
 ## Issue map
 
