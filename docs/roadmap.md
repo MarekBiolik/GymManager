@@ -26,7 +26,7 @@ Zakres:
 - Podpięcie Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); sekrety lokalne / GitHub Secrets; dumpi → [#9](https://github.com/MarekBiolik/GymManager/issues/9)
 - Pierwsza migracja schematu: **spec** [first-migration-profiles-rls](specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6)); **apply** = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (po OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md))
 - Szkielet CI na PR (Gradle core/android + pnpm web + testy core) — szczegóły w playbooku / [ci-cd](conventions/ci-cd.md)
-- Auth: **nie** pełny smoke OAuth w scaffoldzie; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12), login UI → faza 2
+- Auth: **nie** pełny smoke OAuth w scaffoldzie; IdP checklist [specs/idp-config-checklist.md](specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)), login UI → faza 2
 
 **Done when (przed startem głębokiego kodu fazy 2):**
 

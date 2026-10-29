@@ -18,7 +18,7 @@ Puste, **budujące się** projekty w monorepo + podpięty Supabase Cloud (`dev`)
 | Równoległa domena TypeScript w `apps/web` | ADR 0006 + [clients](../architecture/clients.md) |
 | Nx / Turborepo / publikacja core do rejestru | [ADR 0005](../decisions/0005-monorepo-tooling.md) |
 | Osobne `staging` / `prod` Cloud | [ADR 0004](../decisions/0004-supabase-hosting.md), [#10](https://github.com/MarekBiolik/GymManager/issues/10) |
-| Pełny Auth UI + IdP w apkach | Faza 2; checklista IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12) |
+| Pełny Auth UI + IdP w apkach | Faza 2; checklista konsol [idp-config-checklist](../specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)) |
 | Spec SQL pierwszej migracji (treść tabel/RLS) | [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6) — **wejście**, nie output #7/#14; apply = #21 |
 | Runbook dump/restore (operacyjny drill) | [#9](https://github.com/MarekBiolik/GymManager/issues/9) — po pojawieniu się `supabase/` |
 | Domains features (żywienie / trening / pomiary) | Fazy 3–5 |
@@ -208,7 +208,7 @@ Roadmapa wspomina „Auth smoke-test”. W praktyce:
 | Element | Faza 1 (#14) | Później |
 |---------|--------------|---------|
 | Projekt Auth włączony w Supabase `dev` | opcjonalnie checkbox maintainer’a | — |
-| Konfiguracja Google/Apple IdP | nie w #14 | [#12](https://github.com/MarekBiolik/GymManager/issues/12) + faza 2 |
+| Konfiguracja Google/Apple IdP | nie w #14 | [idp-config-checklist](../specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)) + UI w fazie 2 |
 | Login UI / hello sync | nie | faza 2 |
 
 Nie blokuj merge scaffoldu na działającym OAuth.
@@ -234,7 +234,7 @@ Faza 1 jest **zamknięta**, gdy:
 | [#21](https://github.com/MarekBiolik/GymManager/issues/21) | Implementacja / apply migracji ze specu #6 |
 | [#5](https://github.com/MarekBiolik/GymManager/issues/5) | Done — OQ-03 → ADR 0008; odblokowuje treść #6 |
 | [#9](https://github.com/MarekBiolik/GymManager/issues/9) | Runbook dump po `supabase/` z #14 (nie po samym #7) |
-| [#12](https://github.com/MarekBiolik/GymManager/issues/12) | IdP — po scaffoldzie, przed pełnym auth w fazie 2 |
+| [#12](https://github.com/MarekBiolik/GymManager/issues/12) | [Checklista IdP](../specs/idp-config-checklist.md) — po scaffoldzie, przed pełnym auth w fazie 2 |
 
 ## Powiązane
 

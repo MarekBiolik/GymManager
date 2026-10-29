@@ -101,11 +101,19 @@ Zarys na poziomie spec (implementacja w fazie auth/scaffold — osobny follow-up
 
 Hosting projektu, środowiska i pełna polityka sekretów: [ADR 0004](../decisions/0004-supabase-hosting.md), [data-and-sync](data-and-sync.md#hosting-i-backupy).
 
-## Platformy — checklista konfiguracji (scaffold)
+## Platformy — checklista konfiguracji IdP
 
-- **Android / web:** Google Cloud OAuth client + redirect URI Supabase.
-- **iOS:** Google + Apple (Service ID / capability Sign in with Apple, URL schemes / entitlements).
-- Sesja logicznie współdzielona przez to samo konto Supabase → sync danych ([data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
+Pełna checklista konsol (Google Cloud, Apple Developer, redirect URI / deep link, mapa sekretów): **[specs/idp-config-checklist.md](../specs/idp-config-checklist.md)** ([#12](https://github.com/MarekBiolik/GymManager/issues/12)).
+
+Skrót (zgodny z ADR 0007):
+
+| Klient | IdP MVP | Konsola |
+|--------|---------|---------|
+| Android | Google | OAuth client Android (package + SHA-1) + Web client secret w Supabase |
+| iOS | Google + Sign in with Apple | Google iOS client; Apple App ID + Services ID + key `.p8` |
+| Web | Google | OAuth Web client; Site URL + Additional Redirect URLs |
+
+Sesja logicznie współdzielona przez to samo konto Supabase → sync danych ([data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
 
 ## Poza zakresem teraz
 

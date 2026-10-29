@@ -31,14 +31,16 @@ Opcje z [OQ-02](../open-questions.md): Google OAuth, Sign in with Apple, magic l
 ## Konsekwencje
 
 - Pozytywne: jasny happy path na trzech klientach; zgodność z App Store; spójne z minimum PII i ADR 0002; mało własnej logiki auth.
-- Negatywne: email w Auth (kompromis vs „zero PII”); konfiguracja Google Cloud + Apple Developer + redirect URI przy scaffoldingu; na iOS dwa przyciski logowania.
-- Później: checklista konsol IdP przy scaffoldzie; implementacja usuwania konta (SQL cascade / Edge Function); ewentualne linkowanie IdP gdy użytkownik ma osobne konta Google i Apple.
+- Negatywne: email w Auth (kompromis vs „zero PII”); konfiguracja Google Cloud + Apple Developer + redirect URI przed fazą 2; na iOS dwa przyciski logowania.
+- Checklista konsol IdP (Google / Apple / redirecty Supabase, mapa sekretów): [specs/idp-config-checklist.md](../specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)) — docs only; bez kodu SDK.
+- Później: implementacja logowania w klientach (faza 2); usuwanie konta (SQL cascade / Edge Function — [#13](https://github.com/MarekBiolik/GymManager/issues/13)); ewentualne linkowanie IdP gdy użytkownik ma osobne konta Google i Apple.
 
 ## Powiązane
 
 - [auth](../architecture/auth.md)
+- [Checklista IdP — Google + Apple + redirects](../specs/idp-config-checklist.md)
 - [OQ-02](../open-questions.md) (decided)
 - [ADR 0002](0002-backend-supabase.md)
 - [data-model — profiles](../domain/data-model.md)
 - [Spec pierwszej migracji — profiles](../specs/first-migration-profiles-rls.md)
-- Follow-upy: IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12), usuwanie konta [#13](https://github.com/MarekBiolik/GymManager/issues/13), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21)
+- Follow-upy: usuwanie konta [#13](https://github.com/MarekBiolik/GymManager/issues/13), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21)

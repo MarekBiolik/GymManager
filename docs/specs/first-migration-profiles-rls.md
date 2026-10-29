@@ -20,7 +20,7 @@ Ten dokument jest **jedynym źródłem prawdy** dla treści pierwszej migracji. 
 |---------------|--------|
 | Apply / `supabase db push` | [#21](https://github.com/MarekBiolik/GymManager/issues/21) |
 | Pusty scaffold monorepo | [#14](https://github.com/MarekBiolik/GymManager/issues/14) |
-| Auth UI / IdP Google+Apple | [#12](https://github.com/MarekBiolik/GymManager/issues/12), faza 2 |
+| Auth UI / IdP Google+Apple | [idp-config-checklist](idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)), UI faza 2 |
 | Pełne usuwanie konta (Edge Function, UI) | [#13](https://github.com/MarekBiolik/GymManager/issues/13); tu tylko `ON DELETE CASCADE` |
 | `foods`, `food_entries`, `exercises`, `sessions`, `sets`, `tags` | fazy 3–5; ten sam wzorzec RLS + `updated_at` |
 | Tombstone / soft-delete | poza MVP ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
