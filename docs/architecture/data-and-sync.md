@@ -153,7 +153,7 @@ Zasady:
 **Free (obecny plan):**
 
 - Dashboard **nie udostępnia** automatycznych daily backupów do restore (to Pro+).
-- **Okresowy dump logiczy** poza Cloud: `supabase db dump` (lub równoważny `pg_dump`) — minimum przed ryzykowaną migracją i regularnie gdy w `dev` są dane warte odzyskania.
+- **Okresowy dump logiczy** poza Cloud: `supabase db dump` (lub równoważny `pg_dump`) — minimum przed ryzykowaną migracją i regularnie gdy w `dev` są dane warte odzyskania. Procedura: [runbook dump/restore](../runbooks/supabase-dump-restore.md).
 - Dump + pliki migracji w git = ścieżka odtworzenia schematu; dump z danymi = odtworzenie zawartości.
 - Po pauzie Free: odpauzowanie w dashboardzie; dane projektu pozostają, ale bez własnych dumpów nie mamy niezależnej kopii.
 
@@ -166,7 +166,7 @@ Zasady:
 
 1. Preferuj odtworzenie schematem z `supabase/migrations/` + ponowne załadowanie danych z dumpa.
 2. Na Pro: restore z daily backup w dashboardzie według dokumentacji Supabase.
-3. Drill restore (ćwiczenie na pustym projekcie) — follow-up [#9](https://github.com/MarekBiolik/GymManager/issues/9); nie blokuje decyzji hostingu.
+3. Komendy dump/restore, checklista przed migracją, miejsce przechowywania dumpów (bez PII w git) i minimalny drill: [runbook dump/restore](../runbooks/supabase-dump-restore.md) ([#9](https://github.com/MarekBiolik/GymManager/issues/9)).
 4. Split `staging` / `prod` — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) przed publiczną betą.
 
 ### Exit path

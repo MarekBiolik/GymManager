@@ -149,7 +149,7 @@ Wykonuj **w tej kolejności**. Każdy krok ma własny Definition of Done. Prefer
    - [ ] Projekt `dev` istnieje i nie jest spauzowany
    - [ ] URL + anon w lokalnym `.env*`
    - [ ] `service_role` tylko w menedżerze haseł / nigdy w repo
-   - [ ] Przed ryzykowną migracją: dump (szczegóły → #9)
+   - [ ] Przed ryzykowną migracją: dump ([runbook](../runbooks/supabase-dump-restore.md); #9)
 5. **Migracja SQL:** treść ze [specu #6](../specs/first-migration-profiles-rls.md); pliki w `supabase/migrations/` lądują w [#21](https://github.com/MarekBiolik/GymManager/issues/21), nie ad-hoc w #14.
 
 **Done when:** `supabase/` w repo; link do `dev` udokumentowany; sekrety poza gitem; `migrations/` puste albo już 1:1 ze specu jeśli #21 zrobione w tym samym torze.

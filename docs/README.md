@@ -12,6 +12,10 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 
 - [Faza 1 — playbook scaffoldu monorepo](plans/phase-1-scaffold-playbook.md) — kolejność, done criteria, CI, Supabase `dev`; implementacja = issue #14
 
+## Runbooki operatorskie
+
+- [Dump i restore Supabase (Free)](runbooks/supabase-dump-restore.md) — okresowy `db dump`, brak PII w git, drill restore ([ADR 0004](decisions/0004-supabase-hosting.md), [#9](https://github.com/MarekBiolik/GymManager/issues/9))
+
 ## Architektura
 
 - [Przegląd](architecture/overview.md) — high-level, diagram, struktura repo

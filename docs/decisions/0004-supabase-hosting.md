@@ -28,13 +28,15 @@ Siły: koszt (idealnie $0 na start), zero VPS/patchowania, exit path przez SQL, 
 
 - Pozytywne: decyzja gotowa pod fazę 1; niski koszt; słabszy lock-in (SQL); jasna ścieżka upgrade i przyszłego split środowisk.
 - Negatywne / koszty: na Free trzeba **samemu** dumpować; projekt Free może zostać wstrzymany przy bezczynności — po pauzie trzeba go odpauzować przed pracą; limit 2 projektów Free.
-- Doprecyzować później: checklista provisioningu projektu + drill restore przy scaffoldzie; split staging/prod przy becie; PITR gdy RPO < 1 dzień stanie się wymaganiem.
-- Follow-upy: [#9 runbook dump/restore](https://github.com/MarekBiolik/GymManager/issues/9), [#10 split staging/prod](https://github.com/MarekBiolik/GymManager/issues/10).
+- Operacyjny dump/restore na Free: [runbook dump/restore](../runbooks/supabase-dump-restore.md) ([#9](https://github.com/MarekBiolik/GymManager/issues/9)).
+- Doprecyzować później: checklista provisioningu projektu przy scaffoldzie; split staging/prod przy becie; PITR gdy RPO < 1 dzień stanie się wymaganiem.
+- Follow-upy: [#10 split staging/prod](https://github.com/MarekBiolik/GymManager/issues/10).
 
 ## Powiązane
 
 - [OQ-05](../open-questions.md) (decided)
 - [data-and-sync](../architecture/data-and-sync.md) — sekcja Hosting i backupy
+- [Runbook: dump i restore Supabase (Free)](../runbooks/supabase-dump-restore.md)
 - [auth](../architecture/auth.md) — klucze / sekrety
 - [tech-stack](../architecture/tech-stack.md)
 - [ci-cd](../conventions/ci-cd.md)
