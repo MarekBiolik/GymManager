@@ -19,7 +19,7 @@ Złe narzędzie = podwójne systemy buildu bez jasnej granicy albo przedwczesna 
 **Hybrydowe monorepo bez Nx/Turborepo:**
 
 1. **Gradle multi-project** obejmuje `core/` (KMP) oraz `apps/android/` (Compose). iOS konsumuje artefakt KMP (XCFramework / lokalny SPM) budowany z tego samego Gradle; projekt Xcode żyje w `apps/ios/`.
-2. **`apps/web/`** to osobny workspace **pnpm** + Vite + React/TS — poza drzewem Gradle. Integracja z core zależy od [OQ-01](../open-questions.md); do czasu zamknięcia OQ-01 web nie publikuje własnej logiki domenowej „na skróty”.
+2. **`apps/web/`** to osobny workspace **pnpm** + Vite + React/TS — poza drzewem Gradle. Web → Supabase przez `supabase-js`, **bez** KMP→JS/Wasm ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)); bez równoległej domeny TS.
 3. **Root** trzyma cienkie skrypty orkiestracji (`package.json` / Makefile / skrypty w `scripts/`) wywołujące Gradle, pnpm i CLI Supabase — bez drugiego „meta-buildera”.
 4. **Wersjonowanie `core`:** do czasu osobnej publikacji biblioteki core jest **source-linked w tym samym commicie** co klienci (zależność projektowa Gradle / lokalny framework). SemVer dla core + ewentualna publikacja Maven/SPM — dopiero gdy pojawi się potrzeba zewnętrznego konsumenta lub niezależnego cyklu release; do tego wystarczy plik `core/VERSION` (lub `gradle.properties`) synchronizowany przy tagach release produktu. Numery buildów store (Android `versionCode`, iOS `CFBundleVersion`) i deploy web są **niezależne** od SemVer core.
 
@@ -37,17 +37,18 @@ Docelowe drzewo i odpowiedzialności: [overview](../architecture/overview.md). S
 
 - Pozytywne: jasny podział toolchainów; Android i core dzielą jeden Gradle; web zachowuje dojrzały DX; root scripts wystarczą do „build all” / CI; brak vendor lock-in w Nx.
 - Negatywne / koszty: dwa (trzy z Xcode) systemy buildu do nauczenia; skrypty root trzeba utrzymywać ręcznie; iOS wymaga kroku eksportu frameworka z Gradle przed/obok Xcode.
-- Później: OQ-01 (jak web bierze core — artifact JS/Wasm vs inne); playbook scaffoldu ([issue #7](https://github.com/MarekBiolik/GymManager/issues/7)); SemVer/publikacja core tylko gdy zajdzie potrzeba; ewentualnie Turborepo wyłącznie pod web.
+- Później: revisit KMP→JS/Wasm tylko wg warunków w ADR 0006; SemVer/publikacja core tylko gdy zajdzie potrzeba; ewentualnie Turborepo wyłącznie pod web.
+- Playbook scaffoldu: [phase-1-scaffold-playbook](../plans/phase-1-scaffold-playbook.md) ([issue #7](https://github.com/MarekBiolik/GymManager/issues/7)); implementacja [#14](https://github.com/MarekBiolik/GymManager/issues/14).
 
 ### Scope pierwszej implementacji scaffold (faza 1) vs później
 
 | W scope pierwszego scaffoldu | Świadomie później |
 |------------------------------|-------------------|
 | Root: `settings.gradle.kts` / wrapper, skrypty `build`/`test`/`lint` | Nx / Turborepo |
-| `core/` jako moduł KMP (Android + iOS targets; JS/Wasm wg OQ-01) | Publikacja core do rejestru zewnętrznego |
+| `core/` jako moduł KMP (**tylko** Android + iOS targets; **bez** JS/Wasm) | Target JS/Wasm / publikacja core do rejestru |
 | `apps/android/` zależny od `:core` | Niezależne wersjonowanie core vs klientów |
 | `apps/ios/` Xcode project + instrukcja podpięcia frameworka | Pełny SPM package distribution |
-| `apps/web/` pnpm + Vite (UI skeleton; wiring core po OQ-01) | Monorepo JS z wieloma paczkami |
+| `apps/web/` pnpm + Vite + `supabase-js` (bez binary KMP) | Monorepo JS z wieloma paczkami; konsumpcja core z weba |
 | `supabase/` CLI config + miejsce na migracje | Multi-environment release automation |
 | `docs/` (już istnieje) | — |
 | `core/VERSION` lub wpis w `gradle.properties` (placeholder) | Store release / tag policy (faza 6) |

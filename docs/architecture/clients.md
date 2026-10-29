@@ -13,7 +13,7 @@ Każdy klient to **cienka warstwa UI** nad wspólnym core (na webie: cienkie UI 
 
 - UI: SwiftUI
 - Język: Swift
-- Integracja z core: XCFramework / lokalny SPM wygenerowany z KMP (ten sam commit co app; szczegóły kroków w playbooku scaffoldu)
+- Integracja z core: XCFramework / lokalny SPM wygenerowany z KMP (ten sam commit co app; kroki: [playbook fazy 1](../plans/phase-1-scaffold-playbook.md))
 - Odpowiedzialność lokalna: nawigacja SwiftUI, Keychain (jeśli tokeny poza SDK), signing, App Store
 - Auth: przy publikacji z Google Sign-In App Store wymaga też **Sign in with Apple** — patrz [auth](auth.md)
 
@@ -45,7 +45,7 @@ Wspólne niezmienniki potrzebne web + mobile → preferuj **Postgres (RLS / CHEC
 
 1. Brak tajemnic w repo (klucze Supabase anon + URL OK w kliencie; service role nigdy).
 2. Stan użytkownika (zalogowany / dane): mobile z core; web z sesji `supabase-js` / uzgodnionego kontraktu auth ([ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)).
-3. Feature flags / środowisko (dev/staging/prod) — konwencja w fazie 1.
+3. Feature flags / środowisko (`dev` day one; staging/prod później) — [playbook fazy 1](../plans/phase-1-scaffold-playbook.md), [ADR 0004](../decisions/0004-supabase-hosting.md).
 4. Minimalny „hello”: login + odczyt/zapis jednej encji chronionej RLS (online-first + read cache — [ADR 0008](../decisions/0008-sync-strategy-online-first.md)) — cel fazy 2.
 
 ## Poza zakresem UI (na teraz)

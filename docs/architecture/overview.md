@@ -63,7 +63,7 @@ GymManager/
 | `docs/` | Wizja, architektura, ADR, konwencje | — |
 | Root scripts | `build` / `test` / `lint` łączące toolchainy | pnpm / shell |
 
-**Nie** wprowadzamy Nx/Turborepo na start. Scaffolding katalogów kodu — **faza 1** (roadmap); ten dokument opisuje docelowy układ, nie tworzy jeszcze folderów aplikacji.
+**Nie** wprowadzamy Nx/Turborepo na start. Scaffolding katalogów kodu — **faza 1**; kolejność i done criteria: [playbook](../plans/phase-1-scaffold-playbook.md); ten dokument opisuje docelowy układ, nie tworzy jeszcze folderów aplikacji.
 
 ## Zasady architektoniczne
 
