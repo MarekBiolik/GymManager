@@ -8,6 +8,10 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 2. [Roadmapa](roadmap.md) — fazy pracy i kiedy precyzujemy poszczególne obszary
 3. [Otwarte pytania](open-questions.md) — obszary do doprecyzowania w kolejnych iteracjach
 
+## Plany (playbooki faz)
+
+- [Faza 1 — playbook scaffoldu monorepo](plans/phase-1-scaffold-playbook.md) — kolejność, done criteria, CI, Supabase `dev`; implementacja = issue #14
+
 ## Architektura
 
 - [Przegląd](architecture/overview.md) — high-level, diagram, struktura repo

@@ -2,31 +2,42 @@
 
 Fazy pracy. Każda faza kończy się aktualizacją dokumentacji (lub ADR), zanim idzie głęboko w kod.
 
-## Faza 0 — Fundamenty dokumentacji (obecna)
+## Faza 0 — Fundamenty dokumentacji
 
 **Cel:** zarys wizji, architektury, domeny, konwencji i listy otwartych pytań.
 
 **Output:** katalog `docs/` (ten zestaw dokumentów).
 
-**Done when:** ADR-y 0001–0003 przyjęte; open-questions wypisane; konwencje bazowe istnieją.
+**Status:** done — ADR 0001–0003 (+ późniejsze 0004–0007 w iteracjach OQ); open-questions i konwencje bazowe istnieją.
 
 ---
 
 ## Faza 1 — Scaffolding monorepo i infrastruktury
 
-**Cel:** puste, budujące się projekty + podpięty Supabase (dev) + CI szkielet.
+**Cel:** puste, budujące się projekty + podpięty Supabase (`dev`) + CI szkielet.
 
-Zakres (do precyzowania przed startem):
+**Playbook (kolejność, done per krok, non-goals):** [plans/phase-1-scaffold-playbook.md](plans/phase-1-scaffold-playbook.md) — zamyka [#7](https://github.com/MarekBiolik/GymManager/issues/7).  
+**Implementacja kodu:** [#14](https://github.com/MarekBiolik/GymManager/issues/14) (nie ten dokument).
+
+Zakres:
 
 - Struktura wg [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, root scripts
-- Pierwsza migracja schematu (minimalna: `profiles` + 1–2 tabele domenowe)
-- Auth smoke-test (Google; Apple na iOS gdy App Store)
-- Podpięcie projektu Supabase Cloud (`dev`) wg [ADR 0004](decisions/0004-supabase-hosting.md); pierwsze sekrety lokalne + checklista dumpów
-- Playbook kolejności scaffoldu (issue #7) — docs przed tworzeniem folderów kodu
-- Web bez KMP→JS/Wasm w scaffoldzie ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md) — `supabase-js`)
+- Web wyłącznie `supabase-js` — **bez** KMP→JS/Wasm ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md))
+- Podpięcie Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); sekrety lokalne / GitHub Secrets; dumpi → [#9](https://github.com/MarekBiolik/GymManager/issues/9)
+- Pierwsza migracja schematu wg specu [#6](https://github.com/MarekBiolik/GymManager/issues/6) (profiles + baseline RLS; #6 odblokowane po OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md) / [#5](https://github.com/MarekBiolik/GymManager/issues/5))
+- Szkielet CI na PR (Gradle core/android + pnpm web + testy core) — szczegóły w playbooku / [ci-cd](conventions/ci-cd.md)
+- Auth: **nie** pełny smoke OAuth w scaffoldzie; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12), login UI → faza 2
 
-**Zależne open questions:** (brak blokujących OQ-01/04/05).  
-**Zamknięte przed scaffoldem:** hosting Supabase ([OQ-05](open-questions.md) → ADR 0004); monorepo ([OQ-04](open-questions.md) → ADR 0005); interop web↔core ([OQ-01](open-questions.md) → ADR 0006).
+**Done when (przed startem głębokiego kodu fazy 2):**
+
+1. Playbook zmergowany; [#14](https://github.com/MarekBiolik/GymManager/issues/14) zmergowane — drzewo buduje się lokalnie i na CI.
+2. `supabase/` + link do Cloud `dev`; brak sekretów w git.
+3. Spec [#6](https://github.com/MarekBiolik/GymManager/issues/6) zmergowany i migracja SQL zgodna ze specem w repo + na `dev` ([#21](https://github.com/MarekBiolik/GymManager/issues/21)).
+4. Brak targetu JS/Wasm w `core`; web nie konsumuje binary KMP.
+5. Follow-upy dump (#9) / IdP (#12) otwarte świadomie — nie blokują zamknięcia samego layoutu; #6+#21 blokują „faza 1 complete”.
+
+**Zamknięte przed startem kodu scaffoldu:** OQ-05 → ADR 0004; OQ-04 → ADR 0005; OQ-01 → ADR 0006; OQ-03 → ADR 0008; playbook #7.  
+**Nie blokuje startu pustego #14:** treść #6 (nadal OPEN) — sync OQ-03 już decided.
 
 ---
 
