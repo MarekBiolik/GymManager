@@ -30,7 +30,7 @@ Google przekazuje co najmniej email — to kompromis względem „zero informacj
 
 ## Przepływ (docelowy zarys)
 
-```mermaid
+``mermaid
 sequenceDiagram
   participant U as User
   participant App as Client UI
@@ -45,14 +45,16 @@ sequenceDiagram
   App->>Core: odczyt / zapis danych
   Core->>DB: request + JWT
   DB-->>Core: tylko wiersze user_id
-```
+``
 
 ## Role i klucze
 
 | Klucz | Gdzie | Do czego |
 |-------|-------|----------|
-| `anon` + project URL | Klienci | Publiczny dostęp ograniczony RLS |
-| `service_role` | Tylko zaufany backend / admin (jeśli kiedyś) | Omija RLS — **zakaz w apkach** |
+| `anon` + project URL | Klienci; lokalny `.env*` (nie w git) | Publiczny dostęp ograniczony RLS |
+| `service_role` | Tylko zaufany backend / admin (jeśli kiedyś); GitHub Secrets w CI | Omija RLS — **zakaz w apkach i w repo** |
+
+Hosting projektu, środowiska i pełna polityka sekretów: [ADR 0004](../decisions/0004-supabase-hosting.md), [data-and-sync](data-and-sync.md#hosting-i-backupy).
 
 ## Platformy
 
@@ -68,4 +70,4 @@ sequenceDiagram
 
 ## Zamknięcie tematu
 
-Przed fazą 2: decyzja OQ-02 → aktualizacja tego dokumentu + ewentualny ADR `0004-auth-method`.
+Przed fazą 2: decyzja OQ-02 → aktualizacja tego dokumentu + ewentualny ADR `0005-auth-method`.

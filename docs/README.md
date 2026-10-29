@@ -23,6 +23,7 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 - [ADR 0001 — Wspólny core: Kotlin Multiplatform](decisions/0001-shared-core-kmp.md)
 - [ADR 0002 — Backend: Supabase](decisions/0002-backend-supabase.md)
 - [ADR 0003 — Natywne UI per platforma](decisions/0003-native-ui-per-platform.md)
+- [ADR 0004 — Hosting Supabase i backupy](decisions/0004-supabase-hosting.md)
 
 ## Domena
 

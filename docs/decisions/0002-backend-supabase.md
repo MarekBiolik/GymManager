@@ -10,7 +10,7 @@ Potrzebujemy: miejsca na dane apki (historia rok+), sync między urządzeniami, 
 
 ## Decyzja
 
-Używamy **Supabase**: PostgreSQL + Auth + Row Level Security + Realtime + Storage. Klienci / core łączą się przez oficjalne / community SDK (`supabase-kt`, `supabase-js`). Hosting (cloud vs self-host) = [OQ-05](../open-questions.md).
+Używamy **Supabase**: PostgreSQL + Auth + Row Level Security + Realtime + Storage. Klienci / core łączą się przez oficjalne / community SDK (`supabase-kt`, `supabase-js`). Hosting Cloud Free → Pro, środowiska i backupy: [ADR 0004](0004-supabase-hosting.md).
 
 ## Alternatywy rozważone
 
@@ -28,7 +28,7 @@ Używamy **Supabase**: PostgreSQL + Auth + Row Level Security + Realtime + Stora
 
 - Pozytywne: mało własnej infra; RLS egzekwuje „dane tylko właściciela”; darmowy tier na start; ścieżka wyjścia przez SQL dump.
 - Negatywne: zależność od produktu Supabase Auth/API; community `supabase-kt` wymaga monitorowania dojrzałości; trzeba dyscypliny migracji + RLS przy każdej tabeli.
-- Później: OQ-02 (metoda logowania), OQ-03 (sync), OQ-05 (hosting/backupy).
+- Później: OQ-02 (metoda logowania), OQ-03 (sync). Hosting/backupy zamknięte w [ADR 0004](0004-supabase-hosting.md).
 
 ## Powiązane
 

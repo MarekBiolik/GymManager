@@ -20,14 +20,14 @@ Wszystkie tabele użytkownika mają `user_id` (UUID → `auth.users`) i polityki
 
 ## Row Level Security (RLS)
 
-```mermaid
+``mermaid
 flowchart LR
   Client["Klient + JWT"]
   API["Supabase API"]
   RLS["RLS policies"]
   DB["Postgres rows"]
   Client --> API --> RLS --> DB
-```
+``
 
 - Klucz `anon` w kliencie jest OK — bezpieczeństwo opiera się na RLS + JWT, nie na ukrywaniu URL.
 - Klucz `service_role` **nigdy** w aplikacjach klienckich ani w publicznym repo.
@@ -65,4 +65,61 @@ Pliki (np. zdjęcia opakowań / postęp) → Supabase Storage + RLS na bucketach
 
 ## Hosting i backupy
 
-[OQ-05](../open-questions.md) — cloud free tier vs self-host; polityka backupów przy wyborze środowiska.
+Decyzja: [ADR 0004](../decisions/0004-supabase-hosting.md) (zamyka [OQ-05](../open-questions.md)).
+
+### Hosting
+
+| Element | Na start | Upgrade path |
+|---------|----------|--------------|
+| Platforma | **Supabase Cloud** | — |
+| Plan | **Free** | **Pro** gdy: potrzebujemy dostępnych daily backupów, braku pauzy projektu, więcej DB/storage, albo dane „nie do odtworzenia z pamięci” |
+| Self-host | Nie | Opcja exit (Postgres dump → inny hosting), nie cel operacyjny |
+
+### Środowiska
+
+| Środowisko | Na start | Uwagi |
+|------------|----------|--------|
+| `dev` | **Jeden** projekt Cloud | Scaffolding, migracje, osobiste użycie trackera |
+| `local` | Opcjonalnie `supabase start` | Praca nad schematem offline; nie zastępuje `dev` jako źródła prawdy sync |
+| `staging` / `prod` | **Później** | Osobne projekty przy publicznej becie / wielu użytkownikach; prod zwykle na Pro |
+
+Free: max 2 aktywne projekty; pauza po ~1 tygodniu bezczynności — odpauzować przed pracą.
+
+### Sekrety
+
+| Sekret | Gdzie wolno | Gdzie zakaz |
+|--------|-------------|-------------|
+| Project URL + `anon` | Klienci, lokalny `.env*` | Commitowanie nie jest „wyciekiem RLS”, ale **nie** commitujemy `.env*` — URL/klucze per środowisko trzymamy poza gitem |
+| `service_role` | Wyłącznie lokalny admin / przyszły zaufany backend; GitHub Secrets w CI jeśli kiedyś potrzebne | Aplikacje klienckie, publiczne repo, logi CI |
+| OAuth client secrets (Google/Apple) | Dashboard Supabase Auth + (gdy trzeba) GitHub Secrets | Repo, klienci |
+
+Zasady:
+
+1. `.env`, `.env.local`, `.env.*.local` — w `.gitignore` (już na `master`).
+2. W dokumentacji i PR-ach: placeholdery (`YOUR_PROJECT_URL`), nigdy prawdziwe wartości.
+3. CI: GitHub Secrets; żadnych sekretów w logach builda — [ci-cd](../conventions/ci-cd.md).
+
+### Polityka backupów / restore
+
+**Free (obecny plan):**
+
+- Dashboard **nie udostępnia** automatycznych daily backupów do restore (to Pro+).
+- **Okresowy dump logiczy** poza Cloud: `supabase db dump` (lub równoważny `pg_dump`) — minimum przed ryzykowaną migracją i regularnie gdy w `dev` są dane warte odzyskania.
+- Dump + pliki migracji w git = ścieżka odtworzenia schematu; dump z danymi = odtworzenie zawartości.
+- Po pauzie Free: odpauzowanie w dashboardzie; dane projektu pozostają, ale bez własnych dumpów nie mamy niezależnej kopii.
+
+**Po upgrade do Pro:**
+
+- Daily backups (retencja 7 dni) w Dashboard → Database → Backups.
+- PITR (add-on) dopiero gdy RPO < ~1 dzień stanie się wymaganiem.
+
+**Restore (poziom scaffold):**
+
+1. Preferuj odtworzenie schematem z `supabase/migrations/` + ponowne załadowanie danych z dumpa.
+2. Na Pro: restore z daily backup w dashboardzie według dokumentacji Supabase.
+3. Drill restore (ćwiczenie na pustym projekcie) — follow-up [#9](https://github.com/MarekBiolik/GymManager/issues/9); nie blokuje decyzji hostingu.
+4. Split `staging` / `prod` — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) przed publiczną betą.
+
+### Exit path
+
+Dane w standardowym Postgresie → eksport SQL / dump → inny Postgres lub self-host Supabase. Auth/API Supabase to warstwa do przepisania przy pełnym wyjściu; sam model danych nie jest zamknięty w proprietarnym store.

@@ -52,10 +52,8 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 
 ## OQ-05 — Hosting Supabase i backupy
 
-**Status:** open  
-**Opcje:** Supabase Cloud (free tier → Pro) vs self-host na VPS. Polityka backupów, staging vs prod, sekrety.
-
-**Zamyka:** faza 1 (minimum: wybór środowiska deweloperskiego).
+**Status:** decided — [ADR 0004](decisions/0004-supabase-hosting.md), [data-and-sync](architecture/data-and-sync.md#hosting-i-backupy)  
+**Decyzja:** Supabase Cloud Free na start → Pro gdy potrzeba auto-backupów / braku pauzy; jeden projekt `dev` (+ opcjonalnie local CLI); sekrety poza repo; na Free okresowe `db dump`.
 
 ---
 

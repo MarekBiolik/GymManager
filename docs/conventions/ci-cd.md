@@ -24,7 +24,8 @@ PR nie przechodzi przy padającym buildzie core lub testach.
 ## Sekrety
 
 - W CI: secrets store (np. GitHub Secrets).
-- Rozdział `dev` / `staging` / `prod` project Supabase — docelowo (OQ-05).
+- Na start: jeden projekt Supabase Cloud = `dev` ([ADR 0004](../decisions/0004-supabase-hosting.md)). Osobne `staging` / `prod` przy publicznej becie.
+- `service_role` tylko w Secrets / lokalnym adminie — nigdy w klientach ani logach.
 - Żadnych sekretów w logach builda.
 
 ## OTA / hotfix
