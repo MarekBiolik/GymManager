@@ -93,7 +93,7 @@ Supabase Realtime jest **opcją** po „hello sync” (live refresh gdy drugie u
 
 Gdy trening/żywienie w trybie airplane stanie się wymaganiem: kolejka, idempotencja, tombstone’y, revisit konfliktów (możliwe reguły per typ encji) — **nowy ADR**, nie rozszerzanie „po cichu” tego dokumentu. Track: [#20](https://github.com/MarekBiolik/GymManager/issues/20).
 
-Kontrakt cache odczytu / hello sync (faza 2): [#19](https://github.com/MarekBiolik/GymManager/issues/19).
+Kontrakt cache odczytu / hello sync (faza 2): [specs/hello-sync-read-cache.md](../specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19)).
 
 ## Agregacje i historia
 

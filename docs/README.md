@@ -42,6 +42,7 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 ## Specyfikacje (SQL / migracje — draft)
 
 - [Pierwsza migracja: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL w `docs/specs/sql/` (**NOT APPLIED**)
+- [Hello sync / read-cache (faza 2)](specs/hello-sync-read-cache.md) — kontrakt klienta pod [ADR 0008](decisions/0008-sync-strategy-online-first.md); [#19](https://github.com/MarekBiolik/GymManager/issues/19); bez kodu aplikacji
 
 ## Konwencje
 

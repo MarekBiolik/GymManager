@@ -60,6 +60,8 @@ Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-withou
 | Zapis / update / delete | API + RLS; przy sukcesie update cache | **Odrzuć** z komunikatem; nie kolejkuj |
 | Logowanie / odświeżenie sesji | Jak auth.md | Bez ważnej sesji brak dostępu do danych chronionych |
 
+Operacyjny kontrakt klienta (zakres encji hello sync, klucze cache, invalidacja po mutacji / re-login, UX, podział `core` vs web): [specs/hello-sync-read-cache.md](../specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19)). Ten ADR pozostaje decyzją strategii; szczegóły smoke fazy 2 żyją w specu.
+
 ### Poza MVP (świadomie później)
 
 - Kolejka zapisów offline + idempotentne requesty
@@ -75,4 +77,5 @@ Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-withou
 - [ADR 0002](0002-backend-supabase.md), [ADR 0006](0006-web-supabase-js-without-kmp-js.md), [ADR 0007](0007-auth-providers-minimum-pii.md)
 - [data-model](../domain/data-model.md), [auth](../architecture/auth.md), [postgres-invariants](../architecture/postgres-invariants.md)
 - [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [spec pierwszej migracji](../specs/first-migration-profiles-rls.md) — profiles + RLS + `updated_at`; apply [#21](https://github.com/MarekBiolik/GymManager/issues/21)
-- Follow-upy: [#19 kontrakt read-cache / hello sync](https://github.com/MarekBiolik/GymManager/issues/19), [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)
+- Kontrakt read-cache / hello sync: [specs/hello-sync-read-cache.md](../specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19))
+- Follow-up: [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)

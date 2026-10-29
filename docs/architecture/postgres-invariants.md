@@ -92,7 +92,7 @@ Unikaj triggerów z bogatą logiką biznesową („kompletność sesji”, polit
 
 - Use-case’y, orkiestracja repozytoriów, mapowanie DTO ↔ domena.
 - Walidacje bogate / wielo-krokowe (np. „sesja kompletna”, reguły agregacji przed zapisem wielu wierszy).
-- Cache odczytu / invalidacja ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) — **nie** druga SoT.
+- Cache odczytu / invalidacja ([ADR 0008](../decisions/0008-sync-strategy-online-first.md); kontrakt: [hello-sync-read-cache](../specs/hello-sync-read-cache.md)) — **nie** druga SoT.
 - Komunikaty błędów domenowych pod UI natywne.
 
 Core **nie** zastępuje RLS. Nawet poprawny core musi pisać przez JWT + RLS.

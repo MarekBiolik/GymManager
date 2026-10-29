@@ -47,6 +47,7 @@ Jednoznaczne nazwy używane w docs, ADR, kodzie i schemacie. Nowe pojęcia dopis
 | **Source of truth** | Postgres; lokalny cache odczytu jest wtórny |
 | **LWW** | Last-write-wins — konflikt wiersza rozstrzyga późniejszy `updated_at` |
 | **Read cache** | Lokalna kopia odczytanych wierszy; nie kolejka zapisów offline |
+| **Hello sync** | Smoke fazy 2: login + odczyt/zapis `profiles` / `measurements` online-first + read cache ([spec](../specs/hello-sync-read-cache.md)) |
 
 ## Unikać
 
