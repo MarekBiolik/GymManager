@@ -52,7 +52,7 @@ Scope:
 - Sync per [ADR 0008](decisions/0008-sync-strategy-online-first.md): online writes + read cache + LWW; thin “hello sync” UI — contract [hello-sync-read-cache](specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19))
 - Shared repositories in core (mobile) + equivalent `supabase-js` calls (web)
 
-**Dependent open questions:** (no blocking OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web stays on `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); offline-write parity with core only on revisit / a separate ADR.
+**Dependent open questions:** (no blocking OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web stays on `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); offline-write parity with core only on revisit / [offline-write-queue](specs/offline-write-queue.md) ([#20](https://github.com/MarekBiolik/GymManager/issues/20)).
 
 ---
 

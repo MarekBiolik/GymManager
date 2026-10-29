@@ -50,6 +50,7 @@ Project documentation index. These documents are the source of truth for archite
 - [Supabase staging/prod environment split](specs/supabase-staging-prod-split.md) — SPEC ONLY ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); aligns with [ADR 0004](decisions/0004-supabase-hosting.md); no Dashboard provisioning in this ticket
 - [IdP checklist: Google + Apple + Supabase redirects](specs/idp-config-checklist.md) — docs only ([#12](https://github.com/MarekBiolik/GymManager/issues/12)); no SDK code / secrets
 - [Hello sync / read-cache (phase 2)](specs/hello-sync-read-cache.md) — client contract under [ADR 0008](decisions/0008-sync-strategy-online-first.md); [#19](https://github.com/MarekBiolik/GymManager/issues/19); no application code
+- [Offline-write queue and conflict revisit](specs/offline-write-queue.md) — SPEC ONLY; **post-MVP** / not phase 1 ([#20](https://github.com/MarekBiolik/GymManager/issues/20)); no implementation now
 
 ## Conventions
 
