@@ -51,7 +51,8 @@ Wymaga konta **Apple Developer Program** (publikacja App Store).
 | Supabase Auth | Logowanie (kierunek: Google + Apple na iOS) |
 | SQL migrations w `supabase/` | Schemat jako kod |
 
-Decyzja: [ADR 0002](../decisions/0002-backend-supabase.md). Hosting: [OQ-05](../open-questions.md).
+Decyzja backendu: [ADR 0002](../decisions/0002-backend-supabase.md).
+Hosting / środowiska / backupy: [ADR 0004](../decisions/0004-supabase-hosting.md) (Cloud Free → Pro; szczegóły w [data-and-sync](data-and-sync.md#hosting-i-backupy)).
 
 ## Narzędzia projektowe (zarys)
 

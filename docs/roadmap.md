@@ -22,9 +22,10 @@ Zakres (do precyzowania przed startem):
 - Narzędzia monorepo / wersjonowanie (open question)
 - Pierwsza migracja schematu (minimalna: `profiles` + 1–2 tabele domenowe)
 - Auth smoke-test (Google; Apple na iOS gdy App Store)
-- Decyzja hostingu Supabase (cloud free vs self-host)
+- Podpięcie projektu Supabase Cloud (`dev`) wg [ADR 0004](decisions/0004-supabase-hosting.md); pierwsze sekrety lokalne + checklista dumpów
 
-**Zależne open questions:** monorepo tooling, hosting Supabase, interop web↔core.
+**Zależne open questions:** monorepo tooling, interop web↔core.  
+**Zamknięte przed scaffoldem infra:** hosting Supabase ([OQ-05](open-questions.md) → ADR 0004).
 
 ---
 
