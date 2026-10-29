@@ -63,6 +63,7 @@ Project documentation index. These documents are the source of truth for archite
 - [Git workflow](conventions/git-workflow.md)
 - [Testing](conventions/testing.md)
 - [CI/CD](conventions/ci-cd.md)
+- [Agent development environment and delivery flow](conventions/agent-dev-environment.md) — areas, core-first → parallel platforms → test; Cursor-native orchestration; simulator strategy
 
 ## Documentation working rules
 
