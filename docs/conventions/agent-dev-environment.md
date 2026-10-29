@@ -131,7 +131,12 @@ Inspired by an external multi-platform agent write-up (PilcrowMD-style org), kep
 | `.cursor/rules/english-public-artifacts.mdc` | English for public artifacts |
 | `.cursor/rules/docs-current-state.mdc` | Docs = current state |
 
-Area env + skill packages are tracked under the [Issue map](#issue-map). Orchestration skill (when present): `.cursor/skills/platform-delivery/` + rule `.cursor/rules/platform-delivery.mdc`.
+Area env + skill packages are tracked under the [Issue map](#issue-map).
+
+| Skill / rule | Path |
+|--------------|------|
+| Orchestration | `.cursor/skills/platform-delivery/` + `.cursor/rules/platform-delivery.mdc` |
+| Core (KMP) | `.cursor/skills/core-kmp/` (env: `references/env-checklist.md`) |
 
 ## Issue map
 
