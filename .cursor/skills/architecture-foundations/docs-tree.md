@@ -2,6 +2,8 @@
 
 Adapt names/paths if the user already has a docs layout. Create only what the plan lists.
 
+`.cursor/rules/` is **not** part of this tree: seed it in skill step 4 from [project-rules.md](project-rules.md) before writing any `docs/` files.
+
 ```
 docs/
   README.md                 # index + reading order

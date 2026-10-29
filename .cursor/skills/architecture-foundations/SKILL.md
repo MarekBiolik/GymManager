@@ -8,6 +8,8 @@ disable-model-invocation: true
 
 Produce a **docs-first** foundation for a new repo or clean restart. Output is documentation under `docs/` (or path the user names). **No application scaffolding** unless the user explicitly expands scope.
 
+Also **seed project steering rules** under `.cursor/rules/` before writing docs, so English public artifacts and commit/PR discipline apply from commit #1.
+
 ## Workflow
 
 Copy and track:
@@ -17,8 +19,9 @@ Foundations progress:
 - [ ] 1. Survey
 - [ ] 2. Critical decisions (interview)
 - [ ] 3. Plan (docs only)
-- [ ] 4. Write docs + ADRs
-- [ ] 5. Hand-off
+- [ ] 4. Seed project steering
+- [ ] 5. Write docs + ADRs
+- [ ] 6. Hand-off
 ```
 
 ### 1. Survey
@@ -56,13 +59,28 @@ Plan must include:
 - Target architecture sketch (mermaid OK)
 - ADR list for **accepted** decisions only
 - Open-questions list for deferred areas
-- Explicit **out of scope**: app code, AI agents/skills/workflows (unless user insists)
+- Explicit **out of scope**: app code, product AI agents/skills/workflows (unless user insists)
+- Note that step 4 seeds `.cursor/rules/` before docs
 
 **Done when:** user confirms the plan.
 
-### 4. Write docs + ADRs
+### 4. Seed project steering
 
-Implement the plan. Mark todos as you go.
+Write the three always-on project rules from [project-rules.md](project-rules.md) into `.cursor/rules/`:
+
+- `commit-after-steps.mdc`
+- `english-public-artifacts.mdc`
+- `workflow-issue-pr-commit.mdc`
+
+If a file already exists: **reconcile** (keep stronger/clearer wording; do not overwrite silently). Note any drift in the hand-off.
+
+This step is the **first write** into the repo for a greenfield kickoff—before any `docs/` content—so English-public and commit rules bind the foundations docs themselves.
+
+**Done when:** all three rule files exist under `.cursor/rules/` before the first docs commit.
+
+### 5. Write docs + ADRs
+
+Implement the plan. Mark todos as you go. All repo docs and commits are **English** (enforced by the seeded `english-public-artifacts` rule).
 
 Rules:
 
@@ -75,28 +93,29 @@ Rules:
 
 **Done when:** every planned file exists; index (`docs/README.md`) links them; ADRs and OQs are consistent with the interview.
 
-### 5. Hand-off
+### 6. Hand-off
 
 Tell the user:
 
 1. Where to start reading (`docs/README.md`)
 2. Which decisions are locked (ADR ids)
 3. Which OQs block the next phase (usually scaffolding)
-4. Propose **next phase** (typically monorepo/scaffold)—do not start it unless asked
-5. Mentions commits only if they ask
+4. That ongoing work uses **issue → PR → focused commits → merge** (seeded `workflow-issue-pr-commit`; skills `to-issues` and `pr`)
+5. Propose **next phase** (typically monorepo/scaffold or slicing open questions into issues)—do not start it unless asked
+6. Mentions commits/push/merge only per the seeded commit and workflow rules (or when the user asks)
 
 **Done when:** hand-off message sent; foundations todos completed.
 
 ## Non-goals
 
 - Implementing `core/`, `apps/*`, or infra beyond docs
-- Designing AI agent workflows
+- Designing the **product’s** AI agent workflows (dev process rules seeded here are fine)
 - Final UI/UX or pixel design
 - Closing every OQ in foundations—defer is success
 
 ## Quality bar
 
-- Concise **English** for all docs written into the repo (user chat may be Polish; see `english-public-artifacts` rule)
+- Concise **English** for all docs and commits from commit #1—because step 4 seeds `english-public-artifacts` before writing docs (user chat may stay Polish)
 - Prefer pointed docs over essays; diagrams where they replace paragraphs
 - No fake version pins; pin versions at scaffolding time
 - Restart/legacy: treat missing sources as greenfield; document debris explicitly
