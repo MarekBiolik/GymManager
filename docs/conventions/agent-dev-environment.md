@@ -139,6 +139,7 @@ Area env + skill packages are tracked under the [Issue map](#issue-map).
 | Core (KMP) | `.cursor/skills/core-kmp/` (env: `references/env-checklist.md`) |
 | Supabase / DB | `.cursor/skills/supabase-db/` (env: `references/env-checklist.md`) |
 | Android (Compose) | `.cursor/skills/android-compose/` (env: `references/env-checklist.md`) |
+| Web (React) | `.cursor/skills/web-react/` (env: `references/env-checklist.md`) |
 
 ## Issue map
 
