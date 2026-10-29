@@ -46,7 +46,8 @@ Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 ## OQ-05 — Supabase hosting and backups
 
 **Status:** decided — [ADR 0004](decisions/0004-supabase-hosting.md), [data-and-sync](architecture/data-and-sync.md#hosting-and-backups)  
-**Decision:** Supabase Cloud Free to start → Pro when auto-backups / no-pause are needed; one `dev` project (+ optional local CLI); secrets outside the repo; on Free, periodic `db dump`.
+**Decision:** Supabase Cloud Free to start → Pro when auto-backups / no-pause are needed; one `dev` project (+ optional local CLI); secrets outside the repo; on Free, periodic `db dump`.  
+**`staging`/`prod` split (follow-up):** [spec](specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)) — when, naming, Environments, staging→prod migrations, Pro criteria for `prod`; project provisioning later.
 
 ---
 

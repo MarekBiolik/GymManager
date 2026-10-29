@@ -126,27 +126,31 @@ Decision: [ADR 0004](../decisions/0004-supabase-hosting.md) (closes [OQ-05](../o
 
 ### Environments
 
-| Environment | At start | Notes |
-|-------------|----------|--------|
-| `dev` | **One** Cloud project | Scaffolding, migrations, personal tracker use |
-| `local` | Optionally `supabase start` | Offline schema work; does not replace `dev` as sync source of truth |
-| `staging` / `prod` | **Later** | Separate projects for public beta / many users; prod usually on Pro |
+| Environment | At start (phase 1) | After the split (before public beta) |
+|-------------|--------------------|--------------------------------------|
+| `local` | Optionally `supabase start` | Unchanged — offline migration work |
+| `dev` | **One** Cloud project (scaffold + personal use) | Retired or **repurposed → staging** |
+| `staging` | — | Separate Cloud project; first migration apply; Free OK |
+| `prod` | — | Separate Cloud project; promote after staging smoke; **Pro** per criteria |
 
-Free: max 2 active projects; pause after ~1 week idle — unpause before work.
+Free: max 2 active projects; pause after ~1 week idle — unpause before work. After the split we do not keep three active Free projects as the norm.
+
+**When / naming / staging → prod migrations / Pro criteria:** [environment-split spec](../specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)).
 
 ### Secrets
 
 | Secret | Allowed where | Forbidden where |
 |--------|---------------|-----------------|
-| Project URL + `anon` | Clients, local `.env*` | Committing is not an “RLS leak”, but we **do not** commit `.env*` — per-env URL/keys stay out of git |
-| `service_role` | Local admin only / future trusted backend; GitHub Secrets in CI if ever needed | Client apps, public repo, CI logs |
-| OAuth client secrets (Google/Apple) | Supabase Auth dashboard + (when needed) GitHub Secrets | Repo, clients |
+| Project URL + `anon` | Clients, local `.env*` | Committing is not an “RLS leak”, but we **do not** commit `.env*` — URL/keys **per environment** stay out of git |
+| `service_role` | Local admin only / trusted job; GitHub Secrets / **Environments** in CI | Client apps, public repo, CI logs |
+| OAuth client secrets (Google/Apple) | Supabase Auth dashboard + (when needed) GitHub Secrets / Environments | Repo, clients |
 
 Rules:
 
 1. `.env`, `.env.local`, `.env.*.local` — in `.gitignore` (already on `master`).
 2. In docs and PRs: placeholders (`YOUR_PROJECT_URL`), never real values.
-3. CI: GitHub Secrets; no secrets in build logs — [ci-cd](../conventions/ci-cd.md).
+3. CI: GitHub Secrets; after the split — **GitHub Environments** (`staging`, `production`) with separate `SUPABASE_URL` / `anon` / `service_role` — [ci-cd](../conventions/ci-cd.md), [split spec](../specs/supabase-staging-prod-split.md).
+4. No secrets in build logs.
 
 ### Backup / restore policy
 
@@ -167,7 +171,7 @@ Rules:
 1. Prefer restore via schema from `supabase/migrations/` + reload data from dump.
 2. On Pro: restore from daily backup in the dashboard per Supabase docs.
 3. Restore drill (practice on an empty / local project) — [runbook](../runbooks/supabase-dump-restore.md) ([#9](https://github.com/MarekBiolik/GymManager/issues/9)); does not block the hosting decision.
-4. `staging` / `prod` split — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) before public beta.
+4. `staging` / `prod` split — **spec:** [supabase-staging-prod-split](../specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); project provisioning = separate ticket before public beta.
 
 ### Exit path
 
