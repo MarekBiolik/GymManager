@@ -26,7 +26,7 @@ Email z IdP trafia do `auth.users` — kompromis względem „zero PII”; nie b
 2. Nie kopiujemy emaila, display name ani avatara z IdP do tabel aplikacji.
 3. `profiles` trzyma tylko to, co konieczne do działania apki (patrz niżej).
 4. Brak analytics identyfikujących osobę na start.
-5. Usunięcie konta usuwa tożsamość Auth i dane aplikacji użytkownika (zarys poniżej).
+5. Usunięcie konta usuwa tożsamość Auth i dane aplikacji użytkownika ([spec](../specs/account-deletion.md); zarys poniżej).
 
 ## Tabela `profiles`
 
@@ -83,13 +83,14 @@ sequenceDiagram
 
 ## Usuwanie konta
 
-Zarys na poziomie spec (implementacja w fazie auth/scaffold — osobny follow-up).
+**Spec (źródło prawdy mechanizmu):** [account-deletion](../specs/account-deletion.md) ([#13](https://github.com/MarekBiolik/GymManager/issues/13)). Implementacja UI + Edge Function = faza 2 (po apply migracji [#21](https://github.com/MarekBiolik/GymManager/issues/21)).
 
-1. **Wejście:** ustawienia konta → „Usuń konto” → potwierdzenie (świadome, trudne do przypadkowego kliknięcia).
-2. **Skutek:** usunięcie wszystkich wierszy aplikacji użytkownika (`user_id` / `profiles.id`) oraz usunięcie użytkownika w Supabase Auth (koniec sesji na wszystkich urządzeniach).
-3. **Mechanizm (kierunek):** pierwsza migracja ustala FK `ON DELETE CASCADE` z `profiles` / tabel użytkownika → `auth.users` ([spec](../specs/first-migration-profiles-rls.md)); pełny flow UI + ewentualna Edge Function — [#13](https://github.com/MarekBiolik/GymManager/issues/13). **Nie** kasowanie tylko z klienta przez klucz `anon`.
-4. **Po usunięciu:** brak celowego przechowywania PII „na potem”; dumpy backupowe mogą chwilowo zawierać historyczne dane do wygaśnięcia retencji hostingu (patrz polityka backupów przy OQ-05 / data-and-sync).
-5. **Store:** procedura ma być spójna z wymaganiami usuwania konta Apple / Google Play (ścieżka w apce, nie tylko „napisz do supportu”).
+1. **Wejście:** ustawienia konta → „Usuń konto” → potwierdzenie (świadome, trudne do przypadkowego kliknięcia; drugi krok).
+2. **Skutek:** usunięcie tożsamości w Supabase Auth oraz — przez FK **`ON DELETE CASCADE`** — wszystkich wierszy aplikacji (`profiles`, `user_id`, …). Sesje JWT / refresh na wszystkich urządzeniach stają się nieważne.
+3. **Mechanizm (decyzja):** **CASCADE (schema, [#6](https://github.com/MarekBiolik/GymManager/issues/6)) + Edge Function z `service_role`** (Admin `deleteUser` po weryfikacji JWT). To **nie** jest wybór „albo cascade, albo Function” — Function kasuje Auth; CASCADE sprząta Postgres. **Nie** kasowanie Auth z klienta przez `anon`; **nie** sama masa `DELETE` pod RLS jako „usunięcie konta” (zostawia `auth.users` / email).
+4. **Kolejność:** zweryfikowany JWT → Function → `deleteUser` → CASCADE usuwa dane apki; klient czyści lokalną sesję/cache. Szczegóły: [spec](../specs/account-deletion.md#kolejność-kasowania).
+5. **Po usunięciu:** brak celowego przechowywania PII „na potem”; dumpy backupowe mogą chwilowo zawierać historyczne dane do wygaśnięcia retencji hostingu (patrz polityka backupów przy OQ-05 / data-and-sync).
+6. **Store:** ścieżka **w apce** na iOS i Androidzie (Apple / Google Play) — nie zastępowana samym „napisz do supportu”.
 
 ## Role i klucze
 

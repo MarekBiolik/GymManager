@@ -16,7 +16,7 @@ Opcje z [OQ-02](../open-questions.md): Google OAuth, Sign in with Apple, magic l
 2. **Sesja:** Supabase Auth (JWT + odświeżanie przez SDK). Jedno konto = te same dane na wszystkich klientach.
 3. **Minimum PII:** nie zbieramy imienia, płci, daty urodzenia, telefonu ani adresu. Email trafia do `auth.users` z IdP (nieuniknione przy Google/Apple) — **nie** kopiujemy go do `profiles`, **nie** używamy do marketingu. Brak analytics identyfikujących osobę na start.
 4. **`profiles`:** rekord techniczny 1:1 z `auth.users` — `id`, znaczniki czasu, preferencje aplikacji (np. jednostki). Bez display name / avatara z IdP.
-5. **Usuwanie konta:** użytkownik inicjuje w ustawieniach; usuwamy dane aplikacji (`user_id`) oraz rekord Auth — zarys w [auth](../architecture/auth.md#usuwanie-konta).
+5. **Usuwanie konta:** użytkownik inicjuje w ustawieniach; **Edge Function** (`service_role` + Admin `deleteUser` po JWT) usuwa rekord Auth; FK **`ON DELETE CASCADE`** (pierwsza migracja) usuwa dane aplikacji. Spec: [account-deletion](../specs/account-deletion.md); zarys UX: [auth](../architecture/auth.md#usuwanie-konta).
 
 **Poza MVP:** magic link, rejestracja email+hasło, konta anonimowe, linkowanie wielu IdP poza domyślnym zachowaniem Supabase (np. ten sam email Google↔Apple).
 
@@ -32,13 +32,14 @@ Opcje z [OQ-02](../open-questions.md): Google OAuth, Sign in with Apple, magic l
 
 - Pozytywne: jasny happy path na trzech klientach; zgodność z App Store; spójne z minimum PII i ADR 0002; mało własnej logiki auth.
 - Negatywne: email w Auth (kompromis vs „zero PII”); konfiguracja Google Cloud + Apple Developer + redirect URI przy scaffoldingu; na iOS dwa przyciski logowania.
-- Później: checklista konsol IdP przy scaffoldzie; implementacja usuwania konta (SQL cascade / Edge Function); ewentualne linkowanie IdP gdy użytkownik ma osobne konta Google i Apple.
+- Później: checklista konsol IdP przy scaffoldzie; **implementacja** usuwania konta wg [account-deletion](../specs/account-deletion.md) (UI + Edge Function; CASCADE już w specu #6); ewentualne linkowanie IdP gdy użytkownik ma osobne konta Google i Apple.
 
 ## Powiązane
 
 - [auth](../architecture/auth.md)
+- [Spec usuwania konta](../specs/account-deletion.md) ([#13](https://github.com/MarekBiolik/GymManager/issues/13))
 - [OQ-02](../open-questions.md) (decided)
 - [ADR 0002](0002-backend-supabase.md)
 - [data-model — profiles](../domain/data-model.md)
 - [Spec pierwszej migracji — profiles](../specs/first-migration-profiles-rls.md)
-- Follow-upy: IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12), usuwanie konta [#13](https://github.com/MarekBiolik/GymManager/issues/13), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21)
+- Follow-upy: IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21), implementacja delete-account (faza 2)

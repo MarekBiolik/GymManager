@@ -48,7 +48,7 @@ Zakres:
 Zakres:
 
 - Implementacja logowania wg [ADR 0007](decisions/0007-auth-providers-minimum-pii.md) / [auth](architecture/auth.md) (spec zamknięty; tu kod + konfiguracja IdP)
-- Usuwanie konta (cascade / Edge Function) wg zarysu w auth.md
+- Usuwanie konta wg [account-deletion](specs/account-deletion.md) (CASCADE + Edge Function; zarys UX w [auth](architecture/auth.md#usuwanie-konta))
 - Sync wg [ADR 0008](decisions/0008-sync-strategy-online-first.md): zapis online + cache odczytu + LWW; cienkie UI „hello sync”
 - Shared repositories w core (mobile) + równoważne wołania `supabase-js` (web)
 

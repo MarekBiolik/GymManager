@@ -42,6 +42,7 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 ## Specyfikacje (SQL / migracje — draft)
 
 - [Pierwsza migracja: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL w `docs/specs/sql/` (**NOT APPLIED**)
+- [Usuwanie konta: CASCADE + Edge Function](specs/account-deletion.md) — SPEC ONLY ([#13](https://github.com/MarekBiolik/GymManager/issues/13)); bez kodu Function/UI
 
 ## Konwencje
 

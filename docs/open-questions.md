@@ -24,7 +24,7 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 ## OQ-02 — Metoda logowania i minimum PII
 
 **Status:** decided — [ADR 0007](decisions/0007-auth-providers-minimum-pii.md), [auth](architecture/auth.md)  
-**Decyzja:** Google (Android/iOS/web) + Sign in with Apple na iOS; minimum PII (`profiles` bez email/imienia); zarys usuwania konta w auth.md. Poza MVP: magic link, anon+linkowanie, email+hasło.
+**Decyzja:** Google (Android/iOS/web) + Sign in with Apple na iOS; minimum PII (`profiles` bez email/imienia); usuwanie konta: [account-deletion](specs/account-deletion.md) + [auth](architecture/auth.md#usuwanie-konta). Poza MVP: magic link, anon+linkowanie, email+hasło.
 
 ---
 
