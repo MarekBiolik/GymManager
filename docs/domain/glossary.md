@@ -16,10 +16,12 @@ Jednoznaczne nazwy używane w docs, ADR, kodzie i schemacie. Nowe pojęcia dopis
 
 | Termin | Znaczenie |
 |--------|-----------|
-| **Food** | Produkt lub przepis zdefiniowany przez użytkownika (lub zaimportowany), z makro na porcję/100 g |
+| **Food** | Produkt lub przepis **własny użytkownika** (ew. powstały z importu), z makro **na 100 g**; żyje w `foods` pod RLS — [ADR 0009](../decisions/0009-food-data-source-own-first.md) |
 | **Food entry** | Wpis spożycia: co, ile, kiedy (powiązany z Food lub snapshotem wartości) |
 | **Diary / dziennik** | Widok wpisów w dniu (UI); niekoniecznie osobna tabela |
 | **Macro** | Białko, węglowodany, tłuszcz (i kalorie pochodne) |
+| **External food source** | Opcjonalne źródło provenance przy imporcie (np. OpenFoodFacts); nie zastępuje własnego wiersza `foods` |
+| **OpenFoodFacts (OFF)** | Zewnętrzna baza produktów; w MVP **nieużywana**; później tylko jako import → kopia do `foods` |
 
 ## Trening
 
@@ -51,5 +53,6 @@ Jednoznaczne nazwy używane w docs, ADR, kodzie i schemacie. Nowe pojęcia dopis
 ## Unikać
 
 - Mylenia **Food** (definicja) z **Food entry** (zdarzenie spożycia).
+- Traktowania OpenFoodFacts jako SoT dziennika — SoT to Postgres (`foods` / snapshot w `food_entries`).
 - Synonimów „trening / workout / sesja” bez precyzji — w schemacie preferujemy ustalone nazwy tabel z [data-model](data-model.md).
 - „User profile” w sensie social — mamy co najwyżej `profiles` techniczne.

@@ -8,7 +8,7 @@ Fazy pracy. Każda faza kończy się aktualizacją dokumentacji (lub ADR), zanim
 
 **Output:** katalog `docs/` (ten zestaw dokumentów).
 
-**Status:** done — ADR 0001–0003 (+ późniejsze 0004–0007 w iteracjach OQ); open-questions i konwencje bazowe istnieją.
+**Status:** done — ADR 0001–0003 (+ późniejsze 0004–0009 w iteracjach OQ); open-questions i konwencje bazowe istnieją.
 
 ---
 
@@ -60,7 +60,7 @@ Zakres:
 
 **Cel:** własne produkty/posiłki, wpisy spożycia, historia, podstawowe agregacje.
 
-Może wykorzystać zewnętrzne źródło żywności (np. OpenFoodFacts) — decyzja osobnym ADR.
+**Źródło danych:** własne `foods` only ([ADR 0009](decisions/0009-food-data-source-own-first.md), [OQ-07](open-questions.md) decided). OpenFoodFacts / hybryda importu — **poza** MVP fazy 3 ([#26](https://github.com/MarekBiolik/GymManager/issues/26)).
 
 ---
 

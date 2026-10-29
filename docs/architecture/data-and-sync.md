@@ -13,7 +13,7 @@ Pełniejszy model domenowy: [data-model](../domain/data-model.md). Na poziomie b
 | Obszar | Przykładowe tabele | Uwagi |
 |--------|-------------------|--------|
 | Tożsamość | `profiles` (opcjonalnie, 1:1 z `auth.users`) | Minimum PII |
-| Żywienie | `foods`, `food_entries` | Własne produkty + wpisy spożycia |
+| Żywienie | `foods`, `food_entries` | Własne produkty + wpisy spożycia; źródło = user catalog ([ADR 0009](../decisions/0009-food-data-source-own-first.md)) |
 | Trening | `exercises`, `workouts` / `sessions`, `sets` | Historia sesji |
 | Pomiary | `measurements` | Waga i inne metryki w czasie |
 | Wspólne | `tags` (opcjonalnie) | Etykiety cross-cutting |

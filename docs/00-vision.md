@@ -18,7 +18,7 @@ Przełączanie między obszarami (żywienie / trening / pomiary) to detal UI/UX 
 
 ## Moduły produktowe (zarys)
 
-1. **Żywienie** — własne posiłki/produkty, wpisy spożycia, historia (rok+), makro/kalorie. Inspiracja: FitAtu / trackery żywieniowe.
+1. **Żywienie** — własne posiłki/produkty, wpisy spożycia, historia (rok+), makro/kalorie. Inspiracja: FitAtu / trackery żywieniowe. Źródło katalogu w MVP: własne foods ([ADR 0009](decisions/0009-food-data-source-own-first.md)).
 2. **Trening** — ćwiczenia, sesje, serie, historia treningów.
 3. **Pomiary** — waga i inne pomiary ciała w czasie, wykresy/agregacje.
 

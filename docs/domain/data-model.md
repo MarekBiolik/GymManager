@@ -34,14 +34,14 @@ Minimalny rekord aplikacji powiązany z kontem Auth. Zasady PII i usuwania konta
 
 ### foods
 
-Własne produkty / posiłki użytkownika.
+Własne produkty / posiłki użytkownika. **Źródło danych (MVP):** tylko katalog użytkownika — [ADR 0009](../decisions/0009-food-data-source-own-first.md) (zamyka [OQ-07](../open-questions.md)). Brak globalnej tabeli produktów i braku live OpenFoodFacts w fazie 3.
 
 - `id`, `user_id`
 - `name`
-- wartości odżywcze (na 100 g lub na porcję — do ustalenia)
-- `serving_size` / jednostka
+- wartości odżywcze **na 100 g** (kanon MVP): białko, węglowodany, tłuszcz; kalorie pochodne / spójność w warstwie domenowej
+- `default_serving_g` (opcjonalnie) — domyślna porcja w UI; wpis i tak liczy się z `amount`
 - `created_at`, `updated_at`
-- opcjonalnie: zewnętrzne ID (np. OpenFoodFacts) — [OQ-07](../open-questions.md)
+- `external_source` / `external_id` (nullable) — provenance po przyszłym imporcie (np. `openfoodfacts` + kod); **nie** SoT w runtime; wolno dodać w migracji żywienia jako null bez UI OFF
 
 ### food_entries
 
@@ -116,5 +116,5 @@ Materializowane tabele dzienne — opcjonalna optymalizacja później.
 ## Poza zakresem zarysu
 
 - Pełne tabele żywienia / treningu (fazy 3–4); dokładne typy pierwszej migracji → [spec](../specs/first-migration-profiles-rls.md); podział CHECK vs core: [postgres-invariants](../architecture/postgres-invariants.md)
-- Import z OpenFoodFacts
+- Import / wyszukiwanie OpenFoodFacts (hybryda **po** MVP żywienia — [ADR 0009](../decisions/0009-food-data-source-own-first.md))
 - Udostępnianie danych między użytkownikami

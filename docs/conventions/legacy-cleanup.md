@@ -18,7 +18,7 @@ W repozytorium git na `master` jest zacommitowany praktycznie tylko `.gitignore`
 1. Nic z powyższych artefaktów **nie wchodzi** do historii git jako „kod produkcyjny”.
 2. Nowy web żyje w `apps/web/`, nie w starym `web/`.
 3. SQLite nie jest backendem docelowym — docelowo Postgres (Supabase).
-4. OpenFoodFacts może wrócić jako integracja — osobna decyzja ([OQ-07](../open-questions.md)), nie przez wskrzeszanie starego serwera.
+4. OpenFoodFacts może wrócić jako **import do własnych `foods`** ([ADR 0009](../decisions/0009-food-data-source-own-first.md), [OQ-07](../open-questions.md) decided) — nie przez wskrzeszanie starego serwera i nie jako live SoT w MVP.
 
 ## Checklist wykonania
 

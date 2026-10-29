@@ -59,10 +59,15 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 
 ## OQ-07 — Źródło danych żywnościowych
 
-**Status:** open  
-**Kontekst:** stary prototyp używał OpenFoodFacts. Czy wracamy do OFF, własnej bazy produktów użytkownika only, czy hybryda?
+**Status:** decided — [ADR 0009](decisions/0009-food-data-source-own-first.md), [data-model](domain/data-model.md#foods)  
+**Decyzja:** MVP = **własne foods only** (Postgres + RLS); brak live OFF w fazie 3. Później hybryda: wyszukiwanie/import OFF → kopia do `foods` użytkownika z opcjonalnym `external_source` / `external_id`. Snapshot makro w `food_entries` niezależny od API zewnętrznego.
 
-**Zamyka:** przed fazą 3 (moduł żywienia).
+**Opcje (rozważone):**
+
+1. Własne foods only (bez ścieżki hybrydy).
+2. OFF-only (live API).
+3. Hybryda od dnia 1.
+4. Własne first + hybryda później — **wybrane**.
 
 ---
 
