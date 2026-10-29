@@ -1,0 +1,14 @@
+---
+description: When a slice spans shared core/DB and clients, follow platform-delivery (core-first → parallel platforms → test)
+alwaysApply: true
+---
+
+# Platform delivery
+
+When implementing work that touches **both** the shared seam (`core/` and/or `supabase/`) **and** one or more clients (`apps/android`, `apps/web`, `apps/ios`):
+
+1. Follow the project skill `platform-delivery` (core first → parallel platforms → tests).
+2. Honour an explicit user **skip** of a platform or of tests; ask if unclear.
+3. Overview: [docs/conventions/agent-dev-environment.md](../../docs/conventions/agent-dev-environment.md).
+
+Single-area edits (only core, only one app, or docs-only) do not require the full fan-out.
