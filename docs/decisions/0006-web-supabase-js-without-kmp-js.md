@@ -71,7 +71,7 @@ DB vs core/TS rule split (migration checklist): [postgres-invariants](../archite
 We reconsider KMP→JS/Wasm (A) or hybrid (C) when **at least one** condition holds:
 
 1. **Duplication pain** — the same business rule must be maintained in Kotlin and TS and causes real bugs or systematic drift (not a one-off UX helper).
-2. **Offline-write parity** — web must share the same queue/conflict model as mobile after offline-write lands (today’s MVP: online-first, [ADR 0008](0008-sync-strategy-online-first.md) / [OQ-03](../open-questions.md) decided), and maintaining two engines costs more than the JS/Wasm toolchain.
+2. **Offline-write parity** — web must share the same queue/conflict model as mobile after offline-write lands (today’s MVP: online-first, [ADR 0008](0008-sync-strategy-online-first.md) / [OQ-03](../open-questions.md) decided; map: [offline-write-queue](../specs/offline-write-queue.md)), and maintaining two engines costs more than the JS/Wasm toolchain.
 3. **Toolchain mature for us** — green, repeatable `core` → JS or Wasm build wired into Vite, acceptable bundle size, and a data path aligned with the chosen Supabase client — proven by a spike, not an assumption.
 4. **Web as a critical surface** — product-wise web catches up to mobile in domain complexity and B’s cost exceeds A/C.
 

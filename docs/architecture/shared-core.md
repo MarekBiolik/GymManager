@@ -59,7 +59,7 @@ core/
   domain/          # entities, rules, domain errors
   application/     # use cases, ports
   data/            # repo implementations, DTOs, supabase client
-  sync/            # read cache / invalidation (MVP ADR 0008; contract: specs/hello-sync-read-cache.md); offline-write queue later
+  sync/            # read cache / invalidation (MVP ADR 0008; contract: specs/hello-sync-read-cache.md); offline-write queue later — [spec #20](../specs/offline-write-queue.md)
 ```
 
 Gradle module: single `:core` in the multi-project root (optional later split into `:core:domain` / `:core:data` only when benefit > cost). Integration and versioning: [ADR 0005](../decisions/0005-monorepo-tooling.md). The scaffold does **not** add a JS/Wasm target until ADR 0006 is revisited.

@@ -62,9 +62,9 @@ Web does not share a sync engine with KMP ([ADR 0006](0006-web-supabase-js-witho
 
 ### Beyond MVP (deliberately later)
 
-- Offline write queue + idempotent requests
+- Offline write queue + idempotent requests — [spec](../specs/offline-write-queue.md) ([#20](https://github.com/MarekBiolik/GymManager/issues/20)); requires a new ADR before code
 - Optimistic UI with local commit before server ACK
-- Merge / CRDT / per-entity conflict UI
+- Merge / CRDT / per-entity conflict UI (mandatory revisit at offline-write)
 - Mandatory Realtime as sync bus
 - Shared offline engine for web+mobile (ADR 0006 revisit condition)
 
@@ -76,4 +76,4 @@ Web does not share a sync engine with KMP ([ADR 0006](0006-web-supabase-js-witho
 - [data-model](../domain/data-model.md), [auth](../architecture/auth.md), [postgres-invariants](../architecture/postgres-invariants.md)
 - [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [first migration spec](../specs/first-migration-profiles-rls.md) — profiles + RLS + `updated_at`; apply [#21](https://github.com/MarekBiolik/GymManager/issues/21)
 - Read-cache / hello-sync contract: [specs/hello-sync-read-cache.md](../specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19))
-- Follow-up: [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)
+- Offline-write map: [offline-write-queue](../specs/offline-write-queue.md) ([#20](https://github.com/MarekBiolik/GymManager/issues/20))

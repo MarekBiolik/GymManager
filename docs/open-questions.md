@@ -31,7 +31,7 @@ Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 ## OQ-03 — Offline / sync / conflict strategy
 
 **Status:** decided — [ADR 0008](decisions/0008-sync-strategy-online-first.md), [data-and-sync](architecture/data-and-sync.md)  
-**Decision:** online-first + local read cache; SoT = Postgres; writes online-only in MVP; conflicts = LWW per row (`updated_at`), one rule for all entity types; Realtime optional; offline-write later.  
+**Decision:** online-first + local read cache; SoT = Postgres; writes online-only in MVP; conflicts = LWW per row (`updated_at`), one rule for all entity types; Realtime optional; offline-write later — [spec](specs/offline-write-queue.md) ([#20](https://github.com/MarekBiolik/GymManager/issues/20)).  
 **Schema (`updated_at`, RLS):** [first migration spec](specs/first-migration-profiles-rls.md) (#6); apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 
 ---

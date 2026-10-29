@@ -91,7 +91,7 @@ Supabase Realtime is an **option** after “hello sync” (live refresh when ano
 
 ### Offline-write (beyond MVP)
 
-When airplane-mode training/nutrition becomes a requirement: queue, idempotency, tombstones, conflict revisit (possible per-entity rules) — **new ADR**, not silent expansion of this document. Track: [#20](https://github.com/MarekBiolik/GymManager/issues/20).
+When airplane-mode training/nutrition becomes a requirement: queue, idempotency, tombstones, conflict revisit (possible per-entity rules) — **new ADR**, not silent expansion of this document. Spec map: [offline-write-queue](../specs/offline-write-queue.md) ([#20](https://github.com/MarekBiolik/GymManager/issues/20)).
 
 Read-cache / hello-sync contract (phase 2): [specs/hello-sync-read-cache.md](../specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19)).
 
