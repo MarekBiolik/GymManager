@@ -73,6 +73,6 @@ Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-withou
 - Zamyka [OQ-03](../open-questions.md)
 - [data-and-sync](../architecture/data-and-sync.md)
 - [ADR 0002](0002-backend-supabase.md), [ADR 0006](0006-web-supabase-js-without-kmp-js.md), [ADR 0007](0007-auth-providers-minimum-pii.md)
-- [data-model](../domain/data-model.md), [auth](../architecture/auth.md)
+- [data-model](../domain/data-model.md), [auth](../architecture/auth.md), [postgres-invariants](../architecture/postgres-invariants.md)
 - Issue #6 — pierwsza migracja (profiles + RLS + `updated_at`)
 - Follow-upy: [#19 kontrakt read-cache / hello sync](https://github.com/MarekBiolik/GymManager/issues/19), [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)

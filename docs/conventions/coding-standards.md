@@ -36,6 +36,7 @@ Konwencje bazowe. Konkretne wersje linterów i formatters — przy scaffoldingu 
 - Każda tabela użytkownika: `user_id` + polityki RLS w tej samej migracji.
 - Nazwy tabel: `snake_case`, liczba mnoga (`food_entries`, `measurements`).
 - Migracje tylko do przodu; zakaz ręcznego dryfu schematu prod.
+- Wspólne niezmienniki web + mobile → Postgres (RLS / CHECK), nie równoległa domena TS — [postgres-invariants](../architecture/postgres-invariants.md).
 
 ## Komentarze
 

@@ -39,7 +39,7 @@ KMP spina **Android i iOS**. Web **nie** konsumuje tego samego binary co mobile,
 
 **Nie wolno:** zakładać KMP-JS/Wasm bez revisit/ADR; budować równoległą domenę TS (use-case’y, agregacje biznesowe); traktować walidacji tylko-w-TS jako security boundary; omijać RLS.
 
-Wspólne niezmienniki potrzebne web + mobile → preferuj **Postgres (RLS / CHECK / constraints)**. Reguły bogate / offline-first → **KMP core** (mobile); na webie nie reimplementuj „na skróty”.
+Wspólne niezmienniki potrzebne web + mobile → preferuj **Postgres (RLS / CHECK / constraints)**. Reguły bogate / offline-first → **KMP core** (mobile); na webie nie reimplementuj „na skróty”. Szczegóły, przykłady (`food_entries` / `measurements`) i checklista migracji: [postgres-invariants](postgres-invariants.md).
 
 ## Wspólne wymagania wobec klientów
 
