@@ -10,8 +10,19 @@ When a discrete work step is finished (docs batch, skill/rule, scaffold slice, f
 ## Rules
 
 - One step → one commit (split docs vs tooling vs app code when they landed together).
-- Message: **English**, short, imperative, explains **why** (Conventional Commits preferred: `docs:`, `chore:`, `feat:`, …).
+- Message: **English**, short, imperative, explains **why** (Conventional Commits).
 - Stage only files that belong to that step.
 - **Never** add `Co-authored-by` or other trailer crediting Cursor/the agent.
 - Do not commit secrets, `node_modules`, build artifacts, or local DB files.
-- Do not push unless the user asks.
+- Do not push unless the user asks (feature-branch push for an open PR: see `workflow-issue-pr-commit`).
+
+## Message shape
+
+| When | Format | Example |
+|------|--------|---------|
+| Issue known, PR not yet | `type(#ISSUE): subject` | `docs(#26): spec OpenFoodFacts hybrid import` |
+| Issue and PR both known (later commits, squash/merge subject) | `type(#ISSUE): subject (#PR)` | `docs(#26): spec OpenFoodFacts hybrid import (#40)` |
+| No issue (meta/chore on default branch) | `type: subject` | `chore: tighten commit message workflow rules` |
+
+- Prefer GitHub autolink forms `#26` / `#40` (not bare `26` or `pr 40`).
+- Do not invent a PR number before the PR exists; do not amend old commits solely to inject a PR id unless the user asks.
