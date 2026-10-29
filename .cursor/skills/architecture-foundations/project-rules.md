@@ -1,6 +1,6 @@
 # Project rules to seed
 
-Write these three files under `.cursor/rules/` **verbatim** during the Seed step (before any `docs/` content). If a file already exists, reconcile—do not overwrite silently; note differences in the hand-off.
+Write these files under `.cursor/rules/` **verbatim** during the Seed step (before any `docs/` content). If a file already exists, reconcile—do not overwrite silently; note differences in the hand-off.
 
 Push of a feature branch for an open PR is allowed when the user works via PRs; merge/close stays user-gated. That reconciles with `commit-after-steps` (“do not push unless asked”): ask or follow the user’s PR workflow before pushing.
 
@@ -105,4 +105,33 @@ After architecture foundations, implement work as **narrow vertical slices**, no
 
 - Pushing the **feature branch** so the PR stays up to date is OK when the user is working through PRs (ask if unclear).
 - Do **not** push directly to the default branch, force-push shared history, or merge without an explicit user request.
+```
+
+---
+
+## `.cursor/rules/docs-current-state.mdc`
+
+```mdc
+---
+description: Docs are current state only; delete executed plans; no process sediment
+alwaysApply: true
+---
+
+# Documentation = current state
+
+`docs/` holds the **current** agreed state (vision, architecture, ADRs, specs, runbooks, conventions). Git history records process.
+
+## Do
+
+- Write ADRs/specs for decisions and contracts still in force
+- When a plan/playbook is **done**, delete it (or fold leftovers into living docs) in the same change set as the results
+- Keep `docs/plans/` only for **active** phase playbooks
+
+## Do not
+
+- Document discarded prototypes, deleted debris, or “we used to…” cleanup stories
+- Leave finished checklists/plans as permanent docs
+- Treat docs as a changelog of agent sessions
+
+See [docs/conventions/docs-lifecycle.md](../../docs/conventions/docs-lifecycle.md).
 ```

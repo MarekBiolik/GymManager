@@ -1,6 +1,6 @@
 # Open questions
 
-Areas deliberately **undecided** in iteration 1. Each item should be closed in a separate iteration (plan + ADR or docs update) before deep coding.
+Areas still to refine, plus short `decided` pointers to living ADRs/specs. Close items with an ADR or docs update—not a process post-mortem. Drop OQs that leave no lasting decision (cleanup chores belong in git history only).
 
 Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 
@@ -48,13 +48,6 @@ Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 **Status:** decided — [ADR 0004](decisions/0004-supabase-hosting.md), [data-and-sync](architecture/data-and-sync.md#hosting-and-backups)  
 **Decision:** Supabase Cloud Free to start → Pro when auto-backups / no-pause are needed; one `dev` project (+ optional local CLI); secrets outside the repo; on Free, periodic `db dump`.  
 **`staging`/`prod` split (follow-up):** [spec](specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)) — when, naming, Environments, staging→prod migrations, Pro criteria for `prod`; project provisioning later.
-
----
-
-## OQ-06 — Prototype artifact disposition
-
-**Status:** decided — [legacy-cleanup](conventions/legacy-cleanup.md)  
-**Artifacts:** `web/`, `server/`, `data/gymmanager.db*` — **removed** from the working tree (were never git-tracked). SQLite schema export skipped.
 
 ---
 

@@ -66,17 +66,18 @@ Plan must include:
 
 ### 4. Seed project steering
 
-Write the three always-on project rules from [project-rules.md](project-rules.md) into `.cursor/rules/`:
+Write the always-on project rules from [project-rules.md](project-rules.md) into `.cursor/rules/`:
 
 - `commit-after-steps.mdc`
 - `english-public-artifacts.mdc`
 - `workflow-issue-pr-commit.mdc`
+- `docs-current-state.mdc`
 
 If a file already exists: **reconcile** (keep stronger/clearer wording; do not overwrite silently). Note any drift in the hand-off.
 
 This step is the **first write** into the repo for a greenfield kickoff—before any `docs/` content—so English-public and commit rules bind the foundations docs themselves.
 
-**Done when:** all three rule files exist under `.cursor/rules/` before the first docs commit.
+**Done when:** all seeded rule files exist under `.cursor/rules/` before the first docs commit.
 
 ### 5. Write docs + ADRs
 
@@ -88,8 +89,8 @@ Rules:
 - Every accepted stack/structure choice → ADR (`accepted` + date + alternatives).
 - Every deferred topic → `docs/open-questions.md` with id `OQ-NN`, status, close-by phase.
 - Domain model = **outline** (entities + glossary), not final SQL.
-- Conventions = thin and actionable (git, coding seams, testing priority, CI goals).
-- Legacy debris → dedicated cleanup doc + checklist for the next phase; do not silently delete unless asked.
+- Conventions = thin and actionable (git, coding seams, testing priority, CI goals, docs lifecycle).
+- Docs = **current state** only (`docs-current-state`); no prototype post-mortems. Clean working-tree debris when asked — do not immortalize cleanup in `docs/`.
 
 **Done when:** every planned file exists; index (`docs/README.md`) links them; ADRs and OQs are consistent with the interview.
 

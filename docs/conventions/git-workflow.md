@@ -16,10 +16,10 @@ At start (solo): short branches + PR to `master` even with one author — histor
 Examples:
 
 ```
-docs: add architecture overview and ADRs 0001-0003
+docs(#26): spec OpenFoodFacts hybrid import
+docs(#26): spec OpenFoodFacts hybrid import (#40)
 feat(core): add FoodEntry validation
 fix(auth): refresh session before sync
-chore: remove prototype web/dist artifacts
 ```
 
 - One intent per commit.
