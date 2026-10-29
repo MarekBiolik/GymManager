@@ -22,3 +22,11 @@ Project ref and access tokens stay local (CLI stores them outside the repo). Do 
 
 - First schema (`profiles` + measurements + RLS): `migrations/20261029190000_profiles_baseline_rls.sql` ([#21](https://github.com/MarekBiolik/GymManager/issues/21)).
 - Apply to Cloud `dev`: [APPLY_DEV.md](APPLY_DEV.md) (`npx supabase db push` after `supabase link`).
+
+## Edge Functions
+
+| Function | Purpose | Deploy notes |
+|----------|---------|--------------|
+| `delete-account` | JWT-verified Auth Admin `deleteUser` + CASCADE cleanup | [functions/delete-account/README.md](functions/delete-account/README.md) |
+
+Deploy after link: `npx supabase functions deploy delete-account`. `service_role` is provided by the platform at runtime — never add it to git or client env files.

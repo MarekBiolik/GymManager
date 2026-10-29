@@ -1,12 +1,12 @@
 # Spec: account deletion (CASCADE + Edge Function)
 
-**Status:** SPEC ONLY — **no** app code, **no** Edge Function deploy, **no** SQL migration changes in this issue.  
+**Status:** Edge Function in repo ([#80](https://github.com/MarekBiolik/GymManager/issues/80)); settings UI and live smoke remain follow-ups.  
 **Issue:** [#13](https://github.com/MarekBiolik/GymManager/issues/13)  
 **Behavioral outline:** [auth — Account deletion](../architecture/auth.md#account-deletion)  
 **PII / Auth decision:** [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)  
 **FK / RLS schema:** [first migration](first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6); apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21))
 
-This document is the **source of truth** for the account-deletion mechanism in phase 2. Implementation (UI + Edge Function + smoke) is a separate issue after the migration applies.
+This document is the **source of truth** for the account-deletion mechanism in phase 2.
 
 ## Goals
 
@@ -144,12 +144,12 @@ Authorization: Bearer <user_access_token>
 
 Optionally later: rate limit / audit log (no PII in logs beyond `uid`).
 
-## Implementation checklist (phase 2 — outside this PR)
+## Implementation checklist (phase 2)
 
-- [ ] Edge Function `delete-account` (or equivalent name) + `service_role` secret only in Supabase secrets
+- [x] Edge Function `delete-account` + `service_role` only in Supabase runtime secrets ([functions/delete-account/README.md](../../supabase/functions/delete-account/README.md))
 - [ ] Settings UI on iOS / Android / web — same semantics
-- [ ] Smoke: test user → delete → no `profiles`/`measurements` rows; next OAuth = new `auth.users` + empty profile
-- [ ] Secrets / CI docs with no `service_role` leak ([ADR 0004](../decisions/0004-supabase-hosting.md))
+- [ ] Smoke: test user → delete → no `profiles`/`measurements` rows; next OAuth = new `auth.users` + empty profile (maintainer manual on Cloud `dev`; see function README)
+- [x] Secrets / CI docs with no `service_role` leak ([ADR 0004](../decisions/0004-supabase-hosting.md))
 
 ## Related
 
