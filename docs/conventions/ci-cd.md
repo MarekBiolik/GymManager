@@ -21,14 +21,16 @@ PR nie przechodzi przy padającym buildzie `core`, `apps/android` lub `apps/web`
 | Web | Hosting statyczny (np. Cloudflare Pages / Vercel / Supabase hosting) — wybór później |
 | Android | Play Console (wewnętrzny track najpierw) |
 | iOS | TestFlight → App Store (Apple Developer) |
-| Supabase | Migracje aplikowane na staging, potem prod; nigdy „klik w dashboard” jako źródło prawdy |
+| Supabase | Migracje: **najpierw `staging`, potem `prod`** (nigdy odwrotnie); nigdy „klik w dashboard” jako źródło prawdy — [spec split](../specs/supabase-staging-prod-split.md) |
 
 ## Sekrety
 
 - W CI: secrets store (np. GitHub Secrets).
-- Na start: jeden projekt Supabase Cloud = `dev` ([ADR 0004](../decisions/0004-supabase-hosting.md)). Osobne `staging` / `prod` przy publicznej becie.
-- `service_role` tylko w Secrets / lokalnym adminie — nigdy w klientach ani logach.
+- **Na start (faza 1):** jeden projekt Supabase Cloud = `dev` ([ADR 0004](../decisions/0004-supabase-hosting.md)) — płaski zestaw Secrets wystarczy.
+- **Po splocie (przed publiczną betą):** GitHub Environments **`staging`** i **`production`**, każdy z własnym `SUPABASE_URL`, `SUPABASE_ANON_KEY`, oraz (tylko joby admin/migracje) `SUPABASE_SERVICE_ROLE_KEY` / token CLI — tabela w [spec split](../specs/supabase-staging-prod-split.md).
+- `service_role` tylko w Secrets / Environments / lokalnym adminie — nigdy w klientach ani logach.
 - Żadnych sekretów w logach builda.
+- Protection rules: deploy/migrate `production` tylko z `master` (lub release tag) + opcjonalnie required reviewer.
 
 ## OTA / hotfix
 

@@ -47,6 +47,7 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 
 **Status:** decided — [ADR 0004](decisions/0004-supabase-hosting.md), [data-and-sync](architecture/data-and-sync.md#hosting-i-backupy)  
 **Decyzja:** Supabase Cloud Free na start → Pro gdy potrzeba auto-backupów / braku pauzy; jeden projekt `dev` (+ opcjonalnie local CLI); sekrety poza repo; na Free okresowe `db dump`.
+**Split `staging`/`prod` (follow-up):** [spec](specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)) — kiedy, naming, Environments, migracje staging→prod, kryteria Pro na `prod`; implementacja projektów później.
 
 ---
 

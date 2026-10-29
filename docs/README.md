@@ -39,9 +39,10 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 - [Słownik pojęć](domain/glossary.md)
 - [Model danych (zarys)](domain/data-model.md)
 
-## Specyfikacje (SQL / migracje — draft)
+## Specyfikacje (SQL / migracje / ops — draft)
 
 - [Pierwsza migracja: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL w `docs/specs/sql/` (**NOT APPLIED**)
+- [Split środowisk Supabase staging/prod](specs/supabase-staging-prod-split.md) — SPEC ONLY ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); align [ADR 0004](decisions/0004-supabase-hosting.md); bez provisioningu Dashboard w tym ticketcie
 
 ## Konwencje
 

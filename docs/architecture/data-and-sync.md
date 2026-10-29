@@ -126,27 +126,31 @@ Decyzja: [ADR 0004](../decisions/0004-supabase-hosting.md) (zamyka [OQ-05](../op
 
 ### Środowiska
 
-| Środowisko | Na start | Uwagi |
-|------------|----------|--------|
-| `dev` | **Jeden** projekt Cloud | Scaffolding, migracje, osobiste użycie trackera |
-| `local` | Opcjonalnie `supabase start` | Praca nad schematem offline; nie zastępuje `dev` jako źródła prawdy sync |
-| `staging` / `prod` | **Później** | Osobne projekty przy publicznej becie / wielu użytkownikach; prod zwykle na Pro |
+| Środowisko | Na start (faza 1) | Po splocie (przed publiczną betą) |
+|------------|-------------------|-----------------------------------|
+| local | Opcjonalnie supabase start | Bez zmian — praca offline nad migracjami |
+| dev | **Jeden** projekt Cloud (scaffold + osobiste użycie) | Retired albo **repurpose → staging** |
+| staging | — | Osobny projekt Cloud; pierwszy apply migracji; Free OK |
+| prod | — | Osobny projekt Cloud; promocja po smoke na staging; **Pro** wg kryteriów |
 
-Free: max 2 aktywne projekty; pauza po ~1 tygodniu bezczynności — odpauzować przed pracą.
+Free: max 2 aktywne projekty; pauza po ~1 tygodniu bezczynności — odpauzować przed pracą. Po splocie nie utrzymujemy trzech aktywnych Free jako normy.
+
+**Kiedy / naming / migracje staging → prod / kryteria Pro:** [spec split środowisk](../specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)).
 
 ### Sekrety
 
 | Sekret | Gdzie wolno | Gdzie zakaz |
 |--------|-------------|-------------|
-| Project URL + `anon` | Klienci, lokalny `.env*` | Commitowanie nie jest „wyciekiem RLS”, ale **nie** commitujemy `.env*` — URL/klucze per środowisko trzymamy poza gitem |
-| `service_role` | Wyłącznie lokalny admin / przyszły zaufany backend; GitHub Secrets w CI jeśli kiedyś potrzebne | Aplikacje klienckie, publiczne repo, logi CI |
-| OAuth client secrets (Google/Apple) | Dashboard Supabase Auth + (gdy trzeba) GitHub Secrets | Repo, klienci |
+| Project URL + non | Klienci, lokalny .env* | Commitowanie nie jest „wyciekiem RLS”, ale **nie** commitujemy .env* — URL/klucze **per środowisko** poza gitem |
+| service_role | Wyłącznie lokalny admin / zaufany job; GitHub Secrets / **Environments** w CI | Aplikacje klienckie, publiczne repo, logi CI |
+| OAuth client secrets (Google/Apple) | Dashboard Supabase Auth + (gdy trzeba) GitHub Secrets / Environments | Repo, klienci |
 
 Zasady:
 
-1. `.env`, `.env.local`, `.env.*.local` — w `.gitignore` (już na `master`).
-2. W dokumentacji i PR-ach: placeholdery (`YOUR_PROJECT_URL`), nigdy prawdziwe wartości.
-3. CI: GitHub Secrets; żadnych sekretów w logach builda — [ci-cd](../conventions/ci-cd.md).
+1. .env, .env.local, .env.*.local — w .gitignore (już na master).
+2. W dokumentacji i PR-ach: placeholdery (YOUR_PROJECT_URL), nigdy prawdziwe wartości.
+3. CI: GitHub Secrets; po splocie — **GitHub Environments** (staging, production) z osobnym SUPABASE_URL / non / service_role — [ci-cd](../conventions/ci-cd.md), [spec split](../specs/supabase-staging-prod-split.md).
+4. Żadnych sekretów w logach builda.
 
 ### Polityka backupów / restore
 
@@ -167,7 +171,7 @@ Zasady:
 1. Preferuj odtworzenie schematem z `supabase/migrations/` + ponowne załadowanie danych z dumpa.
 2. Na Pro: restore z daily backup w dashboardzie według dokumentacji Supabase.
 3. Drill restore (ćwiczenie na pustym projekcie) — follow-up [#9](https://github.com/MarekBiolik/GymManager/issues/9); nie blokuje decyzji hostingu.
-4. Split `staging` / `prod` — follow-up [#10](https://github.com/MarekBiolik/GymManager/issues/10) przed publiczną betą.
+4. Split `staging` / `prod` — **spec:** [supabase-staging-prod-split](../specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); provision projektów = osobny ticket przed publiczną betą.
 
 ### Exit path
 
