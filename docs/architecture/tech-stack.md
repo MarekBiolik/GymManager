@@ -52,7 +52,7 @@ Requires an **Apple Developer Program** account (App Store publishing).
 | SQL migrations in `supabase/` | Schema as code |
 
 Backend decision: [ADR 0002](../decisions/0002-backend-supabase.md).  
-Hosting / environments / backups: [ADR 0004](../decisions/0004-supabase-hosting.md) (Cloud Free → Pro; details in [data-and-sync](data-and-sync.md#hosting-and-backups)).
+Hosting / environments / backups: [ADR 0004](../decisions/0004-supabase-hosting.md) (Cloud Free → Pro; details in [data-and-sync](data-and-sync.md#hosting-and-backups); staging/prod split: [spec](../specs/supabase-staging-prod-split.md)).
 
 ## Project tooling
 

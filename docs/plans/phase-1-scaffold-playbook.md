@@ -17,7 +17,7 @@ Empty, **building** projects in the monorepo + attached Supabase Cloud (`dev`) +
 | **KMP → JS/Wasm** target or assuming web consumes the core binary | [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md); comment on #7 |
 | Parallel TypeScript domain in `apps/web` | ADR 0006 + [clients](../architecture/clients.md) |
 | Nx / Turborepo / publishing core to a registry | [ADR 0005](../decisions/0005-monorepo-tooling.md) |
-| Separate `staging` / `prod` Cloud | [ADR 0004](../decisions/0004-supabase-hosting.md), [#10](https://github.com/MarekBiolik/GymManager/issues/10) |
+| Separate `staging` / `prod` Cloud | [split spec](../specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); [ADR 0004](../decisions/0004-supabase-hosting.md) |
 | Full Auth UI + IdP in apps | Phase 2; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12) |
 | First migration SQL spec (table/RLS content) | [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6) — **input**, not #7/#14 output; apply = #21 |
 | Dump/restore runbook (operational drill) | [runbook](../runbooks/supabase-dump-restore.md) / [#9](https://github.com/MarekBiolik/GymManager/issues/9) — after `supabase/` appears |
