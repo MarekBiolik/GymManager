@@ -1,2 +1,9 @@
 # Copy to local.properties (gitignored) for Android SDK.
 sdk.dir=C\:\\Users\\YOU\\AppData\\Local\\Android\\Sdk
+
+# GymManager auth (apps/android) — anon key only; never service_role or Google Client Secret.
+# Same Supabase project as .env.local / VITE_* for web.
+gymmanager.supabase.url=https://YOUR_PROJECT_REF.supabase.co
+gymmanager.supabase.anonKey=your-anon-key
+# Google Cloud → Web application OAuth client ID (public; Credential Manager serverClientId).
+gymmanager.google.webClientId=YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
