@@ -38,6 +38,7 @@ kotlin {
             implementation(project.dependencies.platform(libs.supabase.bom))
             implementation(libs.supabase.auth)
             implementation(libs.supabase.postgrest)
+            implementation(libs.supabase.functions)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
