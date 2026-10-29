@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.android.library)
 }
 
@@ -32,10 +33,22 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            // Domain / sync deps land in later phases — keep scaffold empty of domain logic.
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(project.dependencies.platform(libs.supabase.bom))
+            implementation(libs.supabase.auth)
+            implementation(libs.supabase.postgrest)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.client.android)
+        }
+        if (hostIsMac) {
+            iosMain.dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
         }
     }
 }
