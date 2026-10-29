@@ -1,0 +1,11 @@
+{
+  "color": {
+    "bg": {
+      "canvas": {
+        "$type": "color",
+        "$value": "#FFFFFF",
+        "$description": "Stub — light mode deferred (OQ-09). Not the active theme."
+      }
+    }
+  }
+}

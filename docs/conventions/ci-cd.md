@@ -38,7 +38,8 @@ None for now. Fast web fixes are easier than mobile (store review).
 
 ## Pipeline definition of done (phase 1)
 
-- [ ] Workflow on PR (GitHub Actions): Gradle (`core` + `apps/android`) + `core` tests + pnpm build `apps/web`; lint when tools are in the repo
-- [ ] No job requiring KMP-JS/Wasm
-- [ ] Branch protection on `master` when CI exists and is green
-- [ ] Same checks documented locally (root scripts + playbook steps D/F)
+- [x] Workflow on PR (GitHub Actions): Gradle (`core` + `apps/android`) + `core` tests + pnpm build `apps/web`; lint when tools are in the repo; design-token regen-clean; migration file presence
+- [x] No job requiring KMP-JS/Wasm
+- [ ] Branch protection on `master` when CI exists and is green (maintainer)
+- [x] Same checks documented locally (root scripts + [README](../../README.md))
+

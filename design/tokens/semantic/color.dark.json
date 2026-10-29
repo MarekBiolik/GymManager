@@ -1,0 +1,28 @@
+{
+  "color": {
+    "bg": {
+      "canvas": { "$type": "color", "$value": "{color.neutral.0}" },
+      "surface": { "$type": "color", "$value": "{color.neutral.50}" },
+      "surface-elevated": { "$type": "color", "$value": "{color.neutral.100}" },
+      "muted": { "$type": "color", "$value": "{color.neutral.200}" }
+    },
+    "text": {
+      "primary": { "$type": "color", "$value": "{color.neutral.900}" },
+      "secondary": { "$type": "color", "$value": "{color.neutral.400}" },
+      "inverse": { "$type": "color", "$value": "{color.neutral.50}" },
+      "brand": { "$type": "color", "$value": "{color.orange.500}" }
+    },
+    "action": {
+      "primary": { "$type": "color", "$value": "{color.orange.500}" },
+      "secondary": { "$type": "color", "$value": "{color.blue.500}" }
+    },
+    "border": {
+      "subtle": { "$type": "color", "$value": "{color.neutral.300}" }
+    },
+    "feedback": {
+      "success": { "$type": "color", "$value": "{color.green.500}" },
+      "warn": { "$type": "color", "$value": "{color.amber.500}" },
+      "error": { "$type": "color", "$value": "{color.red.500}" }
+    }
+  }
+}

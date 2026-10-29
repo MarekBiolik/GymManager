@@ -1,0 +1,16 @@
+{
+  "name": "gymmanager",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "build": "pnpm run tokens:generate && pnpm run build:web && pnpm run build:android",
+    "build:web": "pnpm --filter @gymmanager/web build",
+    "build:android": "node ./scripts/run-gradle.mjs :apps:android:assembleDebug",
+    "test": "pnpm run test:core",
+    "test:core": "node ./scripts/run-gradle.mjs :core:testDebugUnitTest",
+    "lint": "pnpm run lint:web && pnpm run tokens:check",
+    "lint:web": "pnpm --filter @gymmanager/web lint",
+    "tokens:generate": "pnpm --filter @gymmanager/design generate",
+    "tokens:check": "pnpm --filter @gymmanager/design check"
+  }
+}

@@ -1,0 +1,16 @@
+# Supabase local CLI config — Cloud `dev` is linked via `supabase link` (ref stays local).
+# See supabase/README.md. Do not commit access tokens.
+
+project_id = "gymmanager"
+
+[api]
+enabled = true
+port = 54321
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323

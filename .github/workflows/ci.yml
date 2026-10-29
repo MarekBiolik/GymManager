@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+
+jobs:
+  tokens:
+    name: Design tokens regen-clean
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:check
+
+  web:
+    name: Web build + lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:generate
+      - run: pnpm --filter @gymmanager/web lint
+      - run: pnpm --filter @gymmanager/web build
+
+  android:
+    name: Gradle core + android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tokens:generate
+      - name: Grant gradlew
+        run: chmod +x gradlew
+      - name: Build core + android
+        run: ./gradlew :core:build :apps:android:assembleDebug --no-daemon
+      - name: Core unit tests
+        run: ./gradlew :core:testDebugUnitTest --no-daemon
+
+  supabase:
+    name: Supabase config present
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check supabase directory
+        run: test -f supabase/config.toml
