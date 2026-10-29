@@ -1,0 +1,8 @@
+{
+  "elevation": {
+    "0": { "$type": "string", "$value": "none" },
+    "1": { "$type": "string", "$value": "surface-step" },
+    "2": { "$type": "string", "$value": "0 4px 16px rgba(0,0,0,0.4)" },
+    "3": { "$type": "string", "$value": "scrim-plus-elevated" }
+  }
+}

@@ -13,7 +13,7 @@ Each client is a **thin UI layer** over the shared core (on web: thin UI over Su
 
 - UI: SwiftUI
 - Language: Swift
-- Core integration: XCFramework / local SPM generated from KMP (same commit as the app; steps: [phase-1 playbook](../plans/phase-1-scaffold-playbook.md))
+- Core integration: XCFramework / local SPM generated from KMP (same commit as the app; steps: [apps/ios/README.md](../../apps/ios/README.md))
 - Local responsibility: SwiftUI navigation, Keychain (if tokens outside SDK), signing, App Store
 - Auth: when shipping with Google Sign-In, the App Store also requires **Sign in with Apple** — see [auth](auth.md)
 
@@ -45,7 +45,7 @@ Shared invariants needed by web + mobile → prefer **Postgres (RLS / CHECK / co
 
 1. No secrets in the repo (Supabase anon key + URL OK in the client; service role never).
 2. User state (signed in / data): mobile from core; web from `supabase-js` session / agreed auth contract ([ADR 0007](../decisions/0007-auth-providers-minimum-pii.md)).
-3. Feature flags / environment (`dev` day one; staging/prod per [spec #10](../specs/supabase-staging-prod-split.md)) — [phase-1 playbook](../plans/phase-1-scaffold-playbook.md), [ADR 0004](../decisions/0004-supabase-hosting.md).
+3. Feature flags / environment (`dev` day one; staging/prod per [spec #10](../specs/supabase-staging-prod-split.md)) — [supabase/README.md](../../supabase/README.md), [ADR 0004](../decisions/0004-supabase-hosting.md).
 4. Minimal “hello”: login + read/write one RLS-protected entity (online-first + read cache — [ADR 0008](../decisions/0008-sync-strategy-online-first.md)); smoke contract: [hello-sync-read-cache](../specs/hello-sync-read-cache.md) — phase 2 goal.
 
 ## Out of UI scope (for now)

@@ -9,11 +9,25 @@ build/
 .next/
 out/
 *.tsbuildinfo
+.gradle/
+**/build/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+local.properties
+*.iml
+.cxx/
 
 # Env and secrets
 .env
 .env.*
 !.env.example
+
+# Supabase local
+supabase/.branches
+supabase/.temp
 
 # Local data
 data/
@@ -33,6 +47,7 @@ yarn-error.log*
 .cache/
 .turbo/
 .vite/
+.kotlin/
 
 # OS and editors
 .DS_Store
@@ -45,3 +60,8 @@ Thumbs.db
 # Test / coverage
 coverage/
 .nyc_output/
+
+# Keystores
+*.jks
+*.keystore
+

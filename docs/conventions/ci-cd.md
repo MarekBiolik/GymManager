@@ -1,6 +1,6 @@
 # CI/CD
 
-Principle skeleton. Concrete jobs and enablement order: [phase-1 playbook](../plans/phase-1-scaffold-playbook.md) (step F) — implementation in [#14](https://github.com/MarekBiolik/GymManager/issues/14).
+Concrete jobs: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). Scaffold issues [#14](https://github.com/MarekBiolik/GymManager/issues/14) / [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 
 ## CI goals on PR
 
@@ -38,7 +38,8 @@ None for now. Fast web fixes are easier than mobile (store review).
 
 ## Pipeline definition of done (phase 1)
 
-- [ ] Workflow on PR (GitHub Actions): Gradle (`core` + `apps/android`) + `core` tests + pnpm build `apps/web`; lint when tools are in the repo
-- [ ] No job requiring KMP-JS/Wasm
-- [ ] Branch protection on `master` when CI exists and is green
-- [ ] Same checks documented locally (root scripts + playbook steps D/F)
+- [x] Workflow on PR (GitHub Actions): Gradle (`core` + `apps/android`) + `core` tests + pnpm build `apps/web`; lint when tools are in the repo; design-token regen-clean; migration file presence
+- [x] No job requiring KMP-JS/Wasm
+- [ ] Branch protection on `master` when CI exists and is green (maintainer)
+- [x] Same checks documented locally (root scripts + [README](../../README.md))
+

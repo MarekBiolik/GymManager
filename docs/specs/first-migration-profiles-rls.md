@@ -183,7 +183,7 @@ Not part of this PR (docs only). After SQL is deployed on `dev`:
 | Artifact | Role |
 |----------|------|
 | This spec + draft SQL | Output of [#6](https://github.com/MarekBiolik/GymManager/issues/6) |
-| [phase-1 playbook](../plans/phase-1-scaffold-playbook.md) | #14 may proceed without apply; migration content = here; apply = #21 |
+| [roadmap phase 1](../roadmap.md) / [supabase/APPLY_DEV.md](../../supabase/APPLY_DEV.md) | Migration content = here; apply = #21 |
 | [#21](https://github.com/MarekBiolik/GymManager/issues/21) | Copy draft → `supabase/migrations/…sql`, apply on `dev`, CI lint |
 
 ## Related

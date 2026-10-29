@@ -1,0 +1,6 @@
+{
+  "activeTheme": "fitness-gym-oled-dark",
+  "preferredMode": "dark",
+  "version": "0.0.0",
+  "styleSpec": "docs/specs/visual-style-fitness-gym.md"
+}

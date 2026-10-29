@@ -95,7 +95,7 @@ For a multi-agent slice, keep a **short** status note (issue comment or PR descr
 |---------|--------|-------|
 | **Android** | Testable on Windows | AVD emulator + `adb`: build, install, launch, basic smoke. Env + runner skill = separate issues. |
 | **Web** | Testable | Node LTS + pnpm + Vite; production build in CI; interactive/browser checks via browser tools. |
-| **iOS** | Build-spec / docs only | No local Mac. Align with scaffold playbook step C: Xcode project + framework wiring docs; CI need not green iOS on Linux day one. **Runtime build + Simulator** deferred to Mac-access decision (cloud macOS runner vs physical Mac) — own issue / ADR. |
+| **iOS** | Build-spec / docs only | No local Mac. Align with [apps/ios/README.md](../../apps/ios/README.md): Xcode project + framework wiring docs; CI need not green iOS on Linux day one. **Runtime build + Simulator** deferred to Mac-access decision (cloud macOS runner vs physical Mac) — [#49](https://github.com/MarekBiolik/GymManager/issues/49). |
 | **Supabase / DB** | Testable after scaffold | Local CLI (`supabase start`), migration validate / `db lint`, RLS tests with two user JWTs per [testing](testing.md). Depends on [#14](https://github.com/MarekBiolik/GymManager/issues/14) and migration [#21](https://github.com/MarekBiolik/GymManager/issues/21). |
 
 Skill definitions and orchestration docs can be written **before** app code exists. Emulator smoke, web build checks, local Supabase, and full QA runners are only **exercisable** after the monorepo scaffold lands.
@@ -170,5 +170,5 @@ Area env + skill packages are tracked under the [Issue map](#issue-map).
 - [CI/CD](ci-cd.md)
 - [Coding standards](coding-standards.md)
 - [Architecture overview](../architecture/overview.md)
-- [Phase 1 scaffold playbook](../plans/phase-1-scaffold-playbook.md)
+- [Roadmap — phase 1](../roadmap.md) / [ADR 0005](../decisions/0005-monorepo-tooling.md)
 - Scaffold implement: [#14](https://github.com/MarekBiolik/GymManager/issues/14); first migration: [#21](https://github.com/MarekBiolik/GymManager/issues/21)

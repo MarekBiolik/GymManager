@@ -107,7 +107,7 @@ Files (e.g. package photos / progress) → Supabase Storage + bucket RLS. Option
 
 ## Migrations
 
-- Directory `supabase/migrations/` (phase 1 — [playbook](../plans/phase-1-scaffold-playbook.md)).
+- Directory `supabase/migrations/` (phase 1 — [#14](https://github.com/MarekBiolik/GymManager/issues/14) / [#21](https://github.com/MarekBiolik/GymManager/issues/21)).
 - First migration content: [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6); OQ-03 → [ADR 0008](../decisions/0008-sync-strategy-online-first.md)). Draft SQL in `docs/specs/sql/` = **NOT APPLIED**. Do not invent schema ad hoc in the scaffold PR (#14). Apply 1:1 → [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 - Every schema change = migration in a PR.
 - No “manual” prod changes without a migration.

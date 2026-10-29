@@ -10,7 +10,7 @@ Project documentation index. These documents are the source of truth for archite
 
 ## Plans (active only)
 
-- [Phase 1 — monorepo scaffold playbook](plans/phase-1-scaffold-playbook.md) — active until [#14](https://github.com/MarekBiolik/GymManager/issues/14) lands; then delete this playbook and keep code + living conventions
+- [Roadmap](roadmap.md) — phase order; phase 1 scaffold = [#14](https://github.com/MarekBiolik/GymManager/issues/14) + migration [#21](https://github.com/MarekBiolik/GymManager/issues/21)
 
 ## Architecture
 

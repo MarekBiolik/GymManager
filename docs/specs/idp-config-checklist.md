@@ -209,5 +209,5 @@ Ticking the console checkboxes is maintainer work when wiring `dev`; this docume
 
 - [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md), [ADR 0002](../decisions/0002-backend-supabase.md), [ADR 0004](../decisions/0004-supabase-hosting.md)
 - [auth](../architecture/auth.md), [data-and-sync — secrets](../architecture/data-and-sync.md#secrets)
-- [phase-1 scaffold playbook](../plans/phase-1-scaffold-playbook.md) — IdP outside scaffold done criteria
+- [roadmap phase 1](../roadmap.md) — IdP outside scaffold done criteria
 - Follow-up UI implementation: phase 2; account deletion [spec](account-deletion.md) / [#13](https://github.com/MarekBiolik/GymManager/issues/13)

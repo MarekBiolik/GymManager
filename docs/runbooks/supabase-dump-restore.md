@@ -160,5 +160,5 @@ Dashboard “restore backup” on Free is **not** available — that path appear
 
 - [ADR 0004 — Supabase hosting and backups](../decisions/0004-supabase-hosting.md)
 - [data-and-sync — Hosting and backups](../architecture/data-and-sync.md#hosting-and-backups)
-- [phase-1 scaffold playbook](../plans/phase-1-scaffold-playbook.md) — `supabase/` attach (`#14`)
+- [supabase/README.md](../../supabase/README.md) — `supabase/` attach (`#14`)
 - Issue [#9](https://github.com/MarekBiolik/GymManager/issues/9)

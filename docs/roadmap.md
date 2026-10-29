@@ -16,10 +16,9 @@ Work phases. Each phase ends with a documentation (or ADR) update before going d
 
 **Goal:** empty, building projects + attached Supabase (`dev`) + CI skeleton + **design-tokens foundation wired for apps to consume**.
 
-**Playbook (order, done per step, non-goals):** [plans/phase-1-scaffold-playbook.md](plans/phase-1-scaffold-playbook.md) — closes [#7](https://github.com/MarekBiolik/GymManager/issues/7).  
-**Code implementation:** [#14](https://github.com/MarekBiolik/GymManager/issues/14) (not this document).
+**Status:** scaffold [#14](https://github.com/MarekBiolik/GymManager/issues/14) + first migration [#21](https://github.com/MarekBiolik/GymManager/issues/21) (playbook #7 executed and removed per docs-lifecycle). Maintainer still links Cloud `dev` and runs `npx supabase db push` per [supabase/APPLY_DEV.md](../supabase/APPLY_DEV.md).
 
-**Design tokens (docs-first, before/with scaffold):** [ADR 0010](decisions/0010-design-tokens-ssot.md), [design-tokens contract](specs/design-tokens.md), [Fitness/Gym visual style](specs/visual-style-fitness-gym.md). Scaffold [#14](https://github.com/MarekBiolik/GymManager/issues/14) **extends** to include `design/tokens/` stubs, the thin generator entrypoint, and app theme wiring that **consumes generated outputs** (Compose / SwiftUI / CSS+TS) — not a separate deferred issue.
+**Design tokens:** [ADR 0010](decisions/0010-design-tokens-ssot.md), [design-tokens contract](specs/design-tokens.md), [Fitness/Gym visual style](specs/visual-style-fitness-gym.md) — `design/` generator + app theme wiring land with the scaffold.
 
 Scope:
 
