@@ -1,0 +1,84 @@
+# Roadmapa
+
+Fazy pracy. Każda faza kończy się aktualizacją dokumentacji (lub ADR), zanim idzie głęboko w kod.
+
+## Faza 0 — Fundamenty dokumentacji (obecna)
+
+**Cel:** zarys wizji, architektury, domeny, konwencji i listy otwartych pytań.
+
+**Output:** katalog `docs/` (ten zestaw dokumentów).
+
+**Done when:** ADR-y 0001–0003 przyjęte; open-questions wypisane; konwencje bazowe istnieją.
+
+---
+
+## Faza 1 — Scaffolding monorepo i infrastruktury
+
+**Cel:** puste, budujące się projekty + podpięty Supabase (dev) + CI szkielet.
+
+Zakres (do precyzowania przed startem):
+
+- Struktura `core/`, `apps/ios`, `apps/android`, `apps/web`, `supabase/`
+- Narzędzia monorepo / wersjonowanie (open question)
+- Pierwsza migracja schematu (minimalna: `profiles` + 1–2 tabele domenowe)
+- Auth smoke-test (Google; Apple na iOS gdy App Store)
+- Decyzja hostingu Supabase (cloud free vs self-host)
+
+**Zależne open questions:** monorepo tooling, hosting Supabase, interop web↔core.
+
+---
+
+## Faza 2 — Auth + sync baseline
+
+**Cel:** użytkownik loguje się, dane są izolowane RLS, podstawowy sync działa na wszystkich klientach.
+
+Zakres:
+
+- Finalna metoda logowania (PII minimum)
+- Strategia offline/cache i konflikty
+- Shared repositories w core + cienkie UI „hello sync”
+
+**Zależne open questions:** auth method, offline/sync, web↔KMP interop.
+
+---
+
+## Faza 3 — Moduł żywienia (MVP)
+
+**Cel:** własne produkty/posiłki, wpisy spożycia, historia, podstawowe agregacje.
+
+Może wykorzystać zewnętrzne źródło żywności (np. OpenFoodFacts) — decyzja osobnym ADR.
+
+---
+
+## Faza 4 — Moduł treningu (MVP)
+
+**Cel:** ćwiczenia, sesje, serie, historia treningów.
+
+---
+
+## Faza 5 — Moduł pomiarów (MVP)
+
+**Cel:** pomiary ciała w czasie, proste wykresy/agregacje (Postgres).
+
+---
+
+## Faza 6 — Integracja UX „jedna apka”
+
+**Cel:** spójna nawigacja między modułami, polish, App Store / Play Store / hosting web.
+
+---
+
+## Faza 7 — AI (później)
+
+**Cel:** skille / agenci / workflow wokół ustabilizowanej infrastruktury i domeny.
+
+Świadomie **po** fazach 0–6. Nie projektujemy tu stacku AI.
+
+---
+
+## Jak pracujemy z roadmapą
+
+1. Przed startem fazy: krótki plan + doprecyzowanie powiązanych punktów z [open-questions](open-questions.md).
+2. Decyzje trwałe → ADR.
+3. Kod dopiero po zaktualizowanej dokumentacji obszaru.
+4. Roadmapa nie jest kontraktem dat — to kolejność zależności.
