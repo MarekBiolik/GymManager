@@ -23,11 +23,12 @@ erDiagram
 
 ### profiles
 
-Minimalny rekord aplikacji powiązany z kontem Auth.
+Minimalny rekord aplikacji powiązany z kontem Auth. Zasady PII i usuwania konta: [auth](../architecture/auth.md), [ADR 0007](../decisions/0007-auth-providers-minimum-pii.md).
 
 - `id` (UUID, PK, = auth user)
 - `created_at`, `updated_at`
-- opcjonalnie: preferencje UI / jednostki (`kg`/`lb`) — bez zbędnego PII
+- preferencje UI / jednostki (`kg`/`lb`) — bez PII
+- **nie:** email, display name, avatar, płeć, data urodzenia (email tylko w `auth.users`)
 
 ### foods
 
