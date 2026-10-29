@@ -6,40 +6,53 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.gymmanager.android.auth.AndroidAuthConfig
 import com.gymmanager.android.auth.AuthViewModel
 import com.gymmanager.android.auth.AuthViewModelFactory
 import com.gymmanager.android.auth.GoogleSignInHelper
+import com.gymmanager.android.sync.AndroidNetworkStatus
+import com.gymmanager.android.sync.HelloSyncViewModel
+import com.gymmanager.android.sync.HelloSyncViewModelFactory
 import com.gymmanager.android.theme.GymManagerTheme
 import com.gymmanager.android.theme.GymTokens
 import com.gymmanager.android.ui.AuthScreen
-import com.gymmanager.core.application.auth.createAuthSession
+import com.gymmanager.android.ui.HelloSyncScreen
+import com.gymmanager.core.GymManagerServices
+import com.gymmanager.core.createGymManagerServices
 import com.gymmanager.core.data.supabase.SupabaseConfig
+import com.gymmanager.core.domain.auth.AuthState
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val authConfig = AndroidAuthConfig.fromBuildConfig()
-        val authSession =
+        val network = AndroidNetworkStatus(applicationContext)
+
+        val services: GymManagerServices? =
             if (authConfig.isConfigured) {
-                createAuthSession(
-                    SupabaseConfig(
-                        projectUrl = authConfig.supabaseUrl,
-                        anonKey = authConfig.supabaseAnonKey,
-                    ),
-                    lifecycleScope,
+                createGymManagerServices(
+                    config =
+                        SupabaseConfig(
+                            projectUrl = authConfig.supabaseUrl,
+                            anonKey = authConfig.supabaseAnonKey,
+                        ),
+                    scope = lifecycleScope,
+                    network = network,
                 )
             } else {
                 null
             }
+
         val googleSignInHelper = GoogleSignInHelper(applicationContext)
         val viewModelFactory =
             AuthViewModelFactory(
-                authSession = authSession,
+                authSession = services?.auth,
                 googleSignInHelper = googleSignInHelper,
                 config = authConfig,
             )
@@ -52,8 +65,35 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .background(GymTokens.ColorBgCanvas),
                 ) {
-                    val viewModel: AuthViewModel = viewModel(factory = viewModelFactory)
-                    AuthScreen(viewModel = viewModel)
+                    val authViewModel: AuthViewModel = viewModel(factory = viewModelFactory)
+                    val authUi by authViewModel.uiState.collectAsStateWithLifecycle()
+                    AuthScreen(
+                        viewModel = authViewModel,
+                        signedInExtra = {
+                            val signedIn = authUi.authState as? AuthState.SignedIn
+                            if (signedIn != null && services != null) {
+                                val helloVm: HelloSyncViewModel =
+                                    viewModel(
+                                        key = signedIn.userId,
+                                        factory =
+                                            HelloSyncViewModelFactory(
+                                                userId = signedIn.userId,
+                                                profiles = services.profiles,
+                                                measurements = services.measurements,
+                                                network = network,
+                                            ),
+                                    )
+                                HelloSyncScreen(viewModel = helloVm)
+                            }
+                        },
+                        onBeforeSignOut = {
+                            val signedIn = authUi.authState as? AuthState.SignedIn
+                            if (signedIn != null && services != null) {
+                                services.profiles.onLogout(signedIn.userId)
+                                services.measurements.onLogout(signedIn.userId)
+                            }
+                        },
+                    )
                 }
             }
         }
