@@ -38,7 +38,7 @@ Project documentation index. These documents are the source of truth for archite
 
 ## Specifications (design / UX)
 
-- Design-tokens contract and generation pipeline — SPEC ONLY ([#61](https://github.com/MarekBiolik/GymManager/issues/61)); follows [ADR 0010](decisions/0010-design-tokens-ssot.md)
+- [Design tokens contract and generation pipeline](specs/design-tokens.md) — SPEC ONLY ([#61](https://github.com/MarekBiolik/GymManager/issues/61)); [ADR 0010](decisions/0010-design-tokens-ssot.md)
 - Fitness/Gym visual style — SPEC ONLY ([#62](https://github.com/MarekBiolik/GymManager/issues/62)); depends on tokens contract
 
 ## Specifications (nutrition — post-MVP)
