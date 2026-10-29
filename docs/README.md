@@ -33,6 +33,7 @@ Project documentation index. These documents are the source of truth for archite
 - [ADR 0006 — Web: supabase-js without KMP→JS/Wasm](decisions/0006-web-supabase-js-without-kmp-js.md)
 - [ADR 0007 — Auth providers and minimum PII](decisions/0007-auth-providers-minimum-pii.md)
 - [ADR 0008 — Sync strategy: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
+- [ADR 0009 — Food data source: own foods first](decisions/0009-food-data-source-own-first.md)
 
 ## Domain
 

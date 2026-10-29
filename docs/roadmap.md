@@ -60,7 +60,7 @@ Scope:
 
 **Goal:** own products/meals, intake entries, history, basic aggregations.
 
-May use an external food source (e.g. OpenFoodFacts) — decision in a separate ADR.
+**Data source:** own `foods` only ([ADR 0009](decisions/0009-food-data-source-own-first.md), [OQ-07](open-questions.md) decided). OpenFoodFacts / hybrid import — **beyond** phase-3 MVP ([#26](https://github.com/MarekBiolik/GymManager/issues/26)).
 
 ---
 

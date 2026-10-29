@@ -18,7 +18,7 @@ Switching between areas (nutrition / training / measurements) is a UI/UX detail 
 
 ## Product modules (outline)
 
-1. **Nutrition** — own meals/foods, intake entries, history (1+ year), macros/calories. Inspired by FitAtu / food trackers.
+1. **Nutrition** — own meals/foods, intake entries, history (1+ year), macros/calories. Inspired by FitAtu / food trackers. MVP catalog source: own foods ([ADR 0009](decisions/0009-food-data-source-own-first.md)).
 2. **Training** — exercises, sessions, sets, workout history.
 3. **Measurements** — weight and other body metrics over time, charts/aggregations.
 

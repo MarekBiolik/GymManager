@@ -18,7 +18,7 @@ On git `master` essentially only `.gitignore` was committed. The working tree st
 1. None of the above artifacts **enter** git history as “production code”.
 2. New web lives in `apps/web/`, not old `web/`.
 3. SQLite is not the target backend — target is Postgres (Supabase).
-4. OpenFoodFacts may return as an integration — separate decision ([OQ-07](../open-questions.md)), not by resurrecting the old server.
+4. OpenFoodFacts may return as **import into own `foods`** ([ADR 0009](../decisions/0009-food-data-source-own-first.md), [OQ-07](../open-questions.md) decided) — not by resurrecting the old server and not as a live SoT in MVP.
 
 ## Execution checklist
 

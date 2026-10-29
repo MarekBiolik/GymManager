@@ -13,7 +13,7 @@ Fuller domain model: [data-model](../domain/data-model.md). At the database leve
 | Area | Example tables | Notes |
 |------|----------------|--------|
 | Identity | `profiles` (optional, 1:1 with `auth.users`) | Minimum PII |
-| Nutrition | `foods`, `food_entries` | Own products + intake entries |
+| Nutrition | `foods`, `food_entries` | Own products + intake entries; source = user catalog ([ADR 0009](../decisions/0009-food-data-source-own-first.md)) |
 | Training | `exercises`, `workouts` / `sessions`, `sets` | Session history |
 | Measurements | `measurements` | Weight and other metrics over time |
 | Shared | `tags` (optional) | Cross-cutting labels |

@@ -59,10 +59,15 @@ Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 
 ## OQ-07 — Food data source
 
-**Status:** open  
-**Context:** the old prototype used OpenFoodFacts. Do we return to OFF, user-owned foods only, or a hybrid?
+**Status:** decided — [ADR 0009](decisions/0009-food-data-source-own-first.md), [data-model](domain/data-model.md#foods)  
+**Decision:** MVP = **own foods only** (Postgres + RLS); no live OFF in phase 3. Later hybrid: OFF search/import → copy into the user’s `foods` with optional `external_source` / `external_id`. Macro snapshot in `food_entries` independent of any external API.
 
-**Closes by:** before phase 3 (nutrition module).
+**Options (considered):**
+
+1. Own foods only (no hybrid path).
+2. OFF-only (live API).
+3. Hybrid from day 1.
+4. Own first + hybrid later — **chosen**.
 
 ---
 

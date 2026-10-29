@@ -16,10 +16,12 @@ Unambiguous names used in docs, ADRs, code, and schema. Add new terms here **bef
 
 | Term | Meaning |
 |------|---------|
-| **Food** | Product or recipe defined by the user (or imported), with macros per serving/100 g |
+| **Food** | Product or recipe **owned by the user** (or created via a later import), with macros **per 100 g**; lives in `foods` under RLS — [ADR 0009](../decisions/0009-food-data-source-own-first.md) |
 | **Food entry** | Intake event: what, how much, when (linked to a Food or a value snapshot) |
 | **Diary** | Day view of entries (UI); not necessarily a separate table |
 | **Macro** | Protein, carbs, fat (and derived calories) |
+| **External food source** | Optional provenance source on import (e.g. OpenFoodFacts); does not replace the own `foods` row |
+| **OpenFoodFacts (OFF)** | External product DB; **unused** in MVP; later only as import → copy into `foods` |
 
 ## Training
 

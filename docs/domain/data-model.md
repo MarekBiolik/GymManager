@@ -34,14 +34,14 @@ Minimal app record linked to the Auth account. PII and account-deletion rules: [
 
 ### foods
 
-User-owned products / meals.
+User-owned products / meals. **Data source (MVP):** user catalog only — [ADR 0009](../decisions/0009-food-data-source-own-first.md) (closes [OQ-07](../open-questions.md)). No global product table and no live OpenFoodFacts in phase 3.
 
 - `id`, `user_id`
 - `name`
-- nutrition values (per 100 g or per serving — TBD)
-- `serving_size` / unit
+- nutrition values **per 100 g** (MVP canon): protein, carbs, fat; derived calories / consistency in the domain layer
+- `default_serving_g` (optional) — default UI portion; the entry still computes from `amount`
 - `created_at`, `updated_at`
-- optionally: external id (e.g. OpenFoodFacts) — [OQ-07](../open-questions.md)
+- `external_source` / `external_id` (nullable) — provenance after a future import (e.g. `openfoodfacts` + code); **not** runtime SoT; may be added null in the nutrition migration with no OFF UI
 
 ### food_entries
 
@@ -116,5 +116,5 @@ Materialized daily tables — optional optimization later.
 ## Out of outline scope
 
 - Full nutrition / training tables (phases 3–4); exact first-migration types → [spec](../specs/first-migration-profiles-rls.md); CHECK vs core split: [postgres-invariants](../architecture/postgres-invariants.md)
-- OpenFoodFacts import
+- OpenFoodFacts import / search — beyond MVP ([#26](https://github.com/MarekBiolik/GymManager/issues/26); [ADR 0009](../decisions/0009-food-data-source-own-first.md))
 - Sharing data between users
