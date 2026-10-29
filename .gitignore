@@ -29,8 +29,8 @@ local.properties
 supabase/.branches
 supabase/.temp
 
-# Local data
-data/
+# Local data (repo root only — do not ignore core/.../data/ packages)
+/data/
 *.db
 *.db-shm
 *.db-wal
