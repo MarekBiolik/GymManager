@@ -1,0 +1,17 @@
+---
+description: Commit after completed work steps; never add Co-authored-by
+alwaysApply: true
+---
+
+# Commits after steps
+
+When a discrete work step is finished (docs batch, skill/rule, scaffold slice, feature slice) and the user asked to commit—or said to keep the branch tidy with commits—create a **focused git commit** for that step before moving on.
+
+## Rules
+
+- One step → one commit (split docs vs tooling vs app code when they landed together).
+- Message: short, imperative, explains **why** (Conventional Commits preferred: `docs:`, `chore:`, `feat:`, …).
+- Stage only files that belong to that step.
+- **Never** add `Co-authored-by` or other trailer crediting Cursor/the agent.
+- Do not commit secrets, `node_modules`, build artifacts, or local DB files.
+- Do not push unless the user asks.
