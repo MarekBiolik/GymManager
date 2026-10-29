@@ -59,4 +59,4 @@ Options from [OQ-07](../open-questions.md): own foods only, OFF-only (live), or 
 - [legacy-cleanup](../conventions/legacy-cleanup.md) — OFF does not return via the old server
 - [ADR 0008](0008-sync-strategy-online-first.md) — sync / read cache for `foods`
 - [postgres-invariants](../architecture/postgres-invariants.md) — ownership `food_entries` → `foods`
-- Follow-up: [#26 Spec: OpenFoodFacts import/search (nutrition hybrid post-MVP)](https://github.com/MarekBiolik/GymManager/issues/26)
+- Follow-up hybrid spec: [openfoodfacts-import-hybrid](../specs/openfoodfacts-import-hybrid.md) ([#26](https://github.com/MarekBiolik/GymManager/issues/26))

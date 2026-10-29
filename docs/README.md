@@ -35,6 +35,10 @@ Project documentation index. These documents are the source of truth for archite
 - [ADR 0008 — Sync strategy: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
 - [ADR 0009 — Food data source: own foods first](decisions/0009-food-data-source-own-first.md)
 
+## Specifications (nutrition — post-MVP)
+
+- [OpenFoodFacts import/search hybrid](specs/openfoodfacts-import-hybrid.md) — SPEC ONLY ([#26](https://github.com/MarekBiolik/GymManager/issues/26)); after own-foods MVP / ADR 0009; no OFF client in this ticket
+
 ## Domain
 
 - [Glossary](domain/glossary.md)

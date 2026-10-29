@@ -116,5 +116,5 @@ Materialized daily tables — optional optimization later.
 ## Out of outline scope
 
 - Full nutrition / training tables (phases 3–4); exact first-migration types → [spec](../specs/first-migration-profiles-rls.md); CHECK vs core split: [postgres-invariants](../architecture/postgres-invariants.md)
-- OpenFoodFacts import / search — beyond MVP ([#26](https://github.com/MarekBiolik/GymManager/issues/26); [ADR 0009](../decisions/0009-food-data-source-own-first.md))
+- OpenFoodFacts import / search — beyond MVP ([spec](../specs/openfoodfacts-import-hybrid.md), [#26](https://github.com/MarekBiolik/GymManager/issues/26); [ADR 0009](../decisions/0009-food-data-source-own-first.md))
 - Sharing data between users
