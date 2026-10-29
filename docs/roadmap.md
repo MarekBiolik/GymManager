@@ -38,10 +38,10 @@ Zakres:
 
 - Implementacja logowania wg [ADR 0007](decisions/0007-auth-providers-minimum-pii.md) / [auth](architecture/auth.md) (spec zamknięty; tu kod + konfiguracja IdP)
 - Usuwanie konta (cascade / Edge Function) wg zarysu w auth.md
-- Strategia offline/cache i konflikty
-- Shared repositories w core + cienkie UI „hello sync”
+- Sync wg [ADR 0008](decisions/0008-sync-strategy-online-first.md): zapis online + cache odczytu + LWW; cienkie UI „hello sync”
+- Shared repositories w core (mobile) + równoważne wołania `supabase-js` (web)
 
-**Zależne open questions:** offline/sync (OQ-03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline z core dopiero przy revisit.
+**Zależne open questions:** (brak blokujących OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline-write z core dopiero przy revisit / osobnym ADR.
 
 ---
 

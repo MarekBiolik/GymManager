@@ -43,8 +43,10 @@ Jednoznaczne nazwy używane w docs, ADR, kodzie i schemacie. Nowe pojęcia dopis
 |--------|-----------|
 | **Core** | Wspólny moduł KMP z logiką domenową |
 | **RLS** | Row Level Security — izolacja wierszy per `user_id` |
-| **Sync** | Uzgodnienie stanu lokalnego z Postgresem |
-| **Source of truth** | Po sync: Postgres; lokalny cache jest wtórny |
+| **Sync** | Uzgodnienie stanu klienta z Postgresem (MVP: zapis online + cache odczytu — [ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
+| **Source of truth** | Postgres; lokalny cache odczytu jest wtórny |
+| **LWW** | Last-write-wins — konflikt wiersza rozstrzyga późniejszy `updated_at` |
+| **Read cache** | Lokalna kopia odczytanych wierszy; nie kolejka zapisów offline |
 
 ## Unikać
 

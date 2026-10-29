@@ -105,7 +105,7 @@ Hosting projektu, środowiska i pełna polityka sekretów: [ADR 0004](../decisio
 
 - **Android / web:** Google Cloud OAuth client + redirect URI Supabase.
 - **iOS:** Google + Apple (Service ID / capability Sign in with Apple, URL schemes / entitlements).
-- Sesja logicznie współdzielona przez to samo konto Supabase → sync danych ([data-and-sync](data-and-sync.md)).
+- Sesja logicznie współdzielona przez to samo konto Supabase → sync danych ([data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
 
 ## Poza zakresem teraz
 

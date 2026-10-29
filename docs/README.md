@@ -27,6 +27,7 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 - [ADR 0005 — Monorepo: layout, tooling i wersjonowanie core](decisions/0005-monorepo-tooling.md)
 - [ADR 0006 — Web: supabase-js bez KMP→JS/Wasm](decisions/0006-web-supabase-js-without-kmp-js.md)
 - [ADR 0007 — Providery logowania i minimum PII](decisions/0007-auth-providers-minimum-pii.md)
+- [ADR 0008 — Strategia sync: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
 
 ## Domena
 
