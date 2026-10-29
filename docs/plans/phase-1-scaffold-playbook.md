@@ -18,7 +18,7 @@ Empty, **building** projects in the monorepo + attached Supabase Cloud (`dev`) +
 | Parallel TypeScript domain in `apps/web` | ADR 0006 + [clients](../architecture/clients.md) |
 | Nx / Turborepo / publishing core to a registry | [ADR 0005](../decisions/0005-monorepo-tooling.md) |
 | Separate `staging` / `prod` Cloud | [split spec](../specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); [ADR 0004](../decisions/0004-supabase-hosting.md) |
-| Full Auth UI + IdP in apps | Phase 2; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12) |
+| Full Auth UI + IdP in apps | Phase 2; IdP checklist [spec](../specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)) |
 | First migration SQL spec (table/RLS content) | [first-migration-profiles-rls](../specs/first-migration-profiles-rls.md) / [#6](https://github.com/MarekBiolik/GymManager/issues/6) — **input**, not #7/#14 output; apply = #21 |
 | Dump/restore runbook (operational drill) | [runbook](../runbooks/supabase-dump-restore.md) / [#9](https://github.com/MarekBiolik/GymManager/issues/9) — after `supabase/` appears |
 | Domain features (nutrition / training / measurements) | Phases 3–5 |
@@ -208,7 +208,7 @@ The roadmap mentions “Auth smoke-test”. In practice:
 | Element | Phase 1 (#14) | Later |
 |---------|---------------|--------|
 | Auth project enabled in Supabase `dev` | optional maintainer checkbox | — |
-| Google/Apple IdP config | not in #14 | [#12](https://github.com/MarekBiolik/GymManager/issues/12) + phase 2 |
+| Google/Apple IdP config | not in #14 | [idp-config-checklist](../specs/idp-config-checklist.md) / [#12](https://github.com/MarekBiolik/GymManager/issues/12) + phase 2 |
 | Login UI / hello sync | no | phase 2 |
 
 Do not block scaffold merge on working OAuth.

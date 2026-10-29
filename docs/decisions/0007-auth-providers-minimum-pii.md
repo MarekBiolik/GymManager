@@ -32,13 +32,15 @@ Options from [OQ-02](../open-questions.md): Google OAuth, Sign in with Apple, ma
 
 - Positive: clear happy path on three clients; App Store alignment; consistent with minimum PII and ADR 0002; little custom auth logic.
 - Negative: email in Auth (compromise vs “zero PII”); Google Cloud + Apple Developer + redirect URI config at scaffolding; two sign-in buttons on iOS.
-- Later: IdP console checklist at scaffold; account-deletion implementation (SQL cascade / Edge Function); optional IdP linking when a user has separate Google and Apple accounts.
+- IdP console checklist (Google / Apple / Supabase redirects, secrets map): [specs/idp-config-checklist.md](../specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)) — docs only; no SDK code.
+- Later: client login implementation (phase 2); account deletion ([spec](../specs/account-deletion.md) / [#13](https://github.com/MarekBiolik/GymManager/issues/13)); optional IdP linking when a user has separate Google and Apple accounts.
 
 ## Related
 
 - [auth](../architecture/auth.md)
+- [IdP checklist — Google + Apple + redirects](../specs/idp-config-checklist.md)
 - [OQ-02](../open-questions.md) (decided)
 - [ADR 0002](0002-backend-supabase.md)
 - [data-model — profiles](../domain/data-model.md)
 - [First migration spec — profiles](../specs/first-migration-profiles-rls.md)
-- Follow-ups: IdP [#12](https://github.com/MarekBiolik/GymManager/issues/12), account deletion [#13](https://github.com/MarekBiolik/GymManager/issues/13), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21)
+- Follow-ups: account deletion [#13](https://github.com/MarekBiolik/GymManager/issues/13), apply SQL [#21](https://github.com/MarekBiolik/GymManager/issues/21)

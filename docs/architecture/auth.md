@@ -87,7 +87,7 @@ Spec-level outline (implementation in auth/scaffold phase — separate follow-up
 
 1. **Entry:** account settings → “Delete account” → confirmation (deliberate, hard to click by accident).
 2. **Effect:** delete all of the user’s app rows (`user_id` / `profiles.id`) and delete the user in Supabase Auth (end sessions on all devices).
-3. **Mechanism (direction):** first migration sets FK `ON DELETE CASCADE` from `profiles` / user tables → `auth.users` ([spec](../specs/first-migration-profiles-rls.md)); full UI flow + optional Edge Function — [#13](https://github.com/MarekBiolik/GymManager/issues/13). **Not** deletion only from the client via the `anon` key.
+3. **Mechanism (direction):** first migration sets FK `ON DELETE CASCADE` from `profiles` / user tables → `auth.users` ([spec](../specs/first-migration-profiles-rls.md)); full flow — [account-deletion spec](../specs/account-deletion.md) ([#13](https://github.com/MarekBiolik/GymManager/issues/13)). **Not** deletion only from the client via the `anon` key.
 4. **After deletion:** no intentional “keep PII for later”; backup dumps may briefly hold historical data until hosting retention expires (see backup policy under OQ-05 / data-and-sync).
 5. **Stores:** procedure must align with Apple / Google Play account-deletion requirements (in-app path, not only “email support”).
 
@@ -101,11 +101,19 @@ Spec-level outline (implementation in auth/scaffold phase — separate follow-up
 
 Project hosting, environments, and full secrets policy: [ADR 0004](../decisions/0004-supabase-hosting.md), [data-and-sync](data-and-sync.md#hosting-and-backups).
 
-## Platforms — config checklist (scaffold)
+## Platforms — IdP configuration checklist
 
-- **Android / web:** Google Cloud OAuth client + Supabase redirect URI.
-- **iOS:** Google + Apple (Service ID / Sign in with Apple capability, URL schemes / entitlements).
-- Session logically shared via the same Supabase account → data sync ([data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
+Full console checklist (Google Cloud, Apple Developer, redirect URI / deep link, secrets map): **[specs/idp-config-checklist.md](../specs/idp-config-checklist.md)** ([#12](https://github.com/MarekBiolik/GymManager/issues/12)).
+
+Summary (aligned with ADR 0007):
+
+| Client | IdP MVP | Console |
+|--------|---------|---------|
+| Android | Google | Android OAuth client (package + SHA-1) + Web client secret in Supabase |
+| iOS | Google + Sign in with Apple | Google iOS client; Apple App ID + Services ID + `.p8` key |
+| Web | Google | OAuth Web client; Site URL + Additional Redirect URLs |
+
+Session logically shared via the same Supabase account → data sync ([data-and-sync](data-and-sync.md), [ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
 
 ## Out of scope now
 
