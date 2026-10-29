@@ -1,5 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import { useCallback, useEffect, useState } from "react";
+import { wipeHelloSyncCache } from "../lib/helloSync";
 import {
   restoreSession,
   signInWithGoogle,
@@ -71,12 +72,16 @@ export function useAuthSession(): {
 
   const handleSignOut = useCallback(async () => {
     try {
+      const userId = state.status === "signed_in" ? state.session.user.id : null;
       await signOut();
+      if (userId) {
+        wipeHelloSyncCache(userId);
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Sign-out failed";
       setState({ status: "error", message });
     }
-  }, []);
+  }, [state]);
 
   return { state, signInWithGoogle: handleSignIn, signOut: handleSignOut };
 }
