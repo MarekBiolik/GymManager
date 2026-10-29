@@ -1,0 +1,20 @@
+---
+description: After foundations, ship work as issue then PR then focused commits
+alwaysApply: true
+---
+
+# Workflow: issue → PR → commit
+
+After architecture foundations, implement work as **narrow vertical slices**, not large undocumented batches.
+
+## Loop
+
+1. **Issue** — capture the slice (use skill `to-issues` when breaking a plan/spec). Title and body in **English**.
+2. **Branch + PR** — open a PR early from a focused branch; describe intent in English (skill `pr` when drafting the body).
+3. **Commits** — focused commits per completed step (`commit-after-steps`): English messages, no `Co-authored-by`.
+4. **Merge** — only when the user asks; do not merge or close issues/PRs on your own unless they explicitly request it.
+
+## Push vs merge
+
+- Pushing the **feature branch** so the PR stays up to date is OK when the user is working through PRs (ask if unclear).
+- Do **not** push directly to the default branch, force-push shared history, or merge without an explicit user request.
