@@ -11,7 +11,7 @@ description: >-
 
 Own `apps/web/`: React + TypeScript + Vite UI talking to Supabase via **`supabase-js` only**. Day-1 interop: [ADR 0006](../../../docs/decisions/0006-web-supabase-js-without-kmp-js.md). Client role: [clients](../../../docs/architecture/clients.md). Shared rules with mobile: [postgres-invariants](../../../docs/architecture/postgres-invariants.md). Coding: [coding-standards](../../../docs/conventions/coding-standards.md).
 
-Product visual system / branding → UI/UX skill (#48), not this skill.
+**Theme:** consume generated **CSS variables + TypeScript tokens** (theme hook / CSS). Do **not** hardcode palette hex — change values via SSOT + regenerate (`design-tokens` skill). UX flows/IA → `ui-ux`. See [references/theming.md](references/theming.md).
 
 Env: [references/env-checklist.md](references/env-checklist.md).
 
@@ -36,10 +36,11 @@ Web does **not** consume the KMP binary. Shared integrity/isolation lives in Pos
 
 ### 2. Thin UI + supabase-js
 
-**Allowed:** routing, layout, theme hooks, session glue via `supabase-js`, row/DTO → view mapping, light form validation that **mirrors** DB/core.
+**Allowed:** routing, layout, theme hooks that read **generated** CSS vars / TS tokens, session glue via `supabase-js`, row/DTO → view mapping, light form validation that **mirrors** DB/core.
 
 **Forbidden:**
 
+- Hardcoding brand/surface hex — bind to generated `--color-*` / `tokens` instead
 - KMP-JS/Wasm imports or assuming a shared Kotlin domain on web
 - Parallel TypeScript domain (use cases, business aggregations, “domain services”)
 - Treating TS-only validation as a security boundary
@@ -78,5 +79,6 @@ Short status: routes/components touched, supabase calls used, build result. Coor
 
 - `supabase-js` only — no KMP on web (ADR 0006)
 - No parallel TS domain; shared invariants → Postgres
+- No parallel palette — tokens via `design-tokens` SSOT + regenerate
 - No `service_role` in web
 - Prefer strong model for auth/session edge cases; cheap helpers for pnpm/search

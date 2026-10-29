@@ -13,7 +13,9 @@ Own `apps/ios/`: SwiftUI presentation over the KMP framework exported from `core
 
 **Runtime mode today:** docs + project structure + framework-wiring instructions. Do **not** claim a green Xcode/Simulator build from a Windows agent. Full runtime/Simulator scope waits on [#49](https://github.com/MarekBiolik/GymManager/issues/49) (Mac access decision).
 
-Env: [references/env-checklist.md](references/env-checklist.md). Product visual system → #48.
+Env: [references/env-checklist.md](references/env-checklist.md).
+
+**Theme:** consume generated **SwiftUI token structs** / Color extensions. Do **not** hardcode palette hex — change values via SSOT + regenerate (`design-tokens` skill). Build-spec first until Mac access ([#49](https://github.com/MarekBiolik/GymManager/issues/49)). See [references/theming.md](references/theming.md).
 
 ## Workflow
 
@@ -38,6 +40,7 @@ iOS consumes the public core API via XCFramework / local SPM from KMP (same comm
 
 - SwiftUI views without business logic; map at the edge from core types
 - Navigation, Keychain (if tokens outside SDK), system permissions — iOS-owned
+- Colors / spacing / type from **generated** token structs — never hardcode brand hex in feature views
 - When shipping Google Sign-In: App Store also requires **Sign in with Apple** — see [auth](../../../docs/architecture/auth.md)
 
 On Windows / no Mac: prefer stubs, placeholders, and accurate structure over inventing unverifiable runtime code paths.
@@ -74,5 +77,5 @@ Short status: files/docs touched, mode (build-spec vs runtime), blockers on #49 
 - Thin SwiftUI over KMP — no business rules in Views
 - No claimed Simulator/Xcode success without Mac access (#49)
 - Sign in with Apple when Google Sign-In ships on iOS
-- No product design-system ownership here (#48)
+- No parallel palette — tokens via `design-tokens` SSOT + regenerate (appearance SSOT not owned here)
 - Prefer strong model for interop/auth edges; cheap helpers for search/doc edits

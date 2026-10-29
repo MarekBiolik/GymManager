@@ -30,10 +30,12 @@ Business logic is not reimplemented in UI — it goes to core ([ADR 0001](0001-s
 
 - Positive: full access to platform APIs and look-and-feel; clear ownership split with core.
 - Negative: every screen/UI feature ×3; longer time-to-feature; need strong “logic only in core” discipline.
-- Later: design system per platform or shared UX guidelines; OQ-08 (module navigation); scaffold `apps/*`.
+- Later: OQ-08 (module navigation); scaffold `apps/*`.
+- **Shared visual tokens (not shared UI):** [ADR 0010](0010-design-tokens-ssot.md) adds a language-neutral token SSOT + generator → Compose / SwiftUI / CSS+TS outputs. Native UI ownership in this ADR is **unchanged** — only token values and naming are shared.
 
 ## Related
 
 - [clients](../architecture/clients.md)
 - [ADR 0001](0001-shared-core-kmp.md)
+- [ADR 0010](0010-design-tokens-ssot.md) — design tokens SSOT (does not override this ADR)
 - [vision](../00-vision.md)

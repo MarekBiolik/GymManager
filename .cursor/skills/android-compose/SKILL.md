@@ -13,6 +13,8 @@ Own `apps/android/`: Jetpack Compose UI and Android platform wiring over `:core`
 
 Core domain stays in `core-kmp`. Emulator smoke is a separate skill/issue (`android-emulator` / #50) — this skill covers code and toolchain, not device-farm loops.
 
+**Theme:** consume **generated** design tokens (MaterialTheme / `GymTheme` wiring). Do **not** hardcode palette hex — change values via SSOT + regenerate (`design-tokens` skill). See [references/theming.md](references/theming.md). Deeper notes: [state-management](references/state-management.md), [performance](references/performance.md), [a11y](references/a11y.md).
+
 Env: [references/env-checklist.md](references/env-checklist.md).
 
 ## Workflow
@@ -40,8 +42,9 @@ Do not reimplement macros, session completion, sync conflict rules, etc. in Comp
 
 - Jetpack Compose for UI; idiomatic Kotlin
 - Map core/UI models at the edge; keep screens previewable where practical
-- Navigation, theme, layout, a11y labels — yes
+- Navigation, theme (from generated tokens), layout, a11y labels — yes
 - Business rules, SQL, RLS assumptions — no
+- No hardcoded `#RRGGBB` for brand/surface/text — bind `MaterialTheme` / theme extensions to generated token objects
 
 Prefer state hoisting / unidirectional data from core state; avoid dumping repository calls that bypass the agreed core facade.
 
@@ -77,5 +80,6 @@ Short status: screens/modules touched, core API used, build result. PR/merge onl
 
 - Thin UI over core — no parallel domain in Android
 - No Compose Multiplatform shared UI (native per platform — ADR 0003)
+- No parallel palette — tokens via `design-tokens` SSOT + regenerate
 - No `service_role` in the app
 - Prefer strong model for navigation/UX structure; cheap helpers for Gradle/search

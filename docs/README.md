@@ -34,6 +34,12 @@ Project documentation index. These documents are the source of truth for archite
 - [ADR 0007 — Auth providers and minimum PII](decisions/0007-auth-providers-minimum-pii.md)
 - [ADR 0008 — Sync strategy: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
 - [ADR 0009 — Food data source: own foods first](decisions/0009-food-data-source-own-first.md)
+- [ADR 0010 — Design tokens SSOT and cross-platform generation](decisions/0010-design-tokens-ssot.md)
+
+## Specifications (design / UX)
+
+- [Design tokens contract and generation pipeline](specs/design-tokens.md) — SPEC ONLY ([#61](https://github.com/MarekBiolik/GymManager/issues/61)); [ADR 0010](decisions/0010-design-tokens-ssot.md)
+- [Fitness/Gym visual style](specs/visual-style-fitness-gym.md) — SPEC ONLY ([#62](https://github.com/MarekBiolik/GymManager/issues/62)); tokens contract + [ADR 0010](decisions/0010-design-tokens-ssot.md)
 
 ## Specifications (nutrition — post-MVP)
 
@@ -64,6 +70,7 @@ Project documentation index. These documents are the source of truth for archite
 - [Testing](conventions/testing.md)
 - [CI/CD](conventions/ci-cd.md)
 - [Agent development environment and delivery flow](conventions/agent-dev-environment.md) — areas, core-first → parallel platforms → test; Cursor-native orchestration; simulator strategy
+- [Skill `references/` convention](conventions/skill-references.md) — deep topics vs SKILL.md; routing table in platform-delivery
 
 ## Documentation working rules
 
