@@ -66,9 +66,11 @@ jobs:
         run: ./gradlew :core:testDebugUnitTest --no-daemon
 
   supabase:
-    name: Supabase config present
+    name: Supabase migrations present
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check supabase directory
-        run: test -f supabase/config.toml
+      - name: Check config + first migration
+        run: |
+          test -f supabase/config.toml
+          test -n "$(find supabase/migrations -name '*profiles_baseline_rls.sql' -print -quit)"

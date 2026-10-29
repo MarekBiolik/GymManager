@@ -164,5 +164,5 @@ Separate ticket / code+ops PR (not this document):
 - [ADR 0004](../decisions/0004-supabase-hosting.md) — hosting, Free→Pro, baseline secrets, deferral of this split
 - [data-and-sync — Hosting and backups](../architecture/data-and-sync.md#hosting-and-backups)
 - [ci-cd](../conventions/ci-cd.md)
-- [phase-1-scaffold-playbook](../plans/phase-1-scaffold-playbook.md) — day one still only `dev`
+- [roadmap phase 1](../roadmap.md) — day one still only `dev`
 - [#9](https://github.com/MarekBiolik/GymManager/issues/9) dump/restore

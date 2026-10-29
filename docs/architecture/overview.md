@@ -65,7 +65,7 @@ GymManager/
 | `docs/` | Vision, architecture, ADRs, conventions | — |
 | Root scripts | `build` / `test` / `lint` across toolchains | pnpm / shell |
 
-We do **not** introduce Nx/Turborepo at the start. Code-directory scaffolding is **phase 1**; order and done criteria: [playbook](../plans/phase-1-scaffold-playbook.md); this document describes the target layout and does not create app folders yet.
+We do **not** introduce Nx/Turborepo at the start. Code-directory scaffolding is **phase 1** ([#14](https://github.com/MarekBiolik/GymManager/issues/14), [ADR 0005](../decisions/0005-monorepo-tooling.md)); this document describes the target layout.
 
 ## Architectural principles
 

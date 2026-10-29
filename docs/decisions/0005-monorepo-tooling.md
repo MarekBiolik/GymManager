@@ -38,7 +38,7 @@ Target tree and ownership: [overview](../architecture/overview.md). Tool stack: 
 - Positive: clear toolchain split; Android and core share one Gradle; web keeps mature DX; root scripts suffice for “build all” / CI; no Nx vendor lock-in.
 - Negative / costs: two (three with Xcode) build systems to learn; root scripts maintained by hand; iOS needs a framework-export step from Gradle before/alongside Xcode.
 - Later: revisit KMP→JS/Wasm only per ADR 0006 conditions; SemVer/publish core only when needed; optionally Turborepo under web only.
-- Scaffold playbook: [phase-1-scaffold-playbook](../plans/phase-1-scaffold-playbook.md) ([issue #7](https://github.com/MarekBiolik/GymManager/issues/7)); implementation [#14](https://github.com/MarekBiolik/GymManager/issues/14).
+- Scaffold planning closed in [#7](https://github.com/MarekBiolik/GymManager/issues/7); implementation [#14](https://github.com/MarekBiolik/GymManager/issues/14) / migration [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 
 ### First scaffold implementation scope (phase 1) vs later
 
