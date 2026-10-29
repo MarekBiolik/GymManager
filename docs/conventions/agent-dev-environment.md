@@ -137,6 +137,7 @@ Area env + skill packages are tracked under the [Issue map](#issue-map).
 |--------------|------|
 | Orchestration | `.cursor/skills/platform-delivery/` + `.cursor/rules/platform-delivery.mdc` |
 | Core (KMP) | `.cursor/skills/core-kmp/` (env: `references/env-checklist.md`) |
+| Supabase / DB | `.cursor/skills/supabase-db/` (env: `references/env-checklist.md`) |
 
 ## Issue map
 
