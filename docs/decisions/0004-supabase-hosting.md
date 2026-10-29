@@ -28,13 +28,14 @@ Forces: cost (ideally $0 to start), zero VPS/patching, exit via SQL, sensible up
 
 - Positive: decision ready for phase 1; low cost; weaker lock-in (SQL); clear upgrade and future env-split path.
 - Negative / costs: on Free we must dump **ourselves**; Free project may pause when idle — unpause before work; Free 2-project limit.
-- Refine later: project provisioning checklist + restore drill at scaffold; staging/prod split at beta; PITR when RPO < 1 day becomes a requirement.
-- Follow-ups: [#9 dump/restore runbook](https://github.com/MarekBiolik/GymManager/issues/9), [#10 staging/prod split](https://github.com/MarekBiolik/GymManager/issues/10).
+- Refine later: staging/prod split at beta; PITR when RPO < 1 day becomes a requirement.
+- Dump/restore operator steps: [runbook](../runbooks/supabase-dump-restore.md) ([#9](https://github.com/MarekBiolik/GymManager/issues/9)). Staging/prod: [#10](https://github.com/MarekBiolik/GymManager/issues/10).
 
 ## Related
 
 - [OQ-05](../open-questions.md) (decided)
 - [data-and-sync](../architecture/data-and-sync.md) — Hosting and backups section
+- [runbook: dump / restore (Free)](../runbooks/supabase-dump-restore.md)
 - [auth](../architecture/auth.md) — keys / secrets
 - [tech-stack](../architecture/tech-stack.md)
 - [ci-cd](../conventions/ci-cd.md)
