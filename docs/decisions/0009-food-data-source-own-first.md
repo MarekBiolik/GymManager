@@ -6,9 +6,9 @@
 
 ## Context
 
-The nutrition module (phase 3) needs a product catalog with macros from which **Food entries** are created. The old prototype relied on OpenFoodFacts (OFF). Forces: solo maintenance, data quality (OFF is often incomplete / wrong for local products), offline read of already-cached foods ([ADR 0008](0008-sync-strategy-online-first.md)), no dependency on an external API on the diary critical path, and a fast MVP without HTTP integration to a third-party DB.
+The nutrition module (phase 3) needs a product catalog with macros from which **Food entries** are created. Forces: solo maintenance, control over data quality (especially local / store products), offline read of already-cached foods ([ADR 0008](0008-sync-strategy-online-first.md)), no dependency on an external API on the diary critical path, and a fast MVP without HTTP integration to a third-party DB.
 
-Options from [OQ-07](../open-questions.md): own foods only, OFF-only (live), or hybrid (external search + local own foods).
+Options from [OQ-07](../open-questions.md): own foods only, OpenFoodFacts (OFF) live-only, or hybrid (external search + local own foods).
 
 ## Decision
 
@@ -56,7 +56,6 @@ Options from [OQ-07](../open-questions.md): own foods only, OFF-only (live), or 
 
 - Closes [OQ-07](../open-questions.md)
 - [data-model](../domain/data-model.md), [glossary](../domain/glossary.md), [roadmap](../roadmap.md) phase 3
-- [legacy-cleanup](../conventions/legacy-cleanup.md) — OFF does not return via the old server
 - [ADR 0008](0008-sync-strategy-online-first.md) — sync / read cache for `foods`
 - [postgres-invariants](../architecture/postgres-invariants.md) — ownership `food_entries` → `foods`
 - Follow-up hybrid spec: [openfoodfacts-import-hybrid](../specs/openfoodfacts-import-hybrid.md) ([#26](https://github.com/MarekBiolik/GymManager/issues/26))

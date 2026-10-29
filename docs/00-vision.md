@@ -44,11 +44,3 @@ Ultimately everything training-related lives in **one** app. Module navigation U
 ## Target user (outline)
 
 Someone who trains and wants nutrition, workout, and measurement history in one place, on phone and computer, without permanently locking data into a closed ecosystem.
-
-## Relation to the old prototype
-
-A local prototype existed earlier (web React/Vite + Node server + SQLite + OpenFoodFacts). Sources disappeared; artifacts remained. We treat the project as a **clean restart “on top”**. Disposition of leftovers: [legacy-cleanup](conventions/legacy-cleanup.md).
-
-## Document status
-
-Approved as the foundation for iteration 1. Module details, data model, and auth — to be refined in later plans (see [roadmap](roadmap.md) and [open-questions](open-questions.md)).

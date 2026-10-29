@@ -1,0 +1,22 @@
+---
+description: Docs are current state only; delete executed plans; no process sediment
+alwaysApply: true
+---
+
+# Documentation = current state
+
+`docs/` holds the **current** agreed state (vision, architecture, ADRs, specs, runbooks, conventions). Git history records process.
+
+## Do
+
+- Write ADRs/specs for decisions and contracts still in force
+- When a plan/playbook is **done**, delete it (or fold leftovers into living docs) in the same change set as the results
+- Keep `docs/plans/` only for **active** phase playbooks
+
+## Do not
+
+- Document discarded prototypes, deleted debris, or “we used to…” cleanup stories
+- Leave finished checklists/plans as permanent docs
+- Treat docs as a changelog of agent sessions
+
+See [docs/conventions/docs-lifecycle.md](../../docs/conventions/docs-lifecycle.md).

@@ -1,6 +1,6 @@
 # GymManager — documentation
 
-Project documentation index. These documents are the source of truth for architecture, domain, and conventions; code is secondary to the decisions recorded here.
+Project documentation index. These documents are the source of truth for architecture, domain, and conventions; code is secondary to the decisions recorded here. Docs describe **current** state — see [docs lifecycle](conventions/docs-lifecycle.md).
 
 ## Start here
 
@@ -8,9 +8,9 @@ Project documentation index. These documents are the source of truth for archite
 2. [Roadmap](roadmap.md) — work phases and when each area gets refined
 3. [Open questions](open-questions.md) — areas to refine in later iterations
 
-## Plans (phase playbooks)
+## Plans (active only)
 
-- [Phase 1 — monorepo scaffold playbook](plans/phase-1-scaffold-playbook.md) — order, done criteria, CI, Supabase `dev`; implementation = issue #14
+- [Phase 1 — monorepo scaffold playbook](plans/phase-1-scaffold-playbook.md) — active until [#14](https://github.com/MarekBiolik/GymManager/issues/14) lands; then delete this playbook and keep code + living conventions
 
 ## Architecture
 
@@ -58,17 +58,16 @@ Project documentation index. These documents are the source of truth for archite
 
 ## Conventions
 
+- [Documentation lifecycle](conventions/docs-lifecycle.md) — current state only; delete executed plans
 - [Coding standards](conventions/coding-standards.md)
 - [Git workflow](conventions/git-workflow.md)
 - [Testing](conventions/testing.md)
 - [CI/CD](conventions/ci-cd.md)
-
-## Legacy / cleanup
-
-- [Prototype artifact disposition](conventions/legacy-cleanup.md)
+- [Agent development environment and delivery flow](conventions/agent-dev-environment.md) — areas, core-first → parallel platforms → test; Cursor-native orchestration; simulator strategy
 
 ## Documentation working rules
 
 - New architectural decisions → ADR in `docs/decisions/`.
 - Ambiguities and deferred topics → `open-questions.md`, not silent fixes in code.
 - Refining an area = a separate iteration (plan + docs update), then scaffolding/code.
+- Finished plans/playbooks → delete; do not archive process sediment in `docs/`.

@@ -16,8 +16,7 @@ We use **Supabase**: PostgreSQL + Auth + Row Level Security + Realtime + Storage
 
 1. **Firebase (Auth + Firestore)** — fast start, Google login “native” to the Google ecosystem. Rejected: stronger **vendor lock-in** (proprietary API/model); **weaker aggregations** in NoSQL for tracker history/charts.
 2. **Custom Node/TS backend + Postgres + auth library** — full control. Rejected at start: highest maintenance cost (server, patching, auth hardening, backups).
-3. **Reuse the old prototype server** — sources missing on disk; would de facto be a “custom backend” variant.
-4. **Supabase** — chosen: Postgres (aggregations, SQL migrations), Auth with Google/Apple, RLS for user isolation, export/self-host path (weaker lock-in than Firestore).
+3. **Supabase** — chosen: Postgres (aggregations, SQL migrations), Auth with Google/Apple, RLS for user isolation, export/self-host path (weaker lock-in than Firestore).
 
 ### Glossary (for decision context)
 

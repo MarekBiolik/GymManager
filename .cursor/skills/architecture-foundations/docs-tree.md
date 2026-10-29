@@ -26,11 +26,11 @@ docs/
     glossary.md
     data-model.md           # entity outline, not final migrations
   conventions/
+    docs-lifecycle.md       # current state only; delete executed plans
     coding-standards.md
     git-workflow.md
     testing.md
     ci-cd.md
-    legacy-cleanup.md       # only if restart / debris present
 ```
 
 ## ADR minimum set (examples)
