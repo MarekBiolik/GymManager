@@ -6,21 +6,21 @@ Każdy klient to **cienka warstwa UI** nad wspólnym core. Wspólna decyzja UI: 
 
 - UI: Jetpack Compose
 - Język: Kotlin
-- Integracja z core: zależność Gradle na moduł KMP (najprostsza ścieżka ze wszystkich platform)
+- Integracja z core: zależność Gradle na `:core` w tym samym multi-project ([ADR 0005](../decisions/0005-monorepo-tooling.md))
 - Odpowiedzialność lokalna: Activity/Navigation, motyw, uprawnienia systemowe, ewentualnie WorkManager do sync w tle
 
 ## iOS — `apps/ios`
 
 - UI: SwiftUI
 - Język: Swift
-- Integracja z core: framework wygenerowany z KMP (XCFramework / SPM) — szczegóły przy scaffoldingu
+- Integracja z core: XCFramework / lokalny SPM wygenerowany z KMP (ten sam commit co app; szczegóły kroków w playbooku scaffoldu)
 - Odpowiedzialność lokalna: nawigacja SwiftUI, Keychain (jeśli tokeny poza SDK), signing, App Store
 - Auth: przy publikacji z Google Sign-In App Store wymaga też **Sign in with Apple** — patrz [auth](auth.md)
 
 ## Web — `apps/web`
 
-- UI: React + TypeScript + Vite
-- Integracja z core: **otwarte** ([OQ-01](../open-questions.md))
+- UI: React + TypeScript + Vite; workspace **pnpm**
+- Integracja z core: **otwarte** ([OQ-01](../open-questions.md)); poza drzewem Gradle ([ADR 0005](../decisions/0005-monorepo-tooling.md))
 
 ### Ryzyko interop web ↔ KMP
 

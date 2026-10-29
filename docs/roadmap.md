@@ -18,14 +18,14 @@ Fazy pracy. Każda faza kończy się aktualizacją dokumentacji (lub ADR), zanim
 
 Zakres (do precyzowania przed startem):
 
-- Struktura `core/`, `apps/ios`, `apps/android`, `apps/web`, `supabase/`
-- Narzędzia monorepo / wersjonowanie (open question)
+- Struktura wg [ADR 0005](decisions/0005-monorepo-tooling.md): Gradle (`core`, `apps/android`), Xcode (`apps/ios`), pnpm (`apps/web`), `supabase/`, root scripts
 - Pierwsza migracja schematu (minimalna: `profiles` + 1–2 tabele domenowe)
 - Auth smoke-test (Google; Apple na iOS gdy App Store)
 - Podpięcie projektu Supabase Cloud (`dev`) wg [ADR 0004](decisions/0004-supabase-hosting.md); pierwsze sekrety lokalne + checklista dumpów
+- Playbook kolejności scaffoldu (issue #7) — docs przed tworzeniem folderów kodu
 
-**Zależne open questions:** monorepo tooling, interop web↔core.  
-**Zamknięte przed scaffoldem infra:** hosting Supabase ([OQ-05](open-questions.md) → ADR 0004).
+**Zależne open questions:** interop web↔core (OQ-01).  
+**Zamknięte przed scaffoldem:** hosting Supabase ([OQ-05](open-questions.md) → ADR 0004); monorepo ([OQ-04](open-questions.md) → ADR 0005).
 
 ---
 

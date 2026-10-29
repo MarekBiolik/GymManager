@@ -33,7 +33,7 @@ chore: remove prototype web/dist artifacts
 
 ## Tagowanie / release
 
-Po pojawieniu się aplikacji: semver dla `core` i store build numbers dla klientów — szczegóły przy fazie 1/6 (OQ-04).
+Do czasu osobnej publikacji biblioteki: **core jest source-linked** (ten sam commit co klienci); opcjonalny `core/VERSION` przy tagach produktu. Numery store (Android / iOS) i deploy web są niezależne. SemVer + rejestr dla core — dopiero gdy zajdzie potrzeba. Szczegóły: [ADR 0005](../decisions/0005-monorepo-tooling.md).
 
 ## Zakazy
 

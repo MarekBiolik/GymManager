@@ -33,18 +33,37 @@ Granica core ↔ UI opisana w [shared-core](shared-core.md). Konsumowanie core p
 
 ## Docelowa struktura repozytorium
 
+Decyzja tooling / layout / wersjonowanie: [ADR 0005](../decisions/0005-monorepo-tooling.md).
+
 ```
 GymManager/
-  core/                 # Kotlin Multiplatform
+  settings.gradle.kts   # Gradle multi-project: :core, :apps:android, …
+  gradle/               # wrapper
+  package.json          # root scripts (pnpm) — orkiestracja, nie logika
+  pnpm-workspace.yaml   # apps/web (+ ewentualne paczki TS później)
+  scripts/              # cienkie skrypty CI/dev (opcjonalnie)
+  core/                 # KMP: domena, use-case'y, data, sync
   apps/
-    ios/                # SwiftUI
-    android/            # Jetpack Compose
-    web/                # React + TS (Vite)
-  supabase/             # migracje, RLS, config
-  docs/                 # ta dokumentacja
+    ios/                # Xcode + SwiftUI; konsumuje framework z core
+    android/            # Jetpack Compose; zależność Gradle na :core
+    web/                # React + TS + Vite (pnpm); interop z core = OQ-01
+  supabase/             # migracje SQL, RLS, config CLI
+  docs/                 # dokumentacja i ADR (źródło prawdy decyzji)
 ```
 
-Scaffolding katalogów kodu — **faza 1** (roadmap). Iteracja 1 tworzy tylko `docs/`.
+### Odpowiedzialność top-level
+
+| Ścieżka | Odpowiedzialność | Build |
+|---------|------------------|-------|
+| `core/` | Wspólna logika; **bez** UI | Gradle (KMP) |
+| `apps/android/` | UI Compose + wiring Android | Gradle (ten sam root) |
+| `apps/ios/` | UI SwiftUI + wiring iOS | Xcode; framework z Gradle/KMP |
+| `apps/web/` | UI React/TS | pnpm / Vite |
+| `supabase/` | Schemat, RLS, lokalny/linked projekt | Supabase CLI |
+| `docs/` | Wizja, architektura, ADR, konwencje | — |
+| Root scripts | `build` / `test` / `lint` łączące toolchainy | pnpm / shell |
+
+**Nie** wprowadzamy Nx/Turborepo na start. Scaffolding katalogów kodu — **faza 1** (roadmap); ten dokument opisuje docelowy układ, nie tworzy jeszcze folderów aplikacji.
 
 ## Zasady architektoniczne
 
@@ -61,4 +80,4 @@ Scaffolding katalogów kodu — **faza 1** (roadmap). Iteracja 1 tworzy tylko `d
 - [Klienci](clients.md)
 - [Dane i sync](data-and-sync.md)
 - [Auth](auth.md)
-- ADR: [0001](../decisions/0001-shared-core-kmp.md), [0002](../decisions/0002-backend-supabase.md), [0003](../decisions/0003-native-ui-per-platform.md)
+- ADR: [0001](../decisions/0001-shared-core-kmp.md), [0002](../decisions/0002-backend-supabase.md), [0003](../decisions/0003-native-ui-per-platform.md), [0005](../decisions/0005-monorepo-tooling.md)

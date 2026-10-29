@@ -43,10 +43,8 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 
 ## OQ-04 — Narzędzia monorepo i wersjonowanie
 
-**Status:** open  
-**Pytania:** Gradle multi-project + osobne `apps/web` (npm/pnpm)? Czy jedno narzędzie orkiestracji (np. Nx / Turborepo tylko dla web + skrypty root)? Jak wersjonować `core` względem klientów?
-
-**Zamyka:** faza 1.
+**Status:** decided — [ADR 0005](decisions/0005-monorepo-tooling.md), [overview](architecture/overview.md)  
+**Decyzja (skrót):** Gradle multi-project dla `core` + `apps/android` (export frameworka dla iOS); `apps/web` na pnpm/Vite poza Gradle; orkiestracja = cienkie skrypty root (bez Nx/Turborepo); core source-linked w tym samym commicie, SemVer/publikacja później.
 
 ---
 
