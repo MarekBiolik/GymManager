@@ -16,7 +16,7 @@ Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-withou
 
 1. **Source of truth:** **PostgreSQL (Supabase)**. Każdy udany zapis klienta ląduje w Postgresie (przez RLS + JWT `user_id` = konto Auth z ADR 0007). Lokalny store **nie** jest drugą prawdą.
 2. **MVP baseline:** **online-first + lokalny cache odczytu**. Odczyt: sieć gdy dostępna, inaczej świeży cache (stale-while-revalidate / „pokaż ostatnio pobrane”). Zapis: **tylko gdy online** — request do API; przy braku sieci UI blokuje zapis z jasnym komunikatem (bez cichej kolejki).
-3. **Offline-write (kolejka, optimistic UI z trwałym lokalnym commit):** **poza MVP** — follow-up gdy moduły (zwłaszcza trening w siłowni) tego wymagają; wtedy osobny ADR/revisit konfliktów.
+3. **Offline-write (kolejka, optimistic UI z trwałym lokalnym commit):** **poza MVP / nie faza 1 / nie „hello sync” fazy 2** — follow-up gdy trigger produktowy z [specu #20](../specs/offline-write-queue.md); wtedy **osobny ADR** (lub formalny revisit tego ADR) **oraz obowiązkowy revisit reguł konfliktów** przed kodem kolejki.
 4. **Konflikty (MVP):** jedna reguła dla wszystkich typów encji użytkownika (żywienie / trening / pomiary / `profiles`): **last-write-wins (LWW) na wiersz** wg `updated_at` (timestamptz z serwera / uzgodnionego zegara zapisu). Brak merge per-pole na start. Przy online-first konflikty są rzadkie (głównie dwa urządzenia online naraz); LWW wystarcza.
 5. **Realtime Supabase:** **opcjonalne** w fazie 2+ do odświeżania UI gdy drugie urządzenie zapisze — nie wymagane do akceptacji „hello sync”. Subskrypcje tylko dla tabel użytkownika, zawsze przez RLS.
 6. **Klienci:** mobile — repozytoria w KMP czytają/piszą Supabase (`supabase-kt`) + cache odczytu w core; web — to samo zachowanie przez `supabase-js` + cienki cache przeglądarki/pamięci, **bez** równoległej domeny sync w TS ([ADR 0006](0006-web-supabase-js-without-kmp-js.md)).
@@ -62,11 +62,15 @@ Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-withou
 
 ### Poza MVP (świadomie później)
 
-- Kolejka zapisów offline + idempotentne requesty
+Mapa decyzji (trigger, kolejka, tombstone, revisit konfliktów, web): **[spec offline-write-queue](../specs/offline-write-queue.md)** ([#20](https://github.com/MarekBiolik/GymManager/issues/20)). Skrót:
+
+- Kolejka zapisów offline + idempotentne requesty (`client_mutation_id`, ACK, retry) — **bez** implementacji w fazach 1–2
 - Optimistic UI z lokalnym commit przed ACK serwera
-- Merge / CRDT / per-encja conflict UI
-- Obowiązkowy Realtime jako bus sync
-- Wspólny silnik offline web+mobile (warunek revisit ADR 0006)
+- Tombstone / soft-delete przy wejściu w offline-write (MVP = hard delete)
+- **Obowiązkowy revisit konfliktów** przy lądowaniu offline-write: potwierdzić LWW wszędzie albo reguły per typ encji (żywienie / trening / pomiary); nie dorzucać kolejki „po cichu” przy starym założeniu
+- Merge / CRDT / per-encja conflict UI — tylko jeśli revisit tak zdecyduje
+- Obowiązkowy Realtime jako bus sync — nadal nie
+- Wspólny silnik offline web+mobile — warunek revisit [ADR 0006](0006-web-supabase-js-without-kmp-js.md); preferencja startowa w specu: mobile-first albo świadoma duplikacja TS
 
 ## Powiązane
 
@@ -75,4 +79,4 @@ Web nie współdzieli silnika sync z KMP ([ADR 0006](0006-web-supabase-js-withou
 - [ADR 0002](0002-backend-supabase.md), [ADR 0006](0006-web-supabase-js-without-kmp-js.md), [ADR 0007](0007-auth-providers-minimum-pii.md)
 - [data-model](../domain/data-model.md), [auth](../architecture/auth.md), [postgres-invariants](../architecture/postgres-invariants.md)
 - [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [spec pierwszej migracji](../specs/first-migration-profiles-rls.md) — profiles + RLS + `updated_at`; apply [#21](https://github.com/MarekBiolik/GymManager/issues/21)
-- Follow-upy: [#19 kontrakt read-cache / hello sync](https://github.com/MarekBiolik/GymManager/issues/19), [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)
+- Follow-upy: [#19 kontrakt read-cache / hello sync](https://github.com/MarekBiolik/GymManager/issues/19) (faza 2); [#20 / spec offline-write](../specs/offline-write-queue.md) (**post-MVP**, nie faza 1)

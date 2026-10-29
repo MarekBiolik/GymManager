@@ -58,10 +58,10 @@ flowchart LR
 |---------|-----|---------|
 | Source of truth | Postgres | bez zmian |
 | Odczyt | Sieć + cache; offline → cache | ewent. szerszy pre-fetch |
-| Zapis / update / delete | Tylko online | Kolejka offline-write (osobny ADR) |
-| Konflikty | LWW na wiersz (`updated_at`) — **jedna reguła** dla żywienia / treningu / pomiarów / `profiles` | Merge per typ encji jeśli LWW boli |
+| Zapis / update / delete | Tylko online | Kolejka offline-write — [spec #20](../specs/offline-write-queue.md) + osobny ADR |
+| Konflikty | LWW na wiersz (`updated_at`) — **jedna reguła** dla żywienia / treningu / pomiarów / `profiles` | **Revisit obowiązkowy** przy offline-write (LWW vs per encja) |
 | Realtime | Opcjonalne odświeżanie UI | Nadal nie jako jedyny silnik sync |
-| Tombstone / soft-delete | Nie (hard delete) | Przy offline-write |
+| Tombstone / soft-delete | Nie (hard delete) | Przy offline-write (kierunek w spec #20) |
 
 ### Zachowanie offline
 
@@ -89,9 +89,11 @@ Oba ścieżki piszą do **tego samego** Postgresa pod tym samym `user_id` — pa
 
 Supabase Realtime jest **opcją** po „hello sync” (live refresh gdy drugie urządzenie zapisze). Baseline fazy 2: zapis/odczyt request–response + ręczne / lifecycle refresh wystarcza.
 
-### Offline-write (poza MVP)
+### Offline-write (post-MVP — nie faza 1, nie hello sync)
 
-Gdy trening/żywienie w trybie airplane stanie się wymaganiem: kolejka, idempotencja, tombstone’y, revisit konfliktów (możliwe reguły per typ encji) — **nowy ADR**, nie rozszerzanie „po cichu” tego dokumentu. Track: [#20](https://github.com/MarekBiolik/GymManager/issues/20).
+Świadomie **poza MVP**. Spec (trigger produktowy, model kolejki, tombstone, **obowiązkowy revisit konfliktów**, wpływ na web / ADR 0006): [specs/offline-write-queue.md](../specs/offline-write-queue.md) ([#20](https://github.com/MarekBiolik/GymManager/issues/20)).
+
+Implementacja dopiero po triggerze z tego specu + **nowym ADR** (lub revisit ADR 0008) — nie rozszerzanie „po cichu” baseline online-first. Przy starcie kodu kolejki **musi** dojść revisit: LWW jedna reguła vs reguły per typ encji.
 
 Kontrakt cache odczytu / hello sync (faza 2): [#19](https://github.com/MarekBiolik/GymManager/issues/19).
 

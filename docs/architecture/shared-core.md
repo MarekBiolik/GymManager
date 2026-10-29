@@ -59,7 +59,7 @@ core/
   domain/          # encje, reguły, błędy domenowe
   application/     # use-case'y, porty
   data/            # implementacje repo, DTO, supabase client
-  sync/            # cache odczytu / invalidacja (MVP ADR 0008); kolejka offline-write później
+  sync/            # cache odczytu / invalidacja (MVP ADR 0008); kolejka offline-write dopiero post-MVP — specs/offline-write-queue.md (#20)
 ```
 
 Moduł Gradle: pojedynczy `:core` w multi-project root (ew. późniejszy split na `:core:domain` / `:core:data` dopiero gdy zysk > koszt). Integracja i wersjonowanie: [ADR 0005](../decisions/0005-monorepo-tooling.md). Scaffold **nie** dodaje targetu JS/Wasm, dopóki ADR 0006 nie zostanie zrevisited.

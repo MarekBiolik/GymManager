@@ -52,7 +52,7 @@ Zakres:
 - Sync wg [ADR 0008](decisions/0008-sync-strategy-online-first.md): zapis online + cache odczytu + LWW; cienkie UI „hello sync”
 - Shared repositories w core (mobile) + równoważne wołania `supabase-js` (web)
 
-**Zależne open questions:** (brak blokujących OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline-write z core dopiero przy revisit / osobnym ADR.
+**Zależne open questions:** (brak blokujących OQ-02/03). Auth/PII: **decided** ([OQ-02](open-questions.md) → ADR 0007). Sync/offline: **decided** ([OQ-03](open-questions.md) → ADR 0008). Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)). **Offline-write / revisit konfliktów = post-MVP** — [spec #20](specs/offline-write-queue.md); **nie** w fazie 1 ani w baseline hello sync fazy 2 ([#19](https://github.com/MarekBiolik/GymManager/issues/19)); parity web↔mobile dopiero przy triggerze + ADR implementacyjnym / ewentualnym revisit ADR 0006.
 
 ---
 
