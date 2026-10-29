@@ -4,7 +4,7 @@ Konwencje bazowe. Konkretne wersje linterów i formatters — przy scaffoldingu 
 
 ## Zasady ogólne
 
-1. **Logika domenowa tylko w `core`** — UI nie duplikuje reguł biznesowych (wyjątki tylko po ADR, zwłaszcza web / OQ-01).
+1. **Logika domenowa tylko w `core`** — UI nie duplikuje reguł biznesowych. Web: cienka TS + `supabase-js`, bez równoległej domeny ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
 2. **Jawne nazwy** — zgodne ze [słownikiem](../domain/glossary.md); unikamy skrótów typu `usr`, `sess2`.
 3. **Małe PR-y** — jedna intencja; scaffolding oddzielnie od feature.
 4. **Sekrety** — nigdy w repo; `service_role` nigdy w klientach.
@@ -26,7 +26,8 @@ Konwencje bazowe. Konkretne wersje linterów i formatters — przy scaffoldingu 
 ## TypeScript / React (web)
 
 - TypeScript strict.
-- Funkcyjne komponenty; stan serwerowy / sync przez uzgodniony kontrakt (core lub supabase-js po OQ-01).
+- Funkcyjne komponenty; dane przez `supabase-js` (nie przez binary KMP) — [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md).
+
 - ESLint + Prettier.
 - Brak `any` bez komentarza uzasadniającego.
 

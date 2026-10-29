@@ -9,7 +9,7 @@ Wersje konkretnych bibliotek zostaną przypięte przy scaffoldingu (faza 1). Pon
 | Kotlin Multiplatform (KMP) | Wspólny kod domeny, danych, sync |
 | Kotlin Coroutines / Flow | Asynchroniczność i strumienie stanu |
 | kotlinx.serialization | Serializacja modeli |
-| supabase-kt (community) | Klient Supabase z core (Android/iOS; web — zależnie od OQ-01) |
+| supabase-kt (community) | Klient Supabase z core (Android/iOS; web bez KMP-JS — [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) |
 
 Szczegóły granic: [shared-core](shared-core.md). Decyzja: [ADR 0001](../decisions/0001-shared-core-kmp.md).
 
@@ -40,7 +40,7 @@ Wymaga konta **Apple Developer Program** (publikacja App Store).
 | TypeScript | Język |
 | React | UI |
 | Vite | Tooling / build |
-| supabase-js | Klient Supabase (ścieżka bazowa; finalny model z core: OQ-01) |
+| supabase-js | Jedyny klient Supabase w `apps/web` na dzień 1 ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) |
 
 ## Backend / dane
 
@@ -74,4 +74,5 @@ Decyzja: [ADR 0005](../decisions/0005-monorepo-tooling.md).
 - Flutter / React Native jako główny UI — odrzucone na rzecz natywnego UI ([ADR 0003](../decisions/0003-native-ui-per-platform.md)).
 - Firebase / Firestore — gorszy fit do agregacji i silniejszy lock-in.
 - Własny backend Node od zera — za dużo utrzymania na start.
+- KMP→JS/Wasm dla web na dzień 1 — odłożone; web = `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)).
 - Warstwa AI — faza 7 roadmapy.

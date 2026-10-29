@@ -23,9 +23,10 @@ Zakres (do precyzowania przed startem):
 - Auth smoke-test (Google; Apple na iOS gdy App Store)
 - Podpięcie projektu Supabase Cloud (`dev`) wg [ADR 0004](decisions/0004-supabase-hosting.md); pierwsze sekrety lokalne + checklista dumpów
 - Playbook kolejności scaffoldu (issue #7) — docs przed tworzeniem folderów kodu
+- Web bez KMP→JS/Wasm w scaffoldzie ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md) — `supabase-js`)
 
-**Zależne open questions:** interop web↔core (OQ-01).  
-**Zamknięte przed scaffoldem:** hosting Supabase ([OQ-05](open-questions.md) → ADR 0004); monorepo ([OQ-04](open-questions.md) → ADR 0005).
+**Zależne open questions:** (brak blokujących OQ-01/04/05).  
+**Zamknięte przed scaffoldem:** hosting Supabase ([OQ-05](open-questions.md) → ADR 0004); monorepo ([OQ-04](open-questions.md) → ADR 0005); interop web↔core ([OQ-01](open-questions.md) → ADR 0006).
 
 ---
 
@@ -39,7 +40,7 @@ Zakres:
 - Strategia offline/cache i konflikty
 - Shared repositories w core + cienkie UI „hello sync”
 
-**Zależne open questions:** auth method, offline/sync, web↔KMP interop.
+**Zależne open questions:** auth method, offline/sync. Web nadal na `supabase-js` ([ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)); parity offline z core dopiero przy revisit.
 
 ---
 

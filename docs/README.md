@@ -25,6 +25,7 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 - [ADR 0003 — Natywne UI per platforma](decisions/0003-native-ui-per-platform.md)
 - [ADR 0004 — Hosting Supabase i backupy](decisions/0004-supabase-hosting.md)
 - [ADR 0005 — Monorepo: layout, tooling i wersjonowanie core](decisions/0005-monorepo-tooling.md)
+- [ADR 0006 — Web: supabase-js bez KMP→JS/Wasm](decisions/0006-web-supabase-js-without-kmp-js.md)
 
 ## Domena
 
