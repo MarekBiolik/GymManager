@@ -67,7 +67,7 @@ GymManager/
 
 ## Zasady architektoniczne
 
-1. **Jedna prawda domenowa** — reguły biznesowe żyją w core (lub w Postgres/RLS tam, gdzie izolacja / wspólne niezmienniki), nie w trzech UI.
+1. **Jedna prawda domenowa** — reguły biznesowe żyją w core (lub w Postgres/RLS tam, gdzie izolacja / wspólne niezmienniki), nie w trzech UI. Podział DB vs core/TS: [postgres-invariants](postgres-invariants.md).
 2. **Cienkie UI** — klienci renderują i delegują; web może wołać Supabase przez `supabase-js` bez binary KMP ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)), ale **bez** równoległej domeny TS.
 3. **RLS first** — izolacja danych użytkownika na poziomie bazy, nie „ufamy klientowi”.
 4. **Dokumentacja przed głębokim kodem** — nowe decyzje → ADR.
@@ -79,5 +79,6 @@ GymManager/
 - [Shared core](shared-core.md)
 - [Klienci](clients.md)
 - [Dane i sync](data-and-sync.md)
+- [Wspólne niezmienniki Postgres](postgres-invariants.md)
 - [Auth](auth.md)
 - ADR: [0001](../decisions/0001-shared-core-kmp.md), [0002](../decisions/0002-backend-supabase.md), [0003](../decisions/0003-native-ui-per-platform.md), [0004](../decisions/0004-supabase-hosting.md), [0005](../decisions/0005-monorepo-tooling.md), [0006](../decisions/0006-web-supabase-js-without-kmp-js.md)

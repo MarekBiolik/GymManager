@@ -11,7 +11,7 @@ Statusy: `open` | `in progress` | `decided` (z linkiem do ADR/docs).
 **Status:** decided — [ADR 0006](decisions/0006-web-supabase-js-without-kmp-js.md)  
 **Dlaczego ważne:** KMP naturalnie spina Android i iOS; web (JS/Wasm) jest trudniejszy. Złe rozwiązanie = duplikacja logiki domenowej albo kruchy interop.
 
-**Decyzja (dzień 1):** opcja **B** — web → `supabase-js` + cienka TS; **bez** KMP→JS/Wasm w scaffoldzie. Guardraile i warunki revisit: ADR 0006 + [clients](architecture/clients.md) / [shared-core](architecture/shared-core.md).
+**Decyzja (dzień 1):** opcja **B** — web → `supabase-js` + cienka TS; **bez** KMP→JS/Wasm w scaffoldzie. Guardraile i warunki revisit: ADR 0006 + [clients](architecture/clients.md) / [shared-core](architecture/shared-core.md). Operacyjny podział reguł DB vs core/TS: [postgres-invariants](architecture/postgres-invariants.md) (issue #17).
 
 **Opcje (rozważone):**
 

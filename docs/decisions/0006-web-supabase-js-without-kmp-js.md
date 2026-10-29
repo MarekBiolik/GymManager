@@ -63,7 +63,8 @@ Wybieramy **B na dzień 1** (i przez scaffold + baseline auth/sync):
 - Omijać RLS / pisać ścieżki „ufamy klientowi”.
 - Traktować walidacji tylko-w-TS jako źródła prawdy bezpieczeństwa.
 
-Szczegóły operacyjne: [clients](../architecture/clients.md), [shared-core](../architecture/shared-core.md).
+Szczegóły operacyjne: [clients](../architecture/clients.md), [shared-core](../architecture/shared-core.md).  
+Podział reguł DB vs core/TS (checklista migracji): [postgres-invariants](../architecture/postgres-invariants.md).
 
 ### Warunki revisit (kiedy wrócić do A lub C)
 
@@ -80,4 +81,4 @@ Do czasu revisit: **brak** ukrytego założenia w scaffoldzie, CI ani docs, że 
 
 - Zamyka [OQ-01](../open-questions.md)
 - [ADR 0001](0001-shared-core-kmp.md), [ADR 0003](0003-native-ui-per-platform.md)
-- [clients](../architecture/clients.md), [shared-core](../architecture/shared-core.md), [tech-stack](../architecture/tech-stack.md), [overview](../architecture/overview.md)
+- [clients](../architecture/clients.md), [shared-core](../architecture/shared-core.md), [postgres-invariants](../architecture/postgres-invariants.md), [tech-stack](../architecture/tech-stack.md), [overview](../architecture/overview.md)

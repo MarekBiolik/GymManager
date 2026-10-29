@@ -18,7 +18,7 @@ Pełniejszy model domenowy: [data-model](../domain/data-model.md). Na poziomie b
 | Pomiary | `measurements` | Waga i inne metryki w czasie |
 | Wspólne | `tags` (opcjonalnie) | Etykiety cross-cutting |
 
-Wszystkie tabele użytkownika mają `user_id` (UUID → `auth.users`) i polityki **RLS**: użytkownik widzi/edytuje tylko swoje wiersze.
+Wszystkie tabele użytkownika mają `user_id` (UUID → `auth.users`) i polityki **RLS**: użytkownik widzi/edytuje tylko swoje wiersze. Wspólne niezmienniki web + mobile (RLS / CHECK vs core/TS): [postgres-invariants](postgres-invariants.md).
 
 ## Row Level Security (RLS)
 

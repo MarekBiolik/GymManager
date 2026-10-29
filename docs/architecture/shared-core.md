@@ -12,7 +12,7 @@
 
 Core **nie** zawiera widgetów, kolorów, nawigacji ani layoutu.
 
-Na **webie** (dzień 1) core **nie** jest linkowany jako binary — patrz [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md). Wspólne niezmienniki krytyczne dla web + mobile egzekwuj w Postgres (RLS / CHECK), nie przez ukrytą duplikację w TS.
+Na **webie** (dzień 1) core **nie** jest linkowany jako binary — patrz [ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md). Wspólne niezmienniki krytyczne dla web + mobile egzekwuj w Postgres (RLS / CHECK), nie przez ukrytą duplikację w TS — konwencja i checklista: [postgres-invariants](postgres-invariants.md).
 
 ## Targety kompilacji (zamierzone)
 

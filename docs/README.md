@@ -19,6 +19,7 @@ Indeks dokumentacji projektu. Dokumenty są źródłem prawdy dla architektury, 
 - [Wspólny core (KMP)](architecture/shared-core.md)
 - [Klienci](architecture/clients.md) — iOS / Android / web
 - [Dane i sync](architecture/data-and-sync.md)
+- [Wspólne niezmienniki Postgres](architecture/postgres-invariants.md) — RLS / CHECK vs core/TS (po ADR 0006)
 - [Autentykacja](architecture/auth.md)
 
 ## Decyzje (ADR)

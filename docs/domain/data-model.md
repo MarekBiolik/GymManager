@@ -99,6 +99,7 @@ Etykiety cross-cutting (ćwiczenia, posiłki). Relacje M:N przez tabele łączą
 - Soft-delete tylko jeśli jest case (np. undo); domyślnie **hard delete**. Tombstone pod sync offline — dopiero przy offline-write ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
 - Każda tabela użytkownika: `created_at`, `updated_at` (timestamptz) — LWW na wiersz w MVP sync.
 - Indeksy: `(user_id, eaten_at)`, `(user_id, measured_at)`, `(session_id, position)` itd.
+- Gdzie egzekwować reguły wspólne web + mobile (RLS / CHECK vs KMP / cienka TS): [postgres-invariants](../architecture/postgres-invariants.md).
 
 ## Agregacje (kierunek)
 
@@ -112,6 +113,6 @@ Materializowane tabele dzienne — opcjonalna optymalizacja później.
 
 ## Poza zakresem zarysu
 
-- Dokładne typy SQL i CHECK constraints
+- Dokładne typy SQL i pełna treść pierwszej migracji — [#6](https://github.com/MarekBiolik/GymManager/issues/6); podział CHECK vs core: [postgres-invariants](../architecture/postgres-invariants.md)
 - Import z OpenFoodFacts
 - Udostępnianie danych między użytkownikami
