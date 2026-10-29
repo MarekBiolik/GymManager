@@ -49,6 +49,7 @@ Unambiguous names used in docs, ADRs, code, and schema. Add new terms here **bef
 | **Source of truth** | Postgres; local read cache is secondary |
 | **LWW** | Last-write-wins — row conflict resolved by later `updated_at` |
 | **Read cache** | Local copy of fetched rows; not an offline write queue |
+| **Hello sync** | Phase-2 smoke: profile + measurements read/write online + read-cache contract — [spec](../specs/hello-sync-read-cache.md) |
 
 ## Avoid
 

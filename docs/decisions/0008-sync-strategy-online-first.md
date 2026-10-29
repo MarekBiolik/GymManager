@@ -75,4 +75,5 @@ Web does not share a sync engine with KMP ([ADR 0006](0006-web-supabase-js-witho
 - [ADR 0002](0002-backend-supabase.md), [ADR 0006](0006-web-supabase-js-without-kmp-js.md), [ADR 0007](0007-auth-providers-minimum-pii.md)
 - [data-model](../domain/data-model.md), [auth](../architecture/auth.md), [postgres-invariants](../architecture/postgres-invariants.md)
 - [#6](https://github.com/MarekBiolik/GymManager/issues/6) / [first migration spec](../specs/first-migration-profiles-rls.md) — profiles + RLS + `updated_at`; apply [#21](https://github.com/MarekBiolik/GymManager/issues/21)
-- Follow-ups: [#19 read-cache / hello sync contract](https://github.com/MarekBiolik/GymManager/issues/19), [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)
+- Read-cache / hello-sync contract: [specs/hello-sync-read-cache.md](../specs/hello-sync-read-cache.md) ([#19](https://github.com/MarekBiolik/GymManager/issues/19))
+- Follow-up: [#20 offline-write post-MVP](https://github.com/MarekBiolik/GymManager/issues/20)
