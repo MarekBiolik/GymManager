@@ -88,6 +88,25 @@ Prefer cheap models for running builds/tests; keep the lead on failures that nee
 
 **Done when:** user has a clear next action (review draft, merge ask, or next issue).
 
+## Skill routing
+
+Load the matching project skill when the slice touches its surface. Delivery order stays **core-first → parallel platforms → tests** (this skill’s workflow above). Deep topics live in each skill’s `references/` — see [skill references convention](../../../docs/conventions/skill-references.md).
+
+| Skill | When to load | `references/` (when present) |
+|-------|--------------|------------------------------|
+| `core-kmp` | `core/` domain, use cases, sync, commonTest | `env-checklist.md` |
+| `supabase-db` | `supabase/` migrations, RLS, Auth schema | `env-checklist.md` |
+| `design-tokens` | `design/tokens/`, generator, theme outputs, regen-clean | `token-architecture.md`, `naming.md`, `platform-outputs.md` |
+| `ui-ux` | Flows, IA, a11y contracts, cross-client UX intent | `flows.md`, `a11y-floor.md`, `env-checklist.md` |
+| `android-compose` | `apps/android/` Compose UI / wiring | `theming.md`, `state-management.md`, `performance.md`, `a11y.md`, `env-checklist.md` |
+| `web-react` | `apps/web/` React / Vite / supabase-js | `theming.md`, `env-checklist.md` |
+| `ios-swiftui` | `apps/ios/` SwiftUI / wiring docs (build-spec until #49) | `theming.md`, `env-checklist.md` |
+| `android-emulator` | AVD/adb install/launch smoke | `env-checklist.md` |
+| `qa-testing` | Ordered test gates for a slice | `env-checklist.md` |
+| `platform-delivery` | Multi-platform fan-out (this skill) | — |
+
+Appearance **values** → `design-tokens`; UX **flows** → `ui-ux`; platform **consumption** of generated tokens → platform skills. Do not micro-split skills for every deep topic — add a `references/` file instead.
+
 ## Model budget
 
 | Work | Preference |
@@ -103,3 +122,4 @@ Keep the lead session on one model; dispatch easy work rather than mid-task mode
 - iOS runtime/Simulator is out of scope until #49 is decided
 - No PilcrowMD-style NOW/inbox/facts control plane
 - Do not open a PR or merge unless the user asked for that step
+- Do not reorder delivery (core → platforms → tests) when adding skills

@@ -70,6 +70,7 @@ Project documentation index. These documents are the source of truth for archite
 - [Testing](conventions/testing.md)
 - [CI/CD](conventions/ci-cd.md)
 - [Agent development environment and delivery flow](conventions/agent-dev-environment.md) — areas, core-first → parallel platforms → test; Cursor-native orchestration; simulator strategy
+- [Skill `references/` convention](conventions/skill-references.md) — deep topics vs SKILL.md; routing table in platform-delivery
 
 ## Documentation working rules
 

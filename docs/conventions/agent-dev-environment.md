@@ -13,10 +13,13 @@ This document is **dev-process** convention. It does **not** define product AI f
 | **web** | `apps/web/` | React + TypeScript + Vite; `supabase-js` ([ADR 0006](../decisions/0006-web-supabase-js-without-kmp-js.md)) | Vite build + browser checks |
 | **ios** | `apps/ios/` | SwiftUI + framework wiring from KMP | **Build-spec / docs only** until Mac access is decided |
 | **supabase / db** | `supabase/` | Migrations, RLS, local CLI | Local `supabase start` + migration/RLS checks (after [#14](https://github.com/MarekBiolik/GymManager/issues/14) / [#21](https://github.com/MarekBiolik/GymManager/issues/21)) |
-| **ux** | Design / interaction contracts across clients | Layout, flows, accessibility intent — not a parallel domain | Specs and review; no store release gate alone |
+| **ux** | Design / interaction contracts across clients | Layout, flows, accessibility intent — appearance values via design tokens | Specs and review; no store release gate alone |
+| **design tokens** | `design/tokens/` + generator under `design/` | SSOT visual values → native theme outputs ([ADR 0010](../decisions/0010-design-tokens-ssot.md)) | Docs/skills first; generator with scaffold [#14](https://github.com/MarekBiolik/GymManager/issues/14) |
 | **qa / test** | Per-area test runners | Unit (core), UI smoke (android/web), RLS | Follows [testing](testing.md); iOS runtime tests deferred |
 
 Ownership of code paths matches [overview](../architecture/overview.md). Thin UI, one domain truth — [shared-core](../architecture/shared-core.md), [clients](../architecture/clients.md).
+
+**Skill routing** (when to load each project skill + `references/` pointers): [platform-delivery — Skill routing](../../.cursor/skills/platform-delivery/SKILL.md#skill-routing). **`references/` convention:** [skill-references](skill-references.md).
 
 ## Delivery flow
 
