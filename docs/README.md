@@ -34,6 +34,12 @@ Project documentation index. These documents are the source of truth for archite
 - [ADR 0007 — Auth providers and minimum PII](decisions/0007-auth-providers-minimum-pii.md)
 - [ADR 0008 — Sync strategy: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
 - [ADR 0009 — Food data source: own foods first](decisions/0009-food-data-source-own-first.md)
+- [ADR 0010 — Design tokens SSOT and cross-platform generation](decisions/0010-design-tokens-ssot.md)
+
+## Specifications (design / UX)
+
+- Design-tokens contract and generation pipeline — SPEC ONLY ([#61](https://github.com/MarekBiolik/GymManager/issues/61)); follows [ADR 0010](decisions/0010-design-tokens-ssot.md)
+- Fitness/Gym visual style — SPEC ONLY ([#62](https://github.com/MarekBiolik/GymManager/issues/62)); depends on tokens contract
 
 ## Specifications (nutrition — post-MVP)
 
