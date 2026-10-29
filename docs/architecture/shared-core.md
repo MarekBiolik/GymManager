@@ -57,7 +57,7 @@ core/
   sync/            # kolejka offline, reconciler (po OQ-03)
 ```
 
-Nazwy i moduły Gradle — do ustalenia przy scaffoldingu (OQ-04).
+Moduł Gradle: pojedynczy `:core` w multi-project root (ew. późniejszy split na `:core:domain` / `:core:data` dopiero gdy zysk > koszt). Integracja i wersjonowanie: [ADR 0005](../decisions/0005-monorepo-tooling.md).
 
 ## Testowanie
 

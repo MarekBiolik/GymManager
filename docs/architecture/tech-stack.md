@@ -54,14 +54,20 @@ Wymaga konta **Apple Developer Program** (publikacja App Store).
 Decyzja backendu: [ADR 0002](../decisions/0002-backend-supabase.md).
 Hosting / środowiska / backupy: [ADR 0004](../decisions/0004-supabase-hosting.md) (Cloud Free → Pro; szczegóły w [data-and-sync](data-and-sync.md#hosting-i-backupy)).
 
-## Narzędzia projektowe (zarys)
+## Narzędzia projektowe
 
-| Obszar | Kierunek | Status |
-|--------|----------|--------|
-| Monorepo | Root z `core/` + `apps/*` + `supabase/` + `docs/` | OQ-04 |
+Decyzja: [ADR 0005](../decisions/0005-monorepo-tooling.md).
+
+| Obszar | Wybór | Uwagi |
+|--------|-------|--------|
+| Monorepo | Hybryda: **Gradle** (`core` + `apps/android`) + **pnpm** (`apps/web`) + Xcode (`apps/ios`) | Bez Nx/Turborepo na start |
+| Orkiestracja | Cienkie skrypty w root (`package.json` / `scripts/`) | Wywołują Gradle, pnpm, Supabase CLI |
+| Wersjonowanie core | Source-linked (ten sam commit); `core/VERSION` lub `gradle.properties` | SemVer/publikacja rejestru — później, gdy potrzeba |
+| Wersjonowanie klientów | Niezależne numery store / deploy web | Nie muszą = SemVer core |
 | CI | Build core + klienci + lint; migracje na PR | [ci-cd](../conventions/ci-cd.md) |
 | Testy | Unit w core; UI testy per klient później | [testing](../conventions/testing.md) |
-| Formatowanie | ktlint / spotless (Kotlin); ESLint+Prettier (web); SwiftFormat (iOS) | do przypięcia w fazie 1 |
+| Formatowanie | ktlint / Spotless (Kotlin); ESLint+Prettier (web); SwiftFormat (iOS) | Przypięcie wersji w scaffoldzie fazy 1 |
+| Menedżer paczek JS | **pnpm** (+ `pnpm-workspace.yaml`) | Workspace = `apps/web` na start |
 
 ## Świadomie nie wybrano (na teraz)
 

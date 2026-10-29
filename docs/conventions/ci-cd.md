@@ -4,13 +4,15 @@ Szkielet zasad. Konkrety pipeline (GitHub Actions vs inne) — faza 1.
 
 ## Cele CI na PR
 
-1. Build `core` (przynajmniej target Android/JVM; iOS gdy runner dostępny).
-2. Lint / format check (Kotlin, TS; Swift gdy możliwe).
-3. Unit testy `core`.
-4. Walidacja migracji Supabase (dry-run / `supabase db lint` gdy skonfigurowane).
-5. Build web (gdy `apps/web` istnieje).
+Zgodnie z [ADR 0005](../decisions/0005-monorepo-tooling.md) pipeline łączy **osobne toolchainy** (Gradle, pnpm, ewentualnie Xcode), nie jeden orchestrator monorepo.
 
-PR nie przechodzi przy padającym buildzie core lub testach.
+1. Build `core` przez Gradle (przynajmniej target Android/JVM; iOS / XCFramework gdy runner dostępny).
+2. Lint / format check (Kotlin via Gradle; TS via pnpm; Swift gdy możliwe).
+3. Unit testy `core` (Gradle).
+4. Walidacja migracji Supabase (dry-run / `supabase db lint` gdy skonfigurowane).
+5. Build web przez pnpm (gdy `apps/web` istnieje).
+
+PR nie przechodzi przy padającym buildzie core lub testach. Root scripts powinny wystawiać te same komendy lokalnie i w CI.
 
 ## CD (kierunek)
 
