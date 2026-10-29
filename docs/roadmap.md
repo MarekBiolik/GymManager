@@ -26,7 +26,7 @@ Scope:
 - Attach Supabase Cloud `dev` ([ADR 0004](decisions/0004-supabase-hosting.md)); local secrets / GitHub Secrets; dumps → [#9](https://github.com/MarekBiolik/GymManager/issues/9); `staging`/`prod` split before public beta → [spec](specs/supabase-staging-prod-split.md) ([#10](https://github.com/MarekBiolik/GymManager/issues/10)) (not in #14)
 - First schema migration: **spec** [first-migration-profiles-rls](specs/first-migration-profiles-rls.md) ([#6](https://github.com/MarekBiolik/GymManager/issues/6)); **apply** = [#21](https://github.com/MarekBiolik/GymManager/issues/21) (after OQ-03 → [ADR 0008](decisions/0008-sync-strategy-online-first.md))
 - CI skeleton on PR (Gradle core/android + pnpm web + core tests) — details in the playbook / [ci-cd](conventions/ci-cd.md)
-- Auth: **no** full OAuth smoke in the scaffold; IdP checklist [#12](https://github.com/MarekBiolik/GymManager/issues/12), login UI → phase 2
+- Auth: **no** full OAuth smoke in the scaffold; IdP checklist [spec](specs/idp-config-checklist.md) ([#12](https://github.com/MarekBiolik/GymManager/issues/12)), login UI → phase 2
 
 **Done when (before deep phase-2 code):**
 

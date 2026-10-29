@@ -44,10 +44,11 @@ Project documentation index. These documents are the source of truth for archite
 
 - [Supabase dump and restore (Free)](runbooks/supabase-dump-restore.md) — periodic `db dump`, no PII in git, restore drill ([ADR 0004](decisions/0004-supabase-hosting.md), [#9](https://github.com/MarekBiolik/GymManager/issues/9))
 
-## Specifications (SQL / migrations / ops — draft)
+## Specifications (SQL / migrations / ops / IdP — draft)
 
 - [First migration: profiles + baseline RLS](specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21); draft SQL in `docs/specs/sql/` (**NOT APPLIED**)
 - [Supabase staging/prod environment split](specs/supabase-staging-prod-split.md) — SPEC ONLY ([#10](https://github.com/MarekBiolik/GymManager/issues/10)); aligns with [ADR 0004](decisions/0004-supabase-hosting.md); no Dashboard provisioning in this ticket
+- [IdP checklist: Google + Apple + Supabase redirects](specs/idp-config-checklist.md) — docs only ([#12](https://github.com/MarekBiolik/GymManager/issues/12)); no SDK code / secrets
 
 ## Conventions
 
