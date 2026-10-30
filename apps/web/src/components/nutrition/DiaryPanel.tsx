@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { formatIsoDate, shortDayMonth, shortWeekday, weekStrip } from "../../lib/dateUtils";
+import { addDays, formatIsoDate, shortDayMonth, shortWeekday, weekStrip } from "../../lib/dateUtils";
 import {
   addFoodEntry,
+  addWaterEntry,
+  copyFoodEntriesDay,
+  copyFoodEntriesMeal,
   deleteFoodEntry,
+  deleteWaterEntry,
   insertFood,
   readFoodEntriesDay,
   readFoods,
   readMealTypes,
+  readWaterDay,
   readNutritionSettings,
   sumEntryMacros,
   type FoodEntryRow,
   type FoodRow,
   type MealTypeRow,
   type NutritionSettingsRow,
+  type WaterEntryRow,
 } from "../../lib/nutritionApi";
 import {
   fetchOpenFoodFactsBarcode,
@@ -36,6 +42,9 @@ export function DiaryPanel({ userId }: Props) {
   const [banner, setBanner] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [waterEntries, setWaterEntries] = useState<WaterEntryRow[]>([]);
+  const [waterAdd, setWaterAdd] = useState("250");
+  const [copyFrom, setCopyFrom] = useState("");
 
   const [pickedMealId, setPickedMealId] = useState("");
   const [pickedFoodId, setPickedFoodId] = useState("");
@@ -49,11 +58,12 @@ export function DiaryPanel({ userId }: Props) {
   const loadDay = useCallback(async () => {
     setError(null);
     setBanner(null);
-    const [s, m, e, f] = await Promise.all([
+    const [s, m, e, f, w] = await Promise.all([
       readNutritionSettings(userId),
       readMealTypes(userId),
       readFoodEntriesDay(userId, selectedDay),
       readFoods(userId),
+      readWaterDay(userId, selectedDay),
     ]);
     if (s.kind === "fresh") {
       setSettings(s.data);
@@ -77,6 +87,11 @@ export function DiaryPanel({ userId }: Props) {
     if (f.kind === "fresh" || f.kind === "stale") {
       setFoods(f.data);
     }
+    if (w.kind === "fresh" || w.kind === "stale") {
+      setWaterEntries(w.data);
+    } else {
+      setWaterEntries([]);
+    }
   }, [userId, selectedDay]);
 
   useEffect(() => {
@@ -84,6 +99,11 @@ export function DiaryPanel({ userId }: Props) {
   }, [loadDay]);
 
   const consumed = useMemo(() => sumEntryMacros(entries), [entries]);
+  const waterMl = useMemo(
+    () => waterEntries.reduce((acc, row) => acc + Number(row.amount_ml), 0),
+    [waterEntries],
+  );
+  const waterTargetMl = settings?.water_target_ml != null ? Number(settings.water_target_ml) : null;
   const goals = settings
     ? {
         calorieTargetKcal: Number(settings.calorie_target_kcal),
@@ -134,6 +154,90 @@ export function DiaryPanel({ userId }: Props) {
     setBusy(false);
     if (result.kind === "offline") {
       setError("Offline — connect to remove entries.");
+      return;
+    }
+    if (result.kind === "error") {
+      setError(result.message);
+      return;
+    }
+    void loadDay();
+  }
+
+  async function onCopyDay() {
+    setError(null);
+    if (!copyFrom) {
+      setError("Pick a source day to copy from.");
+      return;
+    }
+    if (copyFrom === selectedDay) {
+      setError("Source day must differ from the selected day.");
+      return;
+    }
+    setBusy(true);
+    const result = await copyFoodEntriesDay(userId, copyFrom, selectedDay);
+    setBusy(false);
+    if (result.kind === "offline") {
+      setError("Offline — cannot copy day.");
+      return;
+    }
+    if (result.kind === "error") {
+      setError(result.message);
+      return;
+    }
+    if (result.data.length === 0) {
+      setError("No entries on the source day.");
+    }
+    void loadDay();
+  }
+
+  async function onCopyMeal(mealTypeId: string) {
+    setError(null);
+    const from = addDays(selectedDay, -1);
+    setBusy(true);
+    const result = await copyFoodEntriesMeal(userId, from, selectedDay, mealTypeId);
+    setBusy(false);
+    if (result.kind === "offline") {
+      setError("Offline — cannot copy meal.");
+      return;
+    }
+    if (result.kind === "error") {
+      setError(result.message);
+      return;
+    }
+    if (result.data.length === 0) {
+      setError("No entries for this meal yesterday.");
+    }
+    void loadDay();
+  }
+
+  async function onAddWater() {
+    setError(null);
+    const ml = Number(waterAdd);
+    if (!Number.isFinite(ml) || ml <= 0) {
+      setError("Enter a positive amount in ml.");
+      return;
+    }
+    setBusy(true);
+    const result = await addWaterEntry(userId, selectedDay, ml);
+    setBusy(false);
+    if (result.kind === "offline") {
+      setError("Offline — cannot log water.");
+      return;
+    }
+    if (result.kind === "error") {
+      setError(result.message);
+      return;
+    }
+    void loadDay();
+  }
+
+  async function onDeleteWater(id: string) {
+    setError(null);
+    setBusy(true);
+    const result = await deleteWaterEntry(userId, selectedDay, id);
+    setBusy(false);
+    if (result.kind === "offline") {
+      setError("Offline — connect to remove water.");
       return;
     }
     if (result.kind === "error") {
@@ -230,13 +334,23 @@ export function DiaryPanel({ userId }: Props) {
         </button>
       </div>
 
-      <GoalProgressBars consumed={consumed} goals={goals} />
+      <GoalProgressBars consumed={consumed} goals={goals} waterMl={waterMl} waterTargetMl={waterTargetMl} />
 
       {mealTypes.map((meal) => {
         const mealEntries = entries.filter((e) => e.meal_type_id === meal.id);
         return (
           <div key={meal.id} className="nutrition-meal">
-            <h3 className="nutrition-meal-title">{meal.name}</h3>
+            <div className="nutrition-list-row">
+              <h3 className="nutrition-meal-title">{meal.name}</h3>
+              <button
+                type="button"
+                className="auth-button auth-button--secondary nutrition-btn-sm"
+                disabled={busy}
+                onClick={() => void onCopyMeal(meal.id)}
+              >
+                Copy from yesterday
+              </button>
+            </div>
             {mealEntries.length === 0 ? (
               <p className="app-sub">No entries</p>
             ) : (
@@ -330,6 +444,69 @@ export function DiaryPanel({ userId }: Props) {
             </button>
           </>
         )}
+      </div>
+
+      <div className="nutrition-card">
+        <h3 className="nutrition-meal-title">Water</h3>
+        <p className="app-sub">
+          Logged: {Math.round(waterMl)} ml
+          {waterTargetMl != null && waterTargetMl > 0 ? ` of ${Math.round(waterTargetMl)} ml` : ""}
+        </p>
+        {waterEntries.length > 0 ? (
+          <ul className="nutrition-list">
+            {waterEntries.map((w) => (
+              <li key={w.id} className="nutrition-list-row">
+                <span>{Math.round(Number(w.amount_ml))} ml</span>
+                <button
+                  type="button"
+                  className="auth-button auth-button--secondary nutrition-btn-sm"
+                  disabled={busy}
+                  onClick={() => void onDeleteWater(w.id)}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+        <div className="hello-sync-form">
+          <input
+            className="hello-sync-input"
+            value={waterAdd}
+            onChange={(e) => setWaterAdd(e.target.value)}
+            inputMode="numeric"
+            aria-label="Water amount in ml"
+          />
+          <button
+            type="button"
+            className="auth-button auth-button--primary"
+            disabled={busy}
+            onClick={() => void onAddWater()}
+          >
+            Add ml
+          </button>
+        </div>
+      </div>
+
+      <div className="nutrition-card">
+        <h3 className="nutrition-meal-title">Copy day</h3>
+        <div className="hello-sync-form">
+          <input
+            className="hello-sync-input"
+            type="date"
+            value={copyFrom}
+            onChange={(e) => setCopyFrom(e.target.value)}
+            aria-label="Copy from date"
+          />
+          <button
+            type="button"
+            className="auth-button auth-button--secondary"
+            disabled={busy}
+            onClick={() => void onCopyDay()}
+          >
+            Copy to {selectedDay}
+          </button>
+        </div>
       </div>
 
       <div className="nutrition-card">

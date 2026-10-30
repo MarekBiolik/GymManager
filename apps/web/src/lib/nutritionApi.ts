@@ -100,6 +100,15 @@ export type RecipeIngredientRow = {
   updated_at: string;
 };
 
+export type WaterEntryRow = {
+  id: string;
+  user_id: string;
+  drunk_on: string;
+  amount_ml: number;
+  created_at: string;
+  updated_at: string;
+};
+
 function isOnline(): boolean {
   return typeof navigator === "undefined" ? true : navigator.onLine;
 }
@@ -541,6 +550,88 @@ export async function deleteFoodEntry(
   }
 }
 
+export async function copyFoodEntriesDay(
+  userId: string,
+  fromDate: string,
+  toDate: string,
+): Promise<WriteOutcome<FoodEntryRow[]>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  try {
+    const { data, error } = await supabase
+      .from("food_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("eaten_on", fromDate);
+    if (error) {
+      throw error;
+    }
+    const source = (data ?? []) as FoodEntryRow[];
+    if (source.length === 0) {
+      return { kind: "ok", data: [] };
+    }
+    const inserts = source.map(({ id: _id, created_at: _c, updated_at: _u, ...rest }) => ({
+      ...rest,
+      eaten_on: toDate,
+    }));
+    const { data: copied, error: insErr } = await supabase.from("food_entries").insert(inserts).select();
+    if (insErr) {
+      throw insErr;
+    }
+    cacheRemove(cacheKeys.foodEntriesDay(userId, toDate));
+    return { kind: "ok", data: (copied ?? []) as FoodEntryRow[] };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Copy day failed" };
+  }
+}
+
+export async function copyFoodEntriesMeal(
+  userId: string,
+  fromDate: string,
+  toDate: string,
+  mealTypeId: string,
+  targetMealTypeId: string = mealTypeId,
+): Promise<WriteOutcome<FoodEntryRow[]>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  try {
+    const { data, error } = await supabase
+      .from("food_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("eaten_on", fromDate)
+      .eq("meal_type_id", mealTypeId);
+    if (error) {
+      throw error;
+    }
+    const source = (data ?? []) as FoodEntryRow[];
+    if (source.length === 0) {
+      return { kind: "ok", data: [] };
+    }
+    const inserts = source.map(({ id: _id, created_at: _c, updated_at: _u, ...rest }) => ({
+      ...rest,
+      eaten_on: toDate,
+      meal_type_id: targetMealTypeId,
+    }));
+    const { data: copied, error: insErr } = await supabase.from("food_entries").insert(inserts).select();
+    if (insErr) {
+      throw insErr;
+    }
+    cacheRemove(cacheKeys.foodEntriesDay(userId, toDate));
+    return { kind: "ok", data: (copied ?? []) as FoodEntryRow[] };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Copy meal failed" };
+  }
+}
+
 export function entryRowMacros(row: FoodEntryRow): Macros {
   return macros(Number(row.protein_g), Number(row.carbs_g), Number(row.fat_g), Number(row.kcal));
 }
@@ -662,5 +753,74 @@ export async function saveRecipe(
     return { kind: "ok", data: saved };
   } catch (err: unknown) {
     return { kind: "error", message: err instanceof Error ? err.message : "Save recipe failed" };
+  }
+}
+
+export async function readWaterDay(userId: string, drunkOn: string): Promise<ReadOutcome<WaterEntryRow[]>> {
+  const key = cacheKeys.waterDay(userId, drunkOn);
+  return readCached(userId, key, async () => {
+    const { data, error } = await supabase!
+      .from("water_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("drunk_on", drunkOn)
+      .order("created_at", { ascending: true });
+    if (error) {
+      throw error;
+    }
+    return (data ?? []) as WaterEntryRow[];
+  }, false);
+}
+
+export async function addWaterEntry(
+  userId: string,
+  drunkOn: string,
+  amountMl: number,
+): Promise<WriteOutcome<WaterEntryRow>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  if (!(amountMl > 0)) {
+    return { kind: "error", message: "Amount must be greater than 0" };
+  }
+  try {
+    const { data, error } = await supabase
+      .from("water_entries")
+      .insert({ user_id: userId, drunk_on: drunkOn, amount_ml: amountMl })
+      .select()
+      .single();
+    if (error) {
+      throw error;
+    }
+    cacheRemove(cacheKeys.waterDay(userId, drunkOn));
+    return { kind: "ok", data: data as WaterEntryRow };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Add water failed" };
+  }
+}
+
+export async function deleteWaterEntry(
+  userId: string,
+  drunkOn: string,
+  id: string,
+): Promise<WriteOutcome<null>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  try {
+    const { error } = await supabase.from("water_entries").delete().eq("id", id).eq("user_id", userId);
+    if (error) {
+      throw error;
+    }
+    cacheRemove(cacheKeys.waterDay(userId, drunkOn));
+    return { kind: "ok", data: null };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Delete failed" };
   }
 }

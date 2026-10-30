@@ -3,6 +3,8 @@ import { goalProgressOf, type Macros, type NutritionSettingsGoals } from "../../
 type Props = {
   consumed: Macros;
   goals: NutritionSettingsGoals;
+  waterMl?: number;
+  waterTargetMl?: number | null;
 };
 
 function Bar({ label, value, target, ratio }: { label: string; value: number; target: number; ratio: number }) {
@@ -29,7 +31,7 @@ function Bar({ label, value, target, ratio }: { label: string; value: number; ta
   );
 }
 
-export function GoalProgressBars({ consumed, goals }: Props) {
+export function GoalProgressBars({ consumed, goals, waterMl, waterTargetMl }: Props) {
   const p = goalProgressOf(consumed, goals);
   return (
     <div className="nutrition-goals">
@@ -37,6 +39,14 @@ export function GoalProgressBars({ consumed, goals }: Props) {
       <Bar label="Protein (g)" value={consumed.proteinG} target={goals.proteinTargetG} ratio={p.protein} />
       <Bar label="Carbs (g)" value={consumed.carbsG} target={goals.carbsTargetG} ratio={p.carbs} />
       <Bar label="Fat (g)" value={consumed.fatG} target={goals.fatTargetG} ratio={p.fat} />
+      {waterTargetMl != null && waterTargetMl > 0 ? (
+        <Bar
+          label="Water (ml)"
+          value={waterMl ?? 0}
+          target={waterTargetMl}
+          ratio={(waterMl ?? 0) / waterTargetMl}
+        />
+      ) : null}
     </div>
   );
 }
