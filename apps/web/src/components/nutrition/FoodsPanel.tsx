@@ -10,6 +10,12 @@ import {
   type FoodRow,
   type FoodServingRow,
 } from "../../lib/nutritionApi";
+import {
+  fetchOpenFoodFactsBarcode,
+  offToFoodInsert,
+  searchOpenFoodFacts,
+  type OffSearchHit,
+} from "../../lib/offClient";
 import { StaleBanner } from "./StaleBanner";
 
 type Props = { userId: string };
@@ -30,6 +36,10 @@ export function FoodsPanel({ userId }: Props) {
 
   const [servingLabel, setServingLabel] = useState("");
   const [servingGrams, setServingGrams] = useState("100");
+
+  const [offQuery, setOffQuery] = useState("");
+  const [offHits, setOffHits] = useState<OffSearchHit[]>([]);
+  const [barcode, setBarcode] = useState("");
 
   const loadFoods = useCallback(async () => {
     setError(null);
@@ -194,6 +204,61 @@ export function FoodsPanel({ userId }: Props) {
     }
   }
 
+  async function onOffSearch() {
+    setError(null);
+    setOffHits([]);
+    if (!offQuery.trim()) {
+      return;
+    }
+    setBusy(true);
+    try {
+      const hits = await searchOpenFoodFacts(offQuery);
+      setOffHits(hits);
+      if (hits.length === 0) {
+        setError("No Open Food Facts results.");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "OFF search failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function importOffHit(hit: OffSearchHit) {
+    setBusy(true);
+    const ins = await insertFood(userId, offToFoodInsert(userId, hit));
+    setBusy(false);
+    if (ins.kind === "offline") {
+      setError("Offline — cannot import.");
+      return;
+    }
+    if (ins.kind === "error") {
+      setError(ins.message);
+      return;
+    }
+    setOffHits([]);
+    void loadFoods();
+    selectFood(ins.data);
+  }
+
+  async function onBarcodeLookup() {
+    setError(null);
+    setBusy(true);
+    try {
+      const product = await fetchOpenFoodFactsBarcode(barcode);
+      if (!product) {
+        setError("Product not found for that barcode.");
+        setOffHits([]);
+      } else {
+        setOffHits([product]);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Barcode lookup failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <section className="nutrition-panel" aria-label="Foods">
       <h2 className="nutrition-panel-title">Foods</h2>
@@ -329,6 +394,62 @@ export function FoodsPanel({ userId }: Props) {
                 </button>
               </div>
             </>
+          ) : null}
+
+          <h3 className="nutrition-meal-title">Open Food Facts import</h3>
+          <p className="auth-hint">Data from Open Food Facts — saved as your private food copy.</p>
+          <div className="hello-sync-form">
+            <input
+              className="hello-sync-input"
+              placeholder="Search products…"
+              value={offQuery}
+              onChange={(e) => setOffQuery(e.target.value)}
+            />
+            <button
+              type="button"
+              className="auth-button auth-button--secondary"
+              disabled={busy}
+              onClick={() => void onOffSearch()}
+            >
+              Search OFF
+            </button>
+          </div>
+          <label className="hello-sync-label">
+            Barcode (paste)
+            <input
+              className="hello-sync-input"
+              value={barcode}
+              onChange={(e) => setBarcode(e.target.value)}
+              placeholder="EAN / UPC"
+            />
+          </label>
+          <button
+            type="button"
+            className="auth-button auth-button--secondary"
+            disabled={busy}
+            onClick={() => void onBarcodeLookup()}
+          >
+            Lookup barcode
+          </button>
+          {offHits.length > 0 ? (
+            <ul className="nutrition-list">
+              {offHits.map((hit) => (
+                <li key={hit.code} className="nutrition-list-row">
+                  <span>
+                    {hit.name} · P {hit.proteinGPer100.toFixed(1)} / C {hit.carbsGPer100.toFixed(1)} / F{" "}
+                    {hit.fatGPer100.toFixed(1)} per 100g
+                  </span>
+                  <button
+                    type="button"
+                    className="auth-button auth-button--primary nutrition-btn-sm"
+                    disabled={busy}
+                    onClick={() => void importOffHit(hit)}
+                  >
+                    Import
+                  </button>
+                </li>
+              ))}
+            </ul>
           ) : null}
         </div>
       </div>
