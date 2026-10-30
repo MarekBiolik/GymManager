@@ -56,6 +56,19 @@ export function per100gScaled(per100: Macros, grams: number): Macros {
   return macros(per100.proteinG * factor, per100.carbsG * factor, per100.fatG * factor);
 }
 
+/** Aggregate recipe component macros into per-100g values for the recipe food. */
+export function recipeMacrosPer100g(totalComponentMacros: Macros, totalGrams: number): Macros {
+  if (totalGrams <= 0) {
+    throw new Error("recipe must have totalGrams > 0");
+  }
+  const factor = 100 / totalGrams;
+  return macros(
+    totalComponentMacros.proteinG * factor,
+    totalComponentMacros.carbsG * factor,
+    totalComponentMacros.fatG * factor,
+  );
+}
+
 export function resolveGrams(
   amount: number,
   unit: AmountUnit,
