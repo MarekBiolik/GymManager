@@ -17,4 +17,9 @@ object CacheKeys {
         userId: String,
         eatenOn: String,
     ): String = "food_entries:day:$userId:$eatenOn"
+
+    fun waterDay(
+        userId: String,
+        drunkOn: String,
+    ): String = "water:day:$userId:$drunkOn"
 }

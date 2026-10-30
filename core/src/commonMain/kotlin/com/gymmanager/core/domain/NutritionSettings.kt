@@ -59,6 +59,17 @@ data class FoodServing(
     val updatedAtEpochMs: Long,
 )
 
+/** Logged water amount for a calendar day (ml). */
+data class WaterEntry(
+    val id: String,
+    val userId: String,
+    /** Local calendar day as ISO-8601 date string YYYY-MM-DD. */
+    val drunkOn: String,
+    val amountMl: Double,
+    val createdAtEpochMs: Long,
+    val updatedAtEpochMs: Long,
+)
+
 /** Component line of a recipe food (grams of another catalog food). */
 data class RecipeIngredient(
     val id: String,
