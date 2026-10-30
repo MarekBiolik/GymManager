@@ -1,6 +1,7 @@
 import { useAuthSession } from "../hooks/useAuthSession";
 import { defaultWebOrigin, oauthRedirectTo } from "../lib/supabaseClient";
 import { HelloSyncPanel } from "./HelloSyncPanel";
+import { FoodsPanel } from "./nutrition/FoodsPanel";
 import { NutritionSettingsPanel } from "./nutrition/NutritionSettingsPanel";
 
 export function AuthPanel() {
@@ -47,6 +48,7 @@ export function AuthPanel() {
           Sign out
         </button>
         <HelloSyncPanel userId={userId} />
+        <FoodsPanel userId={userId} />
         <NutritionSettingsPanel userId={userId} onAccountDeleted={() => void signOut()} />
         <p className="auth-hint">Live OAuth / RLS smoke needs IdP (#73) and a configured Supabase project.</p>
       </div>
