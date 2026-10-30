@@ -5,6 +5,7 @@ import com.gymmanager.core.application.account.DeleteAccount
 import com.gymmanager.core.application.auth.AuthSession
 import com.gymmanager.core.application.auth.DefaultAuthSession
 import com.gymmanager.core.application.measurements.MeasurementRepository
+import com.gymmanager.core.application.nutrition.FoodEntryRepository
 import com.gymmanager.core.application.nutrition.FoodRepository
 import com.gymmanager.core.application.nutrition.MealTypeRepository
 import com.gymmanager.core.application.nutrition.NutritionSettingsRepository
@@ -12,6 +13,7 @@ import com.gymmanager.core.application.profiles.ProfileRepository
 import com.gymmanager.core.data.supabase.SupabaseAuthGateway
 import com.gymmanager.core.data.supabase.SupabaseConfig
 import com.gymmanager.core.data.supabase.SupabaseDeleteAccount
+import com.gymmanager.core.data.supabase.SupabaseFoodEntryRemote
 import com.gymmanager.core.data.supabase.SupabaseFoodRemote
 import com.gymmanager.core.data.supabase.SupabaseFoodServingRemote
 import com.gymmanager.core.data.supabase.SupabaseMealTypeRemote
@@ -25,7 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 
 /**
- * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods.
+ * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods / entries.
  */
 data class GymManagerServices(
     val auth: AuthSession,
@@ -34,6 +36,7 @@ data class GymManagerServices(
     val nutritionSettings: NutritionSettingsRepository,
     val mealTypes: MealTypeRepository,
     val foods: FoodRepository,
+    val foodEntries: FoodEntryRepository,
     val deleteAccount: DeleteAccount,
     val cache: ReadCache,
 )
@@ -81,6 +84,15 @@ fun createGymManagerServices(
         foods =
             FoodRepository(
                 remote = foodRemote,
+                servingRemote = servingRemote,
+                cache = cache,
+                network = network,
+                nowEpochMs = nowEpochMs,
+            ),
+        foodEntries =
+            FoodEntryRepository(
+                remote = SupabaseFoodEntryRemote(client),
+                foodRemote = foodRemote,
                 servingRemote = servingRemote,
                 cache = cache,
                 network = network,

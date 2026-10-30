@@ -48,3 +48,22 @@ interface FoodServingRemote {
 
     suspend fun delete(id: String)
 }
+
+interface FoodEntryRemote {
+    suspend fun listForDay(
+        userId: String,
+        eatenOn: String,
+    ): List<com.gymmanager.core.domain.FoodEntry>
+
+    suspend fun listForRange(
+        userId: String,
+        fromInclusive: String,
+        toInclusive: String,
+    ): List<com.gymmanager.core.domain.FoodEntry>
+
+    suspend fun insert(entry: com.gymmanager.core.domain.FoodEntry): com.gymmanager.core.domain.FoodEntry
+
+    suspend fun update(entry: com.gymmanager.core.domain.FoodEntry): com.gymmanager.core.domain.FoodEntry
+
+    suspend fun delete(id: String)
+}

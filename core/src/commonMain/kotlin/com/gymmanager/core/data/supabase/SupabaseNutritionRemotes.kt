@@ -1,10 +1,12 @@
 package com.gymmanager.core.data.supabase
 
+import com.gymmanager.core.application.nutrition.FoodEntryRemote
 import com.gymmanager.core.application.nutrition.FoodRemote
 import com.gymmanager.core.application.nutrition.FoodServingRemote
 import com.gymmanager.core.application.nutrition.MealTypeRemote
 import com.gymmanager.core.application.nutrition.NutritionSettingsRemote
 import com.gymmanager.core.domain.Food
+import com.gymmanager.core.domain.FoodEntry
 import com.gymmanager.core.domain.FoodServing
 import com.gymmanager.core.domain.MealType
 import com.gymmanager.core.domain.NutritionSettings
@@ -151,5 +153,60 @@ class SupabaseFoodServingRemote(
 
     override suspend fun delete(id: String) {
         client.from("food_servings").delete { filter { eq("id", id) } }
+    }
+}
+
+class SupabaseFoodEntryRemote(
+    private val client: SupabaseClient,
+) : FoodEntryRemote {
+    override suspend fun listForDay(
+        userId: String,
+        eatenOn: String,
+    ): List<FoodEntry> =
+        client
+            .from("food_entries")
+            .select {
+                filter {
+                    eq("user_id", userId)
+                    eq("eaten_on", eatenOn)
+                }
+            }.decodeList<FoodEntryDto>()
+            .map { it.toDomain() }
+
+    override suspend fun listForRange(
+        userId: String,
+        fromInclusive: String,
+        toInclusive: String,
+    ): List<FoodEntry> =
+        client
+            .from("food_entries")
+            .select {
+                filter {
+                    eq("user_id", userId)
+                    gte("eaten_on", fromInclusive)
+                    lte("eaten_on", toInclusive)
+                }
+                order("eaten_on", Order.ASCENDING)
+            }.decodeList<FoodEntryDto>()
+            .map { it.toDomain() }
+
+    override suspend fun insert(entry: FoodEntry): FoodEntry =
+        client
+            .from("food_entries")
+            .insert(entry.toDto()) { select() }
+            .decodeSingle<FoodEntryDto>()
+            .toDomain()
+
+    override suspend fun update(entry: FoodEntry): FoodEntry =
+        client
+            .from("food_entries")
+            .update(entry.toDto()) {
+                filter { eq("id", entry.id) }
+                select()
+            }.decodeSingle<FoodEntryDto>()
+            .toDomain()
+
+    override suspend fun delete(id: String) {
+        client.from("food_entries").delete { filter { eq("id", id) } }
     }
 }

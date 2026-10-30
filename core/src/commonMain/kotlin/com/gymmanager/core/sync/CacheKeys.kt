@@ -12,4 +12,9 @@ object CacheKeys {
     fun mealTypesList(userId: String): String = "meal_types:list:$userId"
 
     fun foodsList(userId: String): String = "foods:list:$userId"
+
+    fun foodEntriesDay(
+        userId: String,
+        eatenOn: String,
+    ): String = "food_entries:day:$userId:$eatenOn"
 }
