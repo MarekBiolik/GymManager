@@ -59,9 +59,11 @@ Scope:
 
 ## Phase 3 — Nutrition module (MVP)
 
-**Goal:** own products/meals, intake entries, history, basic aggregations.
+**Goal:** personal Fitatu-like tracker — goals/settings, own foods + flexible servings, weekly diary with meal sections, OFF search/import + barcode, recipes, charts, water, copy meal/day — Android + web.
 
-**Data source:** own `foods` only ([ADR 0009](decisions/0009-food-data-source-own-first.md), [OQ-07](open-questions.md) decided). OpenFoodFacts / hybrid import — **beyond** phase-3 MVP ([spec](specs/openfoodfacts-import-hybrid.md), [#26](https://github.com/MarekBiolik/GymManager/issues/26)).
+**Data source:** own `foods` as diary SoT; **hybrid** OFF search/import + barcode in phase 3 ([ADR 0011](decisions/0011-food-data-hybrid-in-phase-3.md), supersedes ADR 0009 phase boundary). Contract: [nutrition-module](specs/nutrition-module.md); OFF detail: [openfoodfacts-import-hybrid](specs/openfoodfacts-import-hybrid.md). Starter catalog empty unless [OQ-10](open-questions.md) seed is needed.
+
+**Status:** in progress — docs/ADR first, then vertical slices (settings → foods → diary → OFF → barcode → recipes → charts → water/copy).
 
 ---
 
