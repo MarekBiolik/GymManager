@@ -3,6 +3,7 @@ package com.gymmanager.android.nutrition
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -19,6 +20,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.gymmanager.android.nutrition.charts.ChartsScreen
+import com.gymmanager.android.nutrition.charts.ChartsViewModel
+import com.gymmanager.android.nutrition.charts.ChartsViewModelFactory
 import com.gymmanager.android.nutrition.diary.DiaryScreen
 import com.gymmanager.android.nutrition.diary.DiaryViewModel
 import com.gymmanager.android.nutrition.diary.DiaryViewModelFactory
@@ -41,6 +45,7 @@ enum class NutritionTab(
 ) {
     Diary("diary", "Diary"),
     Foods("foods", "Foods"),
+    Charts("charts", "Charts"),
     Settings("settings", "Settings"),
 }
 
@@ -79,6 +84,7 @@ fun NutritionShell(
                                     when (tab) {
                                         NutritionTab.Diary -> Icons.AutoMirrored.Filled.List
                                         NutritionTab.Foods -> Icons.Default.Restaurant
+                                        NutritionTab.Charts -> Icons.Default.BarChart
                                         NutritionTab.Settings -> Icons.Default.Settings
                                     },
                                 contentDescription = tab.label,
@@ -120,6 +126,19 @@ fun NutritionShell(
                             ),
                     )
                 FoodsScreen(viewModel = vm)
+            }
+            composable(NutritionTab.Charts.route) {
+                val vm: ChartsViewModel =
+                    viewModel(
+                        key = "charts-$userId",
+                        factory =
+                            ChartsViewModelFactory(
+                                userId = userId,
+                                services = services,
+                                network = network,
+                            ),
+                    )
+                ChartsScreen(viewModel = vm)
             }
             composable(NutritionTab.Settings.route) {
                 val settingsVm: NutritionSettingsViewModel =
