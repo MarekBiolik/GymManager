@@ -97,3 +97,54 @@ export function goalProgressOf(consumed: Macros, goals: NutritionSettingsGoals):
     fat: ratio(consumed.fatG, goals.fatTargetG),
   };
 }
+
+export type DailyMacroTotals = {
+  eatenOn: string;
+  macros: Macros;
+};
+
+export type EntryMacroSnapshot = {
+  eatenOn: string;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  kcal: number;
+};
+export const NutritionAggregations = {
+  dailyTotals(entries: EntryMacroSnapshot[]): DailyMacroTotals[] {
+    const byDay = new Map<string, Macros>();
+    for (const e of entries) {
+      const snap = macros(e.proteinG, e.carbsG, e.fatG, e.kcal);
+      const prev = byDay.get(e.eatenOn) ?? zeroMacros();
+      byDay.set(e.eatenOn, addMacros(prev, snap));
+    }
+    return [...byDay.entries()]
+      .map(([eatenOn, m]) => ({ eatenOn, macros: m }))
+      .sort((a, b) => (a.eatenOn < b.eatenOn ? -1 : 1));
+  },
+
+  averageMacros(days: DailyMacroTotals[]): Macros {
+    if (days.length === 0) {
+      return zeroMacros();
+    }
+    const sum = days.reduce((acc, d) => addMacros(acc, d.macros), zeroMacros());
+    const n = days.length;
+    return {
+      proteinG: sum.proteinG / n,
+      carbsG: sum.carbsG / n,
+      fatG: sum.fatG / n,
+      kcal: sum.kcal / n,
+    };
+  },
+
+  macroCalorieShares(m: Macros): { protein: number; carbs: number; fat: number } {
+    const p = m.proteinG * 4;
+    const c = m.carbsG * 4;
+    const f = m.fatG * 9;
+    const total = p + c + f;
+    if (total <= 0) {
+      return { protein: 0, carbs: 0, fat: 0 };
+    }
+    return { protein: p / total, carbs: c / total, fat: f / total };
+  },
+};

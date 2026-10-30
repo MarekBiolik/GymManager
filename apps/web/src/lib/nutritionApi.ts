@@ -839,3 +839,28 @@ export async function deleteWaterEntry(
     return { kind: "error", message: err instanceof Error ? err.message : "Delete failed" };
   }
 }
+
+export async function readFoodEntriesRange(
+  userId: string,
+  fromInclusive: string,
+  toInclusive: string,
+): Promise<ReadOutcome<FoodEntryRow[]>> {
+  if (!isOnline() || !supabase) {
+    return { kind: "empty", reason: !supabase ? "error" : "offline" };
+  }
+  try {
+    const { data, error } = await supabase
+      .from("food_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("eaten_on", fromInclusive)
+      .lte("eaten_on", toInclusive)
+      .order("eaten_on", { ascending: true });
+    if (error) {
+      throw error;
+    }
+    return { kind: "fresh", data: (data ?? []) as FoodEntryRow[] };
+  } catch {
+    return { kind: "empty", reason: "error" };
+  }
+}

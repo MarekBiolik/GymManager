@@ -449,3 +449,34 @@ body {
 .nutrition-food-item.is-selected {
   border-color: var(--color-action-secondary);
 }
+
+.nutrition-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  min-height: 10rem;
+  padding-top: var(--space-2);
+}
+
+.nutrition-chart-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  height: 10rem;
+}
+
+.nutrition-chart-bar {
+  width: 100%;
+  max-width: 2.5rem;
+  margin-top: auto;
+  background: var(--color-action-primary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  min-height: 2px;
+}
+
+.nutrition-chart-label {
+  font-size: var(--type-label-sm-size);
+  color: var(--color-text-secondary);
+}
