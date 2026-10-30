@@ -1,8 +1,6 @@
 import { useAuthSession } from "../hooks/useAuthSession";
 import { defaultWebOrigin, oauthRedirectTo } from "../lib/supabaseClient";
-import { HelloSyncPanel } from "./HelloSyncPanel";
-import { FoodsPanel } from "./nutrition/FoodsPanel";
-import { NutritionSettingsPanel } from "./nutrition/NutritionSettingsPanel";
+import { NutritionApp } from "./nutrition/NutritionShell";
 
 export function AuthPanel() {
   const { state, signInWithGoogle, signOut } = useAuthSession();
@@ -38,25 +36,12 @@ export function AuthPanel() {
 
   if (state.status === "signed_in") {
     const userId = state.session.user.id;
-    return (
-      <div className="auth-panel auth-panel--wide">
-        <p className="app-sub">Signed in</p>
-        <p className="auth-meta" title={userId}>
-          User {userId.slice(0, 8)}…
-        </p>
-        <button type="button" className="auth-button auth-button--secondary" onClick={() => void signOut()}>
-          Sign out
-        </button>
-        <HelloSyncPanel userId={userId} />
-        <FoodsPanel userId={userId} />
-        <NutritionSettingsPanel userId={userId} onAccountDeleted={() => void signOut()} />
-        <p className="auth-hint">Live OAuth / RLS smoke needs IdP (#73) and a configured Supabase project.</p>
-      </div>
-    );
+    return <NutritionApp userId={userId} onSignOut={() => void signOut()} onAccountDeleted={() => void signOut()} />;
   }
 
   return (
     <div className="auth-panel">
+      <h1 className="app-title">GymManager web</h1>
       <button type="button" className="auth-button auth-button--primary" onClick={() => void signInWithGoogle()}>
         Sign in with Google
       </button>
