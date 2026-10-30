@@ -51,6 +51,11 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
                 },
                 label = { Text("Create / edit") },
             )
+            FilterChip(
+                selected = mode == FoodsMode.Recipe,
+                onClick = { mode = FoodsMode.Recipe },
+                label = { Text("Recipe") },
+            )
         }
         when (mode) {
             FoodsMode.List ->
@@ -62,6 +67,9 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
                         editing = it
                         mode = FoodsMode.Edit
                         viewModel.loadServings(it.id)
+                        if (it.isRecipe) {
+                            viewModel.loadRecipeIngredients(it.id)
+                        }
                     },
                     onFavorite = viewModel::toggleFavorite,
                     onDelete = viewModel::deleteFood,
@@ -70,6 +78,8 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
                 FoodEditor(
                     food = editing,
                     servings = state.servings,
+                    recipeIngredients = state.recipeIngredients,
+                    componentFoods = state.foods,
                     offResults = state.offResults,
                     busy = state.busy,
                     online = state.banner.online,
@@ -86,6 +96,16 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
                         mode = FoodsMode.List
                     },
                 )
+            FoodsMode.Recipe ->
+                RecipeBuilder(
+                    foods = state.foods.filter { !it.isRecipe },
+                    busy = state.busy,
+                    online = state.banner.online,
+                    onSave = { name, components, serving ->
+                        viewModel.saveRecipe(null, name, components, serving)
+                        mode = FoodsMode.List
+                    },
+                )
         }
     }
 }
@@ -93,6 +113,7 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
 private enum class FoodsMode {
     List,
     Edit,
+    Recipe,
 }
 
 @Composable
@@ -123,9 +144,14 @@ private fun FoodList(
                 )
                 Text(
                     text =
-                        "P ${food.macrosPer100g.proteinG.roundToInt()} · " +
-                            "C ${food.macrosPer100g.carbsG.roundToInt()} · " +
-                            "F ${food.macrosPer100g.fatG.roundToInt()} / 100g",
+                        buildString {
+                            append(
+                                "P ${food.macrosPer100g.proteinG.roundToInt()} · " +
+                                    "C ${food.macrosPer100g.carbsG.roundToInt()} · " +
+                                    "F ${food.macrosPer100g.fatG.roundToInt()} / 100g",
+                            )
+                            if (food.isRecipe) append(" · recipe")
+                        },
                     color = GymTokens.ColorTextSecondary,
                 )
             }
@@ -145,6 +171,8 @@ private fun FoodList(
 private fun FoodEditor(
     food: Food?,
     servings: List<FoodServing>,
+    recipeIngredients: List<com.gymmanager.core.domain.RecipeIngredient>,
+    componentFoods: List<Food>,
     offResults: List<OffProductCandidate>,
     busy: Boolean,
     online: Boolean,
@@ -207,11 +235,21 @@ private fun FoodEditor(
                     serving.toDoubleOrNull(),
                 )
             },
-            enabled = !busy && online && name.isNotBlank(),
+            enabled = !busy && online && name.isNotBlank() && food?.isRecipe != true,
         ) {
             Text("Save food")
         }
-        if (food != null) {
+        if (food != null && food.isRecipe) {
+            Text("Recipe ingredients", color = GymTokens.ColorTextPrimary)
+            if (recipeIngredients.isEmpty()) {
+                Text("No ingredients loaded.", color = GymTokens.ColorTextSecondary)
+            }
+            recipeIngredients.forEach { ing ->
+                val label = componentFoods.firstOrNull { it.id == ing.componentFoodId }?.name ?: ing.componentFoodId
+                Text("$label · ${ing.grams.roundToInt()} g", color = GymTokens.ColorTextSecondary)
+            }
+        }
+        if (food != null && !food.isRecipe) {
             Text("Servings", color = GymTokens.ColorTextPrimary)
             servings.forEach { s ->
                 Row(
@@ -254,47 +292,114 @@ private fun FoodEditor(
                 Text("Add serving")
             }
         }
-        Text("Import from Open Food Facts", color = GymTokens.ColorTextPrimary, fontWeight = FontWeight.SemiBold)
-        Text(
-            "Data from Open Food Facts — saved as your private food copy.",
-            color = GymTokens.ColorTextSecondary,
-        )
-        OutlinedTextField(
-            value = offQuery,
-            onValueChange = {
-                offQuery = it
-                onSearchOff(it)
-            },
-            label = { Text("Search OFF") },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !busy,
-        )
-        OutlinedTextField(
-            value = barcode,
-            onValueChange = { barcode = it },
-            label = { Text("Barcode (paste)") },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !busy,
-        )
-        Button(onClick = { onBarcode(barcode) }, enabled = !busy) { Text("Lookup barcode") }
-        offResults.forEach { off ->
-            Row(
+        if (food?.isRecipe != true) {
+            Text("Import from Open Food Facts", color = GymTokens.ColorTextPrimary, fontWeight = FontWeight.SemiBold)
+            Text(
+                "Data from Open Food Facts — saved as your private food copy.",
+                color = GymTokens.ColorTextSecondary,
+            )
+            OutlinedTextField(
+                value = offQuery,
+                onValueChange = {
+                    offQuery = it
+                    onSearchOff(it)
+                },
+                label = { Text("Search OFF") },
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(off.name, color = GymTokens.ColorTextPrimary)
-                    Text(
-                        "P ${off.macrosPer100g.proteinG.roundToInt()} · " +
-                            "C ${off.macrosPer100g.carbsG.roundToInt()} · " +
-                            "F ${off.macrosPer100g.fatG.roundToInt()} / 100g",
-                        color = GymTokens.ColorTextSecondary,
-                    )
-                }
-                Button(onClick = { onImportOff(off) }, enabled = !busy && online) {
-                    Text("Import")
+                enabled = !busy,
+            )
+            OutlinedTextField(
+                value = barcode,
+                onValueChange = { barcode = it },
+                label = { Text("Barcode (paste)") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy,
+            )
+            Button(onClick = { onBarcode(barcode) }, enabled = !busy) { Text("Lookup barcode") }
+            offResults.forEach { off ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(off.name, color = GymTokens.ColorTextPrimary)
+                        Text(
+                            "P ${off.macrosPer100g.proteinG.roundToInt()} · " +
+                                "C ${off.macrosPer100g.carbsG.roundToInt()} · " +
+                                "F ${off.macrosPer100g.fatG.roundToInt()} / 100g",
+                            color = GymTokens.ColorTextSecondary,
+                        )
+                    }
+                    Button(onClick = { onImportOff(off) }, enabled = !busy && online) {
+                        Text("Import")
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun RecipeBuilder(
+    foods: List<Food>,
+    busy: Boolean,
+    online: Boolean,
+    onSave: (String, List<Pair<String, Double>>, Double?) -> Unit,
+) {
+    var name by remember { mutableStateOf("My recipe") }
+    var serving by remember { mutableStateOf("") }
+    var pickFoodId by remember { mutableStateOf(foods.firstOrNull()?.id.orEmpty()) }
+    var grams by remember { mutableStateOf("100") }
+    var components by remember { mutableStateOf(listOf<Pair<String, Double>>()) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Recipe name") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        foods.forEach { food ->
+            FilterChip(
+                selected = pickFoodId == food.id,
+                onClick = { pickFoodId = food.id },
+                label = { Text(food.name) },
+            )
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
+            OutlinedTextField(
+                value = grams,
+                onValueChange = { grams = it },
+                label = { Text("Grams") },
+                modifier = Modifier.weight(1f),
+            )
+            Button(
+                onClick = {
+                    val g = grams.toDoubleOrNull() ?: return@Button
+                    if (pickFoodId.isNotBlank()) {
+                        components = components + (pickFoodId to g)
+                    }
+                },
+                enabled = !busy,
+            ) {
+                Text("Add component")
+            }
+        }
+        components.forEach { (id, g) ->
+            val label = foods.firstOrNull { it.id == id }?.name ?: id
+            Text("$label · ${g.roundToInt()} g", color = GymTokens.ColorTextSecondary)
+        }
+        OutlinedTextField(
+            value = serving,
+            onValueChange = { serving = it },
+            label = { Text("Default serving g (optional)") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Button(
+            onClick = { onSave(name, components, serving.toDoubleOrNull()) },
+            enabled = !busy && online && components.isNotEmpty() && name.isNotBlank(),
+        ) {
+            Text("Save recipe")
         }
     }
 }
