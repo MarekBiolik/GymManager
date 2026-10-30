@@ -8,6 +8,8 @@ import com.gymmanager.android.nutrition.errorMessageOrNull
 import com.gymmanager.android.nutrition.unwrap
 import com.gymmanager.android.sync.AndroidNetworkStatus
 import com.gymmanager.core.GymManagerServices
+import com.gymmanager.core.data.off.OffProductCandidate
+import com.gymmanager.core.data.off.toFoodDraft
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodServing
 import com.gymmanager.core.domain.Macros
@@ -23,6 +25,7 @@ data class FoodsUiState(
     val servings: List<FoodServing> = emptyList(),
     val banner: NutritionBannerState = NutritionBannerState(),
     val busy: Boolean = false,
+    val offResults: List<OffProductCandidate> = emptyList(),
 )
 
 class FoodsViewModel(
@@ -189,6 +192,46 @@ class FoodsViewModel(
                     loadServings(foodId)
                     _uiState.update { it.copy(busy = false) }
                 }
+                else -> {
+                    _uiState.update { it.copy(busy = false) }
+                    setError(result.errorMessageOrNull())
+                }
+            }
+        }
+    }
+
+    fun searchOff(query: String) {
+        viewModelScope.launch {
+            try {
+                val results = services.offProducts.search(query)
+                _uiState.update { it.copy(offResults = results) }
+            } catch (e: Exception) {
+                setError(e.message ?: "OFF search failed")
+            }
+        }
+    }
+
+    fun lookupBarcode(code: String) {
+        viewModelScope.launch {
+            try {
+                val hit = services.offProducts.lookupBarcode(code)
+                _uiState.update { it.copy(offResults = listOfNotNull(hit)) }
+            } catch (e: Exception) {
+                setError(e.message ?: "Barcode lookup failed")
+            }
+        }
+    }
+
+    fun importOff(candidate: OffProductCandidate) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            val now = nowEpochMs()
+            when (val result = services.foods.upsertFood(candidate.toFoodDraft(userId, now))) {
+                is WriteResult.Success -> refresh()
                 else -> {
                     _uiState.update { it.copy(busy = false) }
                     setError(result.errorMessageOrNull())

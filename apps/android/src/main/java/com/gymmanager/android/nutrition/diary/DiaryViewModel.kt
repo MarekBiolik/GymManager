@@ -12,6 +12,8 @@ import com.gymmanager.android.nutrition.unwrap
 import com.gymmanager.android.nutrition.weekStrip
 import com.gymmanager.android.sync.AndroidNetworkStatus
 import com.gymmanager.core.GymManagerServices
+import com.gymmanager.core.data.off.OffProductCandidate
+import com.gymmanager.core.data.off.toFoodDraft
 import com.gymmanager.core.domain.AmountUnit
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodEntry
@@ -38,12 +40,14 @@ data class DiaryUiState(
     val goalProgress: GoalProgress? = null,
     val banner: NutritionBannerState = NutritionBannerState(),
     val busy: Boolean = false,
+    val offResults: List<OffProductCandidate> = emptyList(),
 )
 
 class DiaryViewModel(
     private val userId: String,
     private val services: GymManagerServices,
     private val network: AndroidNetworkStatus,
+    private val nowEpochMs: () -> Long = { System.currentTimeMillis() },
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(DiaryUiState())
     val uiState: StateFlow<DiaryUiState> = _uiState.asStateFlow()
@@ -171,6 +175,82 @@ class DiaryViewModel(
         val q = query.trim().lowercase()
         if (q.isEmpty()) return _uiState.value.foods.take(30)
         return _uiState.value.foods.filter { it.name.lowercase().contains(q) }.take(30)
+    }
+
+    fun searchOff(query: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true, offResults = emptyList()) }
+            try {
+                val results = services.offProducts.search(query)
+                _uiState.update { it.copy(offResults = results, busy = false) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        busy = false,
+                        banner = it.banner.copy(errorMessage = e.message ?: "OFF search failed"),
+                    )
+                }
+            }
+        }
+    }
+
+    fun lookupBarcode(code: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            try {
+                val hit = services.offProducts.lookupBarcode(code)
+                _uiState.update {
+                    it.copy(
+                        offResults = listOfNotNull(hit),
+                        busy = false,
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        busy = false,
+                        banner = it.banner.copy(errorMessage = e.message ?: "Barcode lookup failed"),
+                    )
+                }
+            }
+        }
+    }
+
+    fun importOffAndAddEntry(
+        candidate: OffProductCandidate,
+        mealTypeId: String,
+        amount: Double,
+        unit: AmountUnit,
+    ) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            val now = nowEpochMs()
+            val existing = services.foods.findByExternal(userId, "openfoodfacts", candidate.code)
+            val food =
+                existing
+                    ?: when (
+                        val saved =
+                            services.foods.upsertFood(
+                                candidate.toFoodDraft(userId, now),
+                            )
+                    ) {
+                        is WriteResult.Success -> saved.data
+                        else -> {
+                            _uiState.update { it.copy(busy = false) }
+                            setError(saved.errorMessageOrNull())
+                            return@launch
+                        }
+                    }
+            addEntry(food.id, mealTypeId, amount, unit, foodServingId = null)
+        }
+    }
+
+    fun clearOffResults() {
+        _uiState.update { it.copy(offResults = emptyList()) }
     }
 
     private fun setError(message: String?) {
