@@ -1,25 +1,32 @@
 # Data model (outline)
 
-This is a **conceptual outline**, not a final SQL migration. Field, index, and aggregation-view details come with module phases (3–5).
+Conceptual outline plus phase-3 nutrition shape. Field-level SQL lives in migrations / [nutrition-module](../specs/nutrition-module.md).
 
-**First migration (profiles + RLS + `measurements` smoke):** [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) — SPEC ONLY; apply = [#21](https://github.com/MarekBiolik/GymManager/issues/21).
+**First migration (profiles + RLS + `measurements` smoke):** [specs/first-migration-profiles-rls.md](../specs/first-migration-profiles-rls.md) — applied as [#21](https://github.com/MarekBiolik/GymManager/issues/21).
 
 ## Entity diagram (working)
 
 ```mermaid
 erDiagram
+  profiles ||--|| nutrition_settings : has
+  profiles ||--o{ meal_types : owns
   profiles ||--o{ foods : owns
+  foods ||--o{ food_servings : defines
+  foods ||--o{ recipe_ingredients : "recipe parent"
+  foods ||--o{ recipe_ingredients : "component"
   profiles ||--o{ food_entries : owns
+  foods ||--o{ food_entries : referenced
+  meal_types ||--o{ food_entries : sections
+  profiles ||--o{ water_entries : owns
   profiles ||--o{ exercises : owns
   profiles ||--o{ sessions : owns
   profiles ||--o{ measurements : owns
-  foods ||--o{ food_entries : referenced
   exercises ||--o{ sets : used_in
   sessions ||--o{ sets : contains
   profiles ||--o{ tags : owns
 ```
 
-`profiles.id` = `auth.users.id` (UUID). Every user table has `user_id` + RLS.
+`profiles.id` = `auth.users.id` (UUID). Every user table has `user_id` (or `profiles.id` 1:1) + RLS.
 
 ## Entities
 
@@ -29,29 +36,76 @@ Minimal app record linked to the Auth account. PII and account-deletion rules: [
 
 - `id` (UUID, PK, = auth user)
 - `created_at`, `updated_at`
-- `preferred_units` (`kg`/`lb`) — UI preference, not PII
+- `preferred_units` (`kg`/`lb`) — UI preference; **phase 3 UI uses kg/g only**
 - **not:** email, display name, avatar, gender, date of birth (email only in `auth.users`)
+
+### nutrition_settings
+
+1:1 with profile. Macro/calorie goals and body/water preferences ([nutrition-module](../specs/nutrition-module.md)).
+
+- `user_id` (PK, FK → auth user)
+- `calorie_target_kcal`, `protein_target_g`, `carbs_target_g`, `fat_target_g`
+- `height_cm` (nullable)
+- `water_target_ml` (nullable)
+- `created_at`, `updated_at`
+
+**Weight** is not stored here — use `measurements` with `metric = body_weight_kg`.
+
+### meal_types
+
+Per-user diary sections (editable/reorderable). Seeded defaults: breakfast, 2nd breakfast, lunch, snack, dinner.
+
+- `id`, `user_id`
+- `name`, `position`
+- `created_at`, `updated_at`
 
 ### foods
 
-User-owned products / meals. **Data source (MVP):** user catalog only — [ADR 0009](../decisions/0009-food-data-source-own-first.md) (closes [OQ-07](../open-questions.md)). No global product table and no live OpenFoodFacts in phase 3.
+User-owned products / recipes. **SoT for catalog:** own rows only. Hybrid import copies from OFF into this table ([ADR 0011](../decisions/0011-food-data-hybrid-in-phase-3.md)).
 
 - `id`, `user_id`
 - `name`
-- nutrition values **per 100 g** (MVP canon): protein, carbs, fat; derived calories / consistency in the domain layer
-- `default_serving_g` (optional) — default UI portion; the entry still computes from `amount`
+- nutrition values **per 100 g**: `protein_g`, `carbs_g`, `fat_g` (derived kcal in domain)
+- `default_serving_g` (optional)
+- `is_recipe` (boolean)
+- `is_favorite` (boolean)
+- `last_used_at` (nullable timestamptz) — ranking for recent list; **not** eviction
+- `external_source` / `external_id` (nullable) — provenance after import
 - `created_at`, `updated_at`
-- `external_source` / `external_id` (nullable) — provenance after a future import (e.g. `openfoodfacts` + code); **not** runtime SoT; may be added null in the nutrition migration with no OFF UI
+
+### food_servings
+
+Flexible units per food (portion, teaspoon, … → grams).
+
+- `id`, `user_id`, `food_id`
+- `label`, `grams`, `position`
+- `created_at`, `updated_at`
 
 ### food_entries
 
 Intake entries (1+ year history).
 
 - `id`, `user_id`
-- `food_id` (nullable if snapshot without reference)
-- `eaten_at` (timestamptz)
-- `amount` + unit
-- macro snapshot at entry time (resilient to later Food edits)
+- `food_id` (nullable if snapshot-only edge case; prefer set)
+- `meal_type_id`
+- `eaten_on` (date) — diary day in the user’s local calendar sense (store as `date`)
+- `amount` (numeric) + `unit` (`g` | `serving`) + optional `food_serving_id`
+- `grams` (resolved)
+- macro snapshot at entry time: `protein_g`, `carbs_g`, `fat_g`, `kcal`
+- `created_at`, `updated_at`
+
+### recipe_ingredients
+
+- `id`, `user_id`
+- `recipe_food_id`, `component_food_id`
+- `grams`
+- `created_at`, `updated_at`
+
+### water_entries
+
+- `id`, `user_id`
+- `drunk_on` (date)
+- `amount_ml`
 - `created_at`, `updated_at`
 
 ### exercises
@@ -97,10 +151,10 @@ Cross-cutting labels (exercises, meals). M:N via join tables — only when neede
 ## Shared schema conventions
 
 - UUID as PK (`gen_random_uuid()`) — fixed in [first migration spec](../specs/first-migration-profiles-rls.md); not ULID.
-- `timestamptz` for all dates.
+- `timestamptz` for timestamps; diary day as `date` where calendar-day semantics matter.
 - Soft-delete only if there is a case (e.g. undo); default **hard delete**. Tombstone for offline sync — only with offline-write ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)).
 - Every user table: `created_at`, `updated_at` (timestamptz) — LWW per row in MVP sync; `updated_at` set by `set_updated_at` trigger.
-- Indexes: `(user_id, eaten_at)`, `(user_id, measured_at DESC)` (already in first migration), `(session_id, position)`, etc.
+- Indexes: `(user_id, eaten_on)`, `(user_id, measured_at DESC)`, `(session_id, position)`, `(user_id, last_used_at DESC)`, etc.
 - Where to enforce shared web + mobile rules (RLS / CHECK vs KMP / thin TS): [postgres-invariants](../architecture/postgres-invariants.md).
 
 ## Aggregations (direction)
@@ -109,12 +163,13 @@ Views or queries:
 
 - macro sum / day per user,
 - measurement series in a date range,
-- training volume / week.
+- training volume / week,
+- water sum / day.
 
 Materialized daily tables — optional optimization later.
 
 ## Out of outline scope
 
-- Full nutrition / training tables (phases 3–4); exact first-migration types → [spec](../specs/first-migration-profiles-rls.md); CHECK vs core split: [postgres-invariants](../architecture/postgres-invariants.md)
-- OpenFoodFacts import / search — beyond MVP ([spec](../specs/openfoodfacts-import-hybrid.md), [#26](https://github.com/MarekBiolik/GymManager/issues/26); [ADR 0009](../decisions/0009-food-data-source-own-first.md))
+- Full training tables (phase 4); exact first-migration types → [spec](../specs/first-migration-profiles-rls.md); CHECK vs core split: [postgres-invariants](../architecture/postgres-invariants.md)
 - Sharing data between users
+- Imperial unit conversion UI

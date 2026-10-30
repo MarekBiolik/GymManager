@@ -16,12 +16,16 @@ Unambiguous names used in docs, ADRs, code, and schema. Add new terms here **bef
 
 | Term | Meaning |
 |------|---------|
-| **Food** | Product or recipe **owned by the user** (or created via a later import), with macros **per 100 g**; lives in `foods` under RLS — [ADR 0009](../decisions/0009-food-data-source-own-first.md) |
+| **Food** | Product or recipe **owned by the user** (or created via import), with macros **per 100 g**; lives in `foods` under RLS — [ADR 0011](../decisions/0011-food-data-hybrid-in-phase-3.md) |
 | **Food entry** | Intake event: what, how much, when (linked to a Food or a value snapshot) |
-| **Diary** | Day view of entries (UI); not necessarily a separate table |
+| **Food serving** | Named amount for a Food (e.g. portion, teaspoon) defined as grams; used when logging entries |
+| **Meal type** | User-editable diary section (e.g. breakfast); orders entries within a day |
+| **Diary** | Day/week view of entries (UI); not necessarily a separate table |
 | **Macro** | Protein, carbs, fat (and derived calories) |
+| **Nutrition settings** | Per-user calorie/macro targets, height, water target |
+| **Recipe** | Food with `is_recipe` and component ingredients; macros derived from components |
 | **External food source** | Optional provenance source on import (e.g. OpenFoodFacts); does not replace the own `foods` row |
-| **OpenFoodFacts (OFF)** | External product DB; **unused** in MVP; later only as import → copy into `foods` |
+| **OpenFoodFacts (OFF)** | External product DB; phase-3 hybrid = search/barcode → **copy** into `foods` — [ADR 0011](../decisions/0011-food-data-hybrid-in-phase-3.md) |
 
 ## Training
 

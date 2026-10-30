@@ -33,17 +33,19 @@ Project documentation index. These documents are the source of truth for archite
 - [ADR 0006 — Web: supabase-js without KMP→JS/Wasm](decisions/0006-web-supabase-js-without-kmp-js.md)
 - [ADR 0007 — Auth providers and minimum PII](decisions/0007-auth-providers-minimum-pii.md)
 - [ADR 0008 — Sync strategy: online-first + read cache](decisions/0008-sync-strategy-online-first.md)
-- [ADR 0009 — Food data source: own foods first](decisions/0009-food-data-source-own-first.md)
+- [ADR 0009 — Food data source: own foods first](decisions/0009-food-data-source-own-first.md) — superseded for phase-3 boundary by ADR 0011
 - [ADR 0010 — Design tokens SSOT and cross-platform generation](decisions/0010-design-tokens-ssot.md)
+- [ADR 0011 — Food data hybrid in phase 3](decisions/0011-food-data-hybrid-in-phase-3.md)
 
 ## Specifications (design / UX)
 
 - [Design tokens contract and generation pipeline](specs/design-tokens.md) — SPEC ONLY ([#61](https://github.com/MarekBiolik/GymManager/issues/61)); [ADR 0010](decisions/0010-design-tokens-ssot.md)
 - [Fitness/Gym visual style](specs/visual-style-fitness-gym.md) — SPEC ONLY ([#62](https://github.com/MarekBiolik/GymManager/issues/62)); tokens contract + [ADR 0010](decisions/0010-design-tokens-ssot.md)
 
-## Specifications (nutrition — post-MVP)
+## Specifications (nutrition — phase 3)
 
-- [OpenFoodFacts import/search hybrid](specs/openfoodfacts-import-hybrid.md) — SPEC ONLY ([#26](https://github.com/MarekBiolik/GymManager/issues/26)); after own-foods MVP / ADR 0009; no OFF client in this ticket
+- [Nutrition module](specs/nutrition-module.md) — phase-3 contract ([ADR 0011](decisions/0011-food-data-hybrid-in-phase-3.md))
+- [OpenFoodFacts import/search hybrid](specs/openfoodfacts-import-hybrid.md) — in phase-3 scope ([#26](https://github.com/MarekBiolik/GymManager/issues/26) spec; implement in OFF/barcode slices)
 
 ## Domain
 

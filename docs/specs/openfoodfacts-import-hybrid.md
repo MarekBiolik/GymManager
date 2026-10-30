@@ -1,11 +1,11 @@
-# Spec: OpenFoodFacts import/search (nutrition hybrid, post-MVP)
+# Spec: OpenFoodFacts import/search (nutrition hybrid)
 
-**Status:** SPEC ONLY — **no** OFF HTTP client, **no** barcode SDK, **no** schema apply in this ticket.  
-**Issue:** [#26](https://github.com/MarekBiolik/GymManager/issues/26)  
-**Parent decision:** [ADR 0009](../decisions/0009-food-data-source-own-first.md) (closes [OQ-07](../open-questions.md)) — phase-3 MVP = own `foods` only  
+**Status:** living contract — **in phase-3 scope** per [ADR 0011](../decisions/0011-food-data-hybrid-in-phase-3.md). Spec text itself landed in [#26](https://github.com/MarekBiolik/GymManager/issues/26); implementation is separate phase-3 slices.  
+**Parent decision:** [ADR 0011](../decisions/0011-food-data-hybrid-in-phase-3.md) (supersedes ADR 0009 phase boundary); own-foods SoT rules from [ADR 0009](../decisions/0009-food-data-source-own-first.md) still apply  
+**Module:** [nutrition-module](nutrition-module.md)  
 **Domain:** [data-model — foods](../domain/data-model.md#foods), [glossary](../domain/glossary.md)
 
-This document specifies the **later hybrid**: search (and optionally barcode) against OpenFoodFacts → **copy** into the user’s `foods` with provenance. After import, GymManager never treats OFF as live SoT for the diary.
+This document specifies the hybrid: search (and barcode) against OpenFoodFacts → **copy** into the user’s `foods` with provenance. After import, GymManager never treats OFF as live SoT for the diary.
 
 ## Goals
 
@@ -19,21 +19,20 @@ This document specifies the **later hybrid**: search (and optionally barcode) ag
 
 | Out of scope | Where |
 |--------------|--------|
-| OFF client implementation / API keys in code | later implementation ticket after phase-3 own-foods MVP |
 | Live re-fetch from OFF when opening a Food | deliberately rejected — local copy is SoT after import |
-| Global / shared product catalog in Postgres | ADR 0009 |
+| Global / shared product catalog in Postgres | ADR 0011 / ADR 0009 |
 | USDA or other sources | future; same “copy into `foods`” pattern if added |
-| Changing phase-3 MVP scope (own foods only) | ADR 0009 |
+| Mirroring the entire OFF DB | ADR 0011 |
 
 ## When this lands
 
 | Prerequisite | Why |
 |--------------|-----|
-| Phase-3 own-foods CRUD + diary + aggregations working | Hybrid is UX sugar on a working catalog |
-| ADR 0009 accepted | Provenance columns and “copy, don’t link” already decided |
+| Own-foods CRUD + diary entry path exist (or same PR stack) | Import must land in a usable catalog |
+| ADR 0011 accepted | Hybrid is in phase 3; copy-not-link still required |
 | Network error UX patterns from phase 2 available | Search is online-only; write of imported Food follows online-first ([ADR 0008](../decisions/0008-sync-strategy-online-first.md)) |
 
-Do **not** start this before own-foods MVP is usable. Solo pain of manual entry is the product trigger — same spirit as offline-write (#20): ship when friction is real.
+Phase-3 order: settings → foods → diary, then OFF search/import, then barcode (reuses import). See [nutrition-module](nutrition-module.md).
 
 ## Flow
 
@@ -133,7 +132,8 @@ Nullable `external_source` / `external_id` may already exist from the nutrition 
 
 ## Related
 
-- [ADR 0009](../decisions/0009-food-data-source-own-first.md) — own foods first; hybrid deferred here
-- [roadmap](../roadmap.md) phase 3
+- [ADR 0011](../decisions/0011-food-data-hybrid-in-phase-3.md) — hybrid in phase 3
+- [ADR 0009](../decisions/0009-food-data-source-own-first.md) — own foods SoT (superseded for phase boundary only)
+- [nutrition-module](nutrition-module.md), [roadmap](../roadmap.md) phase 3
 - [ADR 0008](../decisions/0008-sync-strategy-online-first.md) — online search/write
-- [#8](https://github.com/MarekBiolik/GymManager/issues/8) — OQ-07 / ADR 0009
+- [#26](https://github.com/MarekBiolik/GymManager/issues/26) — original hybrid spec ticket
