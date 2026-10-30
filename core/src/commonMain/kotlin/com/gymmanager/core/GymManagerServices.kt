@@ -10,6 +10,9 @@ import com.gymmanager.core.application.nutrition.FoodRepository
 import com.gymmanager.core.application.nutrition.MealTypeRepository
 import com.gymmanager.core.application.nutrition.NutritionSettingsRepository
 import com.gymmanager.core.application.profiles.ProfileRepository
+import com.gymmanager.core.data.off.KtorOffProductClient
+import com.gymmanager.core.data.off.OffProductClient
+import com.gymmanager.core.data.off.createPlatformHttpClient
 import com.gymmanager.core.data.supabase.SupabaseAuthGateway
 import com.gymmanager.core.data.supabase.SupabaseConfig
 import com.gymmanager.core.data.supabase.SupabaseDeleteAccount
@@ -27,7 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 
 /**
- * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods / entries.
+ * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods / entries / OFF.
  */
 data class GymManagerServices(
     val auth: AuthSession,
@@ -37,6 +40,7 @@ data class GymManagerServices(
     val mealTypes: MealTypeRepository,
     val foods: FoodRepository,
     val foodEntries: FoodEntryRepository,
+    val offProducts: OffProductClient,
     val deleteAccount: DeleteAccount,
     val cache: ReadCache,
 )
@@ -47,6 +51,7 @@ fun createGymManagerServices(
     network: NetworkStatus,
     cache: ReadCache = InMemoryReadCache(),
     nowEpochMs: () -> Long = { Clock.System.now().toEpochMilliseconds() },
+    offProducts: OffProductClient = KtorOffProductClient(createPlatformHttpClient()),
 ): GymManagerServices {
     val client = createGymManagerSupabaseClient(config)
     val foodRemote = SupabaseFoodRemote(client)
@@ -98,6 +103,7 @@ fun createGymManagerServices(
                 network = network,
                 nowEpochMs = nowEpochMs,
             ),
+        offProducts = offProducts,
         deleteAccount = SupabaseDeleteAccount(client),
         cache = cache,
     )
