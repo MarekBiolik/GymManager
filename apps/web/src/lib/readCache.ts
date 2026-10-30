@@ -24,6 +24,7 @@ export const cacheKeys = {
   mealTypesList: (userId: string) => `nutrition:mealTypes:${userId}`,
   foodsList: (userId: string) => `nutrition:foods:${userId}`,
   foodEntriesDay: (userId: string, eatenOn: string) => `nutrition:entries:${userId}:${eatenOn}`,
+  waterDay: (userId: string, drunkOn: string) => `nutrition:water:${userId}:${drunkOn}`,
 };
 
 export function cacheGet<T>(key: string): CacheEntry<T> | null {
