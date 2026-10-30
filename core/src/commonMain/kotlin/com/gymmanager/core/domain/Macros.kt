@@ -77,3 +77,21 @@ fun resolveGrams(
         }
     }
 }
+
+/**
+ * Aggregate recipe component macros into per-100g values for the recipe food.
+ * [totalComponentMacros] is the sum of scaled macros for all ingredient grams;
+ * [totalGrams] is sum of ingredient grams. Result = per 100 g of the recipe mix.
+ */
+fun recipeMacrosPer100g(
+    totalComponentMacros: Macros,
+    totalGrams: Double,
+): Macros {
+    require(totalGrams > 0.0) { "recipe must have totalGrams > 0" }
+    val factor = 100.0 / totalGrams
+    return Macros(
+        proteinG = totalComponentMacros.proteinG * factor,
+        carbsG = totalComponentMacros.carbsG * factor,
+        fatG = totalComponentMacros.fatG * factor,
+    )
+}

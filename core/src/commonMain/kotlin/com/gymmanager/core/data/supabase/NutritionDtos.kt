@@ -7,6 +7,7 @@ import com.gymmanager.core.domain.FoodServing
 import com.gymmanager.core.domain.Macros
 import com.gymmanager.core.domain.MealType
 import com.gymmanager.core.domain.NutritionSettings
+import com.gymmanager.core.domain.RecipeIngredient
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -217,6 +218,39 @@ fun FoodEntry.toDto() =
         carbsG = macros.carbsG,
         fatG = macros.fatG,
         kcal = macros.kcal,
+        createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
+        updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
+    )
+
+@Serializable
+data class RecipeIngredientDto(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String,
+    @SerialName("recipe_food_id") val recipeFoodId: String,
+    @SerialName("component_food_id") val componentFoodId: String,
+    val grams: Double,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+fun RecipeIngredientDto.toDomain() =
+    RecipeIngredient(
+        id = id ?: "",
+        userId = userId,
+        recipeFoodId = recipeFoodId,
+        componentFoodId = componentFoodId,
+        grams = grams,
+        createdAtEpochMs = createdAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+        updatedAtEpochMs = updatedAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+    )
+
+fun RecipeIngredient.toDto() =
+    RecipeIngredientDto(
+        id = id.ifBlank { null },
+        userId = userId,
+        recipeFoodId = recipeFoodId,
+        componentFoodId = componentFoodId,
+        grams = grams,
         createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
         updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
     )

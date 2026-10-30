@@ -30,6 +30,16 @@ class MacrosTest {
     }
 
     @Test
+    fun recipeMacrosPer100g_fromComponents() {
+        // 200 g of mix with 20g protein total → 10g protein / 100g
+        val total = Macros(20.0, 40.0, 10.0, kcal = 330.0)
+        val per100 = recipeMacrosPer100g(total, 200.0)
+        assertEquals(10.0, per100.proteinG)
+        assertEquals(20.0, per100.carbsG)
+        assertEquals(5.0, per100.fatG)
+    }
+
+    @Test
     fun goalProgress_ratios() {
         val goals =
             NutritionSettings(
