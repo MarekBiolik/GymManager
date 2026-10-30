@@ -550,6 +550,26 @@ export async function deleteFoodEntry(
   }
 }
 
+function foodEntryCopyPayload(
+  row: FoodEntryRow,
+  overrides: { eaten_on: string; meal_type_id?: string },
+) {
+  return {
+    user_id: row.user_id,
+    food_id: row.food_id,
+    meal_type_id: overrides.meal_type_id ?? row.meal_type_id,
+    eaten_on: overrides.eaten_on,
+    amount: row.amount,
+    unit: row.unit,
+    food_serving_id: row.food_serving_id,
+    grams: row.grams,
+    protein_g: row.protein_g,
+    carbs_g: row.carbs_g,
+    fat_g: row.fat_g,
+    kcal: row.kcal,
+  };
+}
+
 export async function copyFoodEntriesDay(
   userId: string,
   fromDate: string,
@@ -574,10 +594,7 @@ export async function copyFoodEntriesDay(
     if (source.length === 0) {
       return { kind: "ok", data: [] };
     }
-    const inserts = source.map(({ id: _id, created_at: _c, updated_at: _u, ...rest }) => ({
-      ...rest,
-      eaten_on: toDate,
-    }));
+    const inserts = source.map((row) => foodEntryCopyPayload(row, { eaten_on: toDate }));
     const { data: copied, error: insErr } = await supabase.from("food_entries").insert(inserts).select();
     if (insErr) {
       throw insErr;
@@ -616,11 +633,9 @@ export async function copyFoodEntriesMeal(
     if (source.length === 0) {
       return { kind: "ok", data: [] };
     }
-    const inserts = source.map(({ id: _id, created_at: _c, updated_at: _u, ...rest }) => ({
-      ...rest,
-      eaten_on: toDate,
-      meal_type_id: targetMealTypeId,
-    }));
+    const inserts = source.map((row) =>
+      foodEntryCopyPayload(row, { eaten_on: toDate, meal_type_id: targetMealTypeId }),
+    );
     const { data: copied, error: insErr } = await supabase.from("food_entries").insert(inserts).select();
     if (insErr) {
       throw insErr;
