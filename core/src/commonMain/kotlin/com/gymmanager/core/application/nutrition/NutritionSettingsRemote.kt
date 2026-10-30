@@ -67,3 +67,15 @@ interface FoodEntryRemote {
 
     suspend fun delete(id: String)
 }
+
+interface RecipeIngredientRemote {
+    suspend fun listForRecipe(recipeFoodId: String): List<com.gymmanager.core.domain.RecipeIngredient>
+
+    suspend fun insert(
+        ingredient: com.gymmanager.core.domain.RecipeIngredient,
+    ): com.gymmanager.core.domain.RecipeIngredient
+
+    suspend fun delete(id: String)
+
+    suspend fun deleteForRecipe(recipeFoodId: String)
+}

@@ -59,6 +59,17 @@ data class FoodServing(
     val updatedAtEpochMs: Long,
 )
 
+/** Component line of a recipe food (grams of another catalog food). */
+data class RecipeIngredient(
+    val id: String,
+    val userId: String,
+    val recipeFoodId: String,
+    val componentFoodId: String,
+    val grams: Double,
+    val createdAtEpochMs: Long,
+    val updatedAtEpochMs: Long,
+)
+
 /** Diary row with snapped macros at log time. */
 data class FoodEntry(
     val id: String,

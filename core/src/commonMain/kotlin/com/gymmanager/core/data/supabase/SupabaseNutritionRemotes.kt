@@ -5,11 +5,13 @@ import com.gymmanager.core.application.nutrition.FoodRemote
 import com.gymmanager.core.application.nutrition.FoodServingRemote
 import com.gymmanager.core.application.nutrition.MealTypeRemote
 import com.gymmanager.core.application.nutrition.NutritionSettingsRemote
+import com.gymmanager.core.application.nutrition.RecipeIngredientRemote
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodEntry
 import com.gymmanager.core.domain.FoodServing
 import com.gymmanager.core.domain.MealType
 import com.gymmanager.core.domain.NutritionSettings
+import com.gymmanager.core.domain.RecipeIngredient
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
@@ -208,5 +210,33 @@ class SupabaseFoodEntryRemote(
 
     override suspend fun delete(id: String) {
         client.from("food_entries").delete { filter { eq("id", id) } }
+    }
+}
+
+class SupabaseRecipeIngredientRemote(
+    private val client: SupabaseClient,
+) : RecipeIngredientRemote {
+    override suspend fun listForRecipe(recipeFoodId: String): List<RecipeIngredient> =
+        client
+            .from("recipe_ingredients")
+            .select { filter { eq("recipe_food_id", recipeFoodId) } }
+            .decodeList<RecipeIngredientDto>()
+            .map { it.toDomain() }
+
+    override suspend fun insert(ingredient: RecipeIngredient): RecipeIngredient =
+        client
+            .from("recipe_ingredients")
+            .insert(ingredient.toDto()) { select() }
+            .decodeSingle<RecipeIngredientDto>()
+            .toDomain()
+
+    override suspend fun delete(id: String) {
+        client.from("recipe_ingredients").delete { filter { eq("id", id) } }
+    }
+
+    override suspend fun deleteForRecipe(recipeFoodId: String) {
+        client.from("recipe_ingredients").delete {
+            filter { eq("recipe_food_id", recipeFoodId) }
+        }
     }
 }
