@@ -50,10 +50,10 @@ flowchart TD
 
 ### Rules
 
-1. **Intake → plan → issues** — New work starts with an intake skill (`research`, `prototype`, and/or `interview`) when needed, then an agreed plan, then `to-issues`. Issue AC checkboxes are the agent’s done-list ([workflow rule](../../.cursor/rules/workflow-issue-pr-commit.mdc)).
-2. **Core first** — Shared KMP behavior and/or Postgres+RLS contract lands before platform UIs fan out, so Android / web / iOS build on a stable seam.
-3. **Then parallel platforms** — After core is ready, cover platforms in parallel via on-demand subagents when possible.
-4. **Then test** — Per-platform tests and smoke (Android emulator / web) gate PRs unless the user skips tests.
+1. **Intake → plan → issues** — New work starts with an intake skill (`research`, `prototype`, and/or `interview`) when needed, then an agreed plan, then `to-issues` (**epic → per-area tasks**; core task blocks UI tasks; android + web parallel after core). Issue AC checkboxes are the agent’s done-list ([workflow rule](../../.cursor/rules/workflow-issue-pr-commit.mdc)). **One task = one focused PR.**
+2. **Core first** — Shared KMP behavior and/or Postgres+RLS contract lands (its own PR) before platform UIs fan out, so Android / web / iOS build on a stable seam.
+3. **Then parallel platforms** — After core is ready, cover platforms in parallel via on-demand subagents when possible — **separate PRs** per platform task.
+4. **Then test** — Per-platform tests and smoke (Android emulator / web) gate **each** task PR unless the user skips tests.
 5. **Skip gate** — The user may explicitly skip a platform, skip tests, or both. Do not invent skips; ask if unclear.
 6. **Issue → PR → commit → merge** — Existing project rules; merge only when the user asks.
 
