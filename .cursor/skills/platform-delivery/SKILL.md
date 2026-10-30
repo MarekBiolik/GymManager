@@ -34,28 +34,30 @@ If the request still needs facts, a throwaway probe, or unresolved design branch
 
 ### 2. Issues ready
 
-If the work is not yet sliced, run `to-issues`. AC checkboxes on the issue are the done-list.
+If the work is not yet sliced, run `to-issues` (epic → per-area tasks; size budget). AC checkboxes on the **task** issue are the done-list.
+
+Non-trivial multi-platform features → **per-area tasks** (`schema+core`, then `android` / `web`), not one mega-issue. Phase-2 pattern: separate issues/PRs per area.
 
 **Skip gate (ask if unclear):** user may skip a platform, skip tests, or both. Record skips in the issue/PR; do not invent them.
 
-**Done when:** implementable issue(s) exist with AC, or user pointed at an existing issue.
+**Done when:** implementable **task** issue(s) exist with AC (or user pointed at one task). Epics alone are not enough to start coding.
 
 ### 3. Core slice
 
-Land the shared seam first:
+Land the shared seam for **this task** first (usually the `schema+core` task’s PR):
 
 - KMP domain / use cases / repositories / sync in `core/`, and/or
 - Postgres + RLS contract under `supabase/` when the slice needs schema
 
-Platform UIs wait until this seam is mergeable or clearly staged for the same PR stack.
+Open a **focused PR for the core task** and merge (on user ask) before UI tasks start — unless the user explicitly stacks dependent branches.
 
 Prefer a strong model for hard domain, sync, or RLS calls. Dispatch search / mechanical edits to cheaper helpers when useful.
 
-**Done when:** core (and required DB contract) satisfy the issue’s core AC; thin UI has a stable API/contract to call.
+**Done when:** core (and required DB contract) satisfy the **core task** AC; thin UI has a stable API/contract to call.
 
 ### 4. Parallel platforms
 
-Fan out with on-demand `Task` subagents when write ownership is disjoint:
+After the core task’s seam is on the default branch (or an agreed stack base), fan out **one PR per UI task** with on-demand `Task` subagents when write ownership is disjoint:
 
 | Area | Path | Today |
 |------|------|--------|
@@ -65,28 +67,31 @@ Fan out with on-demand `Task` subagents when write ownership is disjoint:
 
 Use area skills when they exist; otherwise frame the subagent with the area row above and [clients](../../../docs/architecture/clients.md). One writer per path; no persistent advisor/inbox files.
 
-**Done when:** each non-skipped platform meets its AC (iOS = docs/wiring only unless Mac access is decided).
+Android and web tasks run **in parallel** after core; each keeps its own branch/PR.
+
+**Done when:** each non-skipped **platform task** meets its AC (iOS = docs/wiring only unless Mac access is decided).
 
 ### 5. Tests
 
-Unless the user skipped tests:
+Unless the user skipped tests — gate **each task’s PR** with the checks that match its area:
 
-1. Core unit tests for new rules
-2. Web build / targeted checks
-3. Android smoke when emulator runner skill exists and an emulator is available
+1. Core unit tests for new rules (`schema+core` task)
+2. Web build / targeted checks (`web` task)
+3. Android smoke when emulator runner skill exists and an emulator is available (`android` task)
 4. RLS / migration checks when the slice touched `supabase/`
 
 Prefer cheap models for running builds/tests; keep the lead on failures that need judgement.
 
-**Done when:** required checks are green, or skips are explicit on the issue.
+**Done when:** required checks are green for the current task PR, or skips are explicit on that issue.
 
 ### 6. Hand-off
 
-- Short status on the issue or PR: done / waiting on / next step
-- Open or update PR with `pr` when the user wants a PR (never merge unless asked)
+- Short status on the **task** issue or its PR: done / waiting on / next step
+- Open or update **one PR per task** with `pr` when the user wants a PR (never merge unless asked)
 - Tick satisfied AC checkboxes via `gh`
+- Then pick the next unblocked task (sibling UI after core, or next feature’s core)
 
-**Done when:** user has a clear next action (review draft, merge ask, or next issue).
+**Done when:** user has a clear next action (review draft, merge ask, or next task).
 
 ## Skill routing
 

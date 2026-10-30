@@ -7,10 +7,12 @@ alwaysApply: true
 
 After architecture foundations, implement work as **narrow vertical slices**, not large undocumented batches.
 
+**One issue = one focused PR.** Decompose plans into epic → per-area tasks with skill `to-issues` (size budget: split when a slice spans core + two UIs). Do not land a whole multi-feature phase in a single PR.
+
 ## Loop
 
-1. **Issue** — capture the slice (use skill `to-issues` when breaking a plan/spec). Title and body in **English**. Acceptance criteria checkboxes are the agent’s done-list.
-2. **Branch + PR** — open a PR early from a focused branch; describe intent in English (skill `pr`). Title uses the same shape as commits: `type(#ISSUE): subject`. Body links/closes the issue.
+1. **Issue** — capture the slice (use skill `to-issues` when breaking a plan/spec into epic → tasks). Title and body in **English**. Acceptance criteria checkboxes are the agent’s done-list. Implement **tasks**, not epics.
+2. **Branch + PR** — open a PR early from a focused branch **for that one task**; describe intent in English (skill `pr`). Title uses the same shape as commits: `type(#ISSUE): subject`. Body links/closes the issue.
 3. **Commits** — focused commits per step (`commit-after-steps`): `type(#ISSUE): subject`, then `type(#ISSUE): subject (#PR)` once the PR number exists.
 4. **Acceptance criteria** — before asking to merge (or when AC are met): check off satisfied boxes on the issue via `gh` (only criteria actually done).
 5. **Merge** — only when the user asks. Prefer squash subject `type(#ISSUE): subject (#PR)`. Do not merge/close issues or PRs unless the user explicitly requests it.
