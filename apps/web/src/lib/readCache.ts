@@ -20,6 +20,8 @@ export const cacheKeys = {
   profile: (userId: string) => `profile:${userId}`,
   measurementsList: (userId: string) => `measurements:list:${userId}`,
   measurementItem: (id: string) => `measurements:item:${id}`,
+  nutritionSettings: (userId: string) => `nutrition:settings:${userId}`,
+  mealTypesList: (userId: string) => `nutrition:mealTypes:${userId}`,
 };
 
 export function cacheGet<T>(key: string): CacheEntry<T> | null {
