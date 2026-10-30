@@ -27,18 +27,21 @@ import com.gymmanager.android.nutrition.MacroGoalSummary
 import com.gymmanager.android.nutrition.NutritionStatusBanner
 import com.gymmanager.android.nutrition.dayLabel
 import com.gymmanager.android.nutrition.parseIsoDay
+import com.gymmanager.android.nutrition.toIsoDay
 import com.gymmanager.android.theme.GymTokens
 import com.gymmanager.core.data.off.OffProductCandidate
 import com.gymmanager.core.domain.AmountUnit
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodEntry
 import com.gymmanager.core.domain.MealType
+import com.gymmanager.core.domain.WaterEntry
 import kotlin.math.roundToInt
 
 @Composable
 fun DiaryScreen(viewModel: DiaryViewModel) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showAdd by remember { mutableStateOf(false) }
+    var showCopy by remember { mutableStateOf(false) }
 
     Column(
         modifier =
@@ -84,8 +87,22 @@ fun DiaryScreen(viewModel: DiaryViewModel) {
             }
         }
         MacroGoalSummary(state.consumed, state.settings, state.goalProgress)
-        Button(onClick = { showAdd = true }, enabled = !state.busy && state.banner.online) {
-            Text("Add entry")
+        WaterSection(
+            totalMl = state.waterTotalMl,
+            targetMl = state.settings?.waterTargetMl,
+            entries = state.waterEntries,
+            busy = state.busy,
+            online = state.banner.online,
+            onAdd = viewModel::addWater,
+            onDelete = viewModel::deleteWater,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
+            Button(onClick = { showAdd = true }, enabled = !state.busy && state.banner.online) {
+                Text("Add entry")
+            }
+            Button(onClick = { showCopy = true }, enabled = !state.busy && state.banner.online) {
+                Text("Copy day")
+            }
         }
         if (state.mealTypes.isEmpty()) {
             Text("No meal types — add them in Settings.", color = GymTokens.ColorTextSecondary)
@@ -98,6 +115,10 @@ fun DiaryScreen(viewModel: DiaryViewModel) {
                 busy = state.busy,
                 online = state.banner.online,
                 onDelete = viewModel::deleteEntry,
+                onCopyMealFromYesterday = {
+                    val yesterday = parseIsoDay(state.selectedDay).minusDays(1).toIsoDay()
+                    viewModel.copyMeal(yesterday, meal.id)
+                },
             )
         }
     }
@@ -125,6 +146,17 @@ fun DiaryScreen(viewModel: DiaryViewModel) {
             },
         )
     }
+    if (showCopy) {
+        CopyDayDialog(
+            targetDay = state.selectedDay,
+            defaultFromDay = parseIsoDay(state.selectedDay).minusDays(1).toIsoDay(),
+            onDismiss = { showCopy = false },
+            onCopy = { from ->
+                viewModel.copyDay(from)
+                showCopy = false
+            },
+        )
+    }
 }
 
 @Composable
@@ -135,6 +167,7 @@ private fun MealSection(
     busy: Boolean,
     online: Boolean,
     onDelete: (FoodEntry) -> Unit,
+    onCopyMealFromYesterday: () -> Unit,
 ) {
     Column(
         modifier =
@@ -144,7 +177,15 @@ private fun MealSection(
                 .padding(GymTokens.Space3),
         verticalArrangement = Arrangement.spacedBy(GymTokens.Space2),
     ) {
-        Text(text = title, color = GymTokens.ColorTextBrand, fontWeight = FontWeight.SemiBold)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(text = title, color = GymTokens.ColorTextBrand, fontWeight = FontWeight.SemiBold)
+            Button(onClick = onCopyMealFromYesterday, enabled = !busy && online) {
+                Text("Copy from yesterday")
+            }
+        }
         if (entries.isEmpty()) {
             Text("No entries", color = GymTokens.ColorTextSecondary)
         } else {
@@ -168,6 +209,105 @@ private fun MealSection(
                         Text("Remove")
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WaterSection(
+    totalMl: Double,
+    targetMl: Double?,
+    entries: List<WaterEntry>,
+    busy: Boolean,
+    online: Boolean,
+    onAdd: (Double) -> Unit,
+    onDelete: (WaterEntry) -> Unit,
+) {
+    var amount by remember { mutableStateOf("250") }
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(GymTokens.ColorBgSurfaceElevated)
+                .padding(GymTokens.Space3),
+        verticalArrangement = Arrangement.spacedBy(GymTokens.Space2),
+    ) {
+        val targetText = targetMl?.let { " / ${it.roundToInt()} ml" }.orEmpty()
+        Text(
+            text = "Water · ${totalMl.roundToInt()} ml$targetText",
+            color = GymTokens.ColorTextPrimary,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2),
+        ) {
+            OutlinedTextField(
+                value = amount,
+                onValueChange = { amount = it },
+                label = { Text("ml") },
+                modifier = Modifier.weight(1f),
+                enabled = !busy,
+            )
+            Button(
+                onClick = {
+                    amount.toDoubleOrNull()?.takeIf { it > 0.0 }?.let(onAdd)
+                },
+                enabled = !busy && online,
+            ) {
+                Text("Add")
+            }
+        }
+        entries.forEach { w ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text("${w.amountMl.roundToInt()} ml", color = GymTokens.ColorTextSecondary)
+                Text(
+                    text = "Remove",
+                    color = GymTokens.ColorActionSecondary,
+                    modifier =
+                        Modifier.clickable(enabled = !busy && online) {
+                            onDelete(w)
+                        },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CopyDayDialog(
+    targetDay: String,
+    defaultFromDay: String,
+    onDismiss: () -> Unit,
+    onCopy: (String) -> Unit,
+) {
+    var fromDay by remember { mutableStateOf(defaultFromDay) }
+    Column(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(GymTokens.ColorBgSurfaceElevated)
+                .padding(GymTokens.Space4),
+        verticalArrangement = Arrangement.spacedBy(GymTokens.Space2),
+    ) {
+        Text("Copy entries to $targetDay", color = GymTokens.ColorTextPrimary)
+        OutlinedTextField(
+            value = fromDay,
+            onValueChange = { fromDay = it },
+            label = { Text("From date (YYYY-MM-DD)") },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
+            Button(onClick = onDismiss) { Text("Cancel") }
+            Button(
+                onClick = { onCopy(fromDay.trim()) },
+                enabled = fromDay.trim().isNotEmpty(),
+            ) {
+                Text("Copy")
             }
         }
     }

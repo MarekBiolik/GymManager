@@ -21,6 +21,7 @@ import com.gymmanager.core.domain.GoalProgress
 import com.gymmanager.core.domain.Macros
 import com.gymmanager.core.domain.MealType
 import com.gymmanager.core.domain.NutritionSettings
+import com.gymmanager.core.domain.WaterEntry
 import com.gymmanager.core.sync.WriteResult
 import java.time.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +35,8 @@ data class DiaryUiState(
     val weekDays: List<String> = weekStrip(LocalDate.now()).map { it.toIsoDay() },
     val mealTypes: List<MealType> = emptyList(),
     val entries: List<FoodEntry> = emptyList(),
+    val waterEntries: List<WaterEntry> = emptyList(),
+    val waterTotalMl: Double = 0.0,
     val foods: List<Food> = emptyList(),
     val settings: NutritionSettings? = null,
     val consumed: Macros = Macros.zero(),
@@ -86,6 +89,7 @@ class DiaryViewModel(
             val mealTypes = services.mealTypes.list(userId).unwrap(::noteBanner).orEmpty()
             val day = _uiState.value.selectedDay
             val entries = services.foodEntries.listDay(userId, day).unwrap(::noteBanner).orEmpty()
+            val water = services.water.listDay(userId, day).unwrap(::noteBanner).orEmpty()
             val foods = services.foods.list(userId).unwrap(::noteBanner).orEmpty()
             val settings = services.nutritionSettings.read(userId).unwrap(::noteBanner)
             val consumed = services.foodEntries.sumMacros(entries)
@@ -95,6 +99,8 @@ class DiaryViewModel(
                 it.copy(
                     mealTypes = mealTypes,
                     entries = entries,
+                    waterEntries = water,
+                    waterTotalMl = services.water.totalMl(water),
                     foods = foods,
                     settings = settings,
                     consumed = consumed,
@@ -162,6 +168,87 @@ class DiaryViewModel(
                         foodServingId = foodServingId,
                     )
             ) {
+                is WriteResult.Success -> refresh()
+                else -> {
+                    _uiState.update { it.copy(busy = false) }
+                    setError(result.errorMessageOrNull())
+                }
+            }
+        }
+    }
+
+    fun copyDay(fromIso: String) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            val toDay = _uiState.value.selectedDay
+            when (val result = services.foodEntries.copyDay(userId, fromIso, toDay)) {
+                is WriteResult.Success -> refresh()
+                else -> {
+                    _uiState.update { it.copy(busy = false) }
+                    setError(result.errorMessageOrNull())
+                }
+            }
+        }
+    }
+
+    fun copyMeal(
+        fromIso: String,
+        mealTypeId: String,
+    ) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            val toDay = _uiState.value.selectedDay
+            when (
+                val result =
+                    services.foodEntries.copyMeal(
+                        userId = userId,
+                        fromDate = fromIso,
+                        toDate = toDay,
+                        mealTypeId = mealTypeId,
+                    )
+            ) {
+                is WriteResult.Success -> refresh()
+                else -> {
+                    _uiState.update { it.copy(busy = false) }
+                    setError(result.errorMessageOrNull())
+                }
+            }
+        }
+    }
+
+    fun addWater(amountMl: Double) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            when (val result = services.water.add(userId, _uiState.value.selectedDay, amountMl)) {
+                is WriteResult.Success -> refresh()
+                else -> {
+                    _uiState.update { it.copy(busy = false) }
+                    setError(result.errorMessageOrNull())
+                }
+            }
+        }
+    }
+
+    fun deleteWater(entry: WaterEntry) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            when (val result = services.water.delete(userId, entry.drunkOn, entry.id)) {
                 is WriteResult.Success -> refresh()
                 else -> {
                     _uiState.update { it.copy(busy = false) }
