@@ -15,20 +15,19 @@ import com.gymmanager.android.auth.AndroidAuthConfig
 import com.gymmanager.android.auth.AuthViewModel
 import com.gymmanager.android.auth.AuthViewModelFactory
 import com.gymmanager.android.auth.GoogleSignInHelper
+import com.gymmanager.android.nutrition.settings.NutritionSettingsScreen
+import com.gymmanager.android.nutrition.settings.NutritionSettingsViewModel
+import com.gymmanager.android.nutrition.settings.NutritionSettingsViewModelFactory
 import com.gymmanager.android.sync.AndroidNetworkStatus
 import com.gymmanager.android.sync.HelloSyncViewModel
 import com.gymmanager.android.sync.HelloSyncViewModelFactory
 import com.gymmanager.android.theme.GymManagerTheme
 import com.gymmanager.android.theme.GymTokens
-import com.gymmanager.android.ui.AccountSettingsSection
 import com.gymmanager.android.ui.AuthScreen
-import com.gymmanager.android.ui.HelloSyncScreen
 import com.gymmanager.core.GymManagerServices
 import com.gymmanager.core.createGymManagerServices
 import com.gymmanager.core.data.supabase.SupabaseConfig
 import com.gymmanager.core.domain.auth.AuthState
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,28 +74,42 @@ class MainActivity : ComponentActivity() {
                         signedInExtra = {
                             val signedIn = authUi.authState as? AuthState.SignedIn
                             if (signedIn != null && services != null) {
-                                Column(modifier = Modifier.fillMaxWidth()) {
-                                    val helloVm: HelloSyncViewModel =
-                                        viewModel(
-                                            key = signedIn.userId,
-                                            factory =
-                                                HelloSyncViewModelFactory(
-                                                    userId = signedIn.userId,
-                                                    profiles = services.profiles,
-                                                    measurements = services.measurements,
-                                                    network = network,
-                                                ),
-                                        )
-                                    HelloSyncScreen(viewModel = helloVm)
-                                    AccountSettingsSection(
-                                        deleteAccount = services.deleteAccount,
-                                        onDeleted = {
-                                            services.profiles.onLogout(signedIn.userId)
-                                            services.measurements.onLogout(signedIn.userId)
-                                            authViewModel.signOut()
-                                        },
+                                val nutritionVm: NutritionSettingsViewModel =
+                                    viewModel(
+                                        key = "nutrition-${signedIn.userId}",
+                                        factory =
+                                            NutritionSettingsViewModelFactory(
+                                                userId = signedIn.userId,
+                                                services = services,
+                                                network = network,
+                                            ),
                                     )
-                                }
+                                val helloVm: HelloSyncViewModel =
+                                    viewModel(
+                                        key = signedIn.userId,
+                                        factory =
+                                            HelloSyncViewModelFactory(
+                                                userId = signedIn.userId,
+                                                profiles = services.profiles,
+                                                measurements = services.measurements,
+                                                network = network,
+                                            ),
+                                    )
+                                NutritionSettingsScreen(
+                                    viewModel = nutritionVm,
+                                    helloSyncViewModel = helloVm,
+                                    deleteAccount = services.deleteAccount,
+                                    onAccountDeleted = {
+                                        services.profiles.onLogout(signedIn.userId)
+                                        services.measurements.onLogout(signedIn.userId)
+                                        authViewModel.signOut()
+                                    },
+                                    onSignOut = {
+                                        services.profiles.onLogout(signedIn.userId)
+                                        services.measurements.onLogout(signedIn.userId)
+                                        authViewModel.signOut()
+                                    },
+                                )
                             }
                         },
                         onBeforeSignOut = {
