@@ -5,11 +5,15 @@ import com.gymmanager.core.application.account.DeleteAccount
 import com.gymmanager.core.application.auth.AuthSession
 import com.gymmanager.core.application.auth.DefaultAuthSession
 import com.gymmanager.core.application.measurements.MeasurementRepository
+import com.gymmanager.core.application.nutrition.MealTypeRepository
+import com.gymmanager.core.application.nutrition.NutritionSettingsRepository
 import com.gymmanager.core.application.profiles.ProfileRepository
 import com.gymmanager.core.data.supabase.SupabaseAuthGateway
 import com.gymmanager.core.data.supabase.SupabaseConfig
 import com.gymmanager.core.data.supabase.SupabaseDeleteAccount
+import com.gymmanager.core.data.supabase.SupabaseMealTypeRemote
 import com.gymmanager.core.data.supabase.SupabaseMeasurementRemote
+import com.gymmanager.core.data.supabase.SupabaseNutritionSettingsRemote
 import com.gymmanager.core.data.supabase.SupabaseProfileRemote
 import com.gymmanager.core.data.supabase.createGymManagerSupabaseClient
 import com.gymmanager.core.sync.InMemoryReadCache
@@ -18,12 +22,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 
 /**
- * Shared mobile wiring: one Supabase client → auth + hello-sync repositories + delete-account.
+ * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types.
  */
 data class GymManagerServices(
     val auth: AuthSession,
     val profiles: ProfileRepository,
     val measurements: MeasurementRepository,
+    val nutritionSettings: NutritionSettingsRepository,
+    val mealTypes: MealTypeRepository,
     val deleteAccount: DeleteAccount,
     val cache: ReadCache,
 )
@@ -48,6 +54,20 @@ fun createGymManagerServices(
         measurements =
             MeasurementRepository(
                 remote = SupabaseMeasurementRemote(client),
+                cache = cache,
+                network = network,
+                nowEpochMs = nowEpochMs,
+            ),
+        nutritionSettings =
+            NutritionSettingsRepository(
+                remote = SupabaseNutritionSettingsRemote(client),
+                cache = cache,
+                network = network,
+                nowEpochMs = nowEpochMs,
+            ),
+        mealTypes =
+            MealTypeRepository(
+                remote = SupabaseMealTypeRemote(client),
                 cache = cache,
                 network = network,
                 nowEpochMs = nowEpochMs,
