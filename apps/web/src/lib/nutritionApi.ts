@@ -1,6 +1,7 @@
 /**
- * Thin supabase-js glue for nutrition_settings, meal_types, foods + servings (ADR 0006).
+ * Thin supabase-js glue for nutrition_settings, meal_types, foods + servings, food_entries (ADR 0006).
  */
+import { addMacros, macros, per100gScaled, resolveGrams, type AmountUnit, type Macros } from "./macros";
 import { cacheGet, cacheKeys, cachePut, cacheRemove } from "./readCache";
 import { supabase } from "./supabaseClient";
 
@@ -63,8 +64,30 @@ export type FoodServingRow = {
   updated_at: string;
 };
 
+export type FoodEntryRow = {
+  id: string;
+  user_id: string;
+  food_id: string | null;
+  meal_type_id: string;
+  eaten_on: string;
+  amount: number;
+  unit: AmountUnit;
+  food_serving_id: string | null;
+  grams: number;
+  protein_g: number;
+  carbs_g: number;
+  fat_g: number;
+  kcal: number;
+  created_at: string;
+  updated_at: string;
+};
+
 function isOnline(): boolean {
   return typeof navigator === "undefined" ? true : navigator.onLine;
+}
+
+function foodMacrosPer100(row: FoodRow): Macros {
+  return macros(Number(row.protein_g), Number(row.carbs_g), Number(row.fat_g));
 }
 
 async function readCached<T>(
@@ -381,4 +404,129 @@ export async function deleteFoodServing(userId: string, id: string): Promise<Wri
   } catch (err: unknown) {
     return { kind: "error", message: err instanceof Error ? err.message : "Delete failed" };
   }
+}
+
+export async function readFoodEntriesDay(userId: string, eatenOn: string): Promise<ReadOutcome<FoodEntryRow[]>> {
+  const key = cacheKeys.foodEntriesDay(userId, eatenOn);
+  return readCached(userId, key, async () => {
+    const { data, error } = await supabase!
+      .from("food_entries")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("eaten_on", eatenOn)
+      .order("created_at", { ascending: true });
+    if (error) {
+      throw error;
+    }
+    return (data ?? []) as FoodEntryRow[];
+  }, false);
+}
+
+export async function addFoodEntry(
+  userId: string,
+  input: {
+    foodId: string;
+    mealTypeId: string;
+    eatenOn: string;
+    amount: number;
+    unit: AmountUnit;
+    foodServingId?: string | null;
+  },
+): Promise<WriteOutcome<FoodEntryRow>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  try {
+    const { data: foodData, error: foodErr } = await supabase
+      .from("foods")
+      .select("*")
+      .eq("id", input.foodId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (foodErr) {
+      throw foodErr;
+    }
+    if (!foodData) {
+      return { kind: "error", message: "Food not found" };
+    }
+    const food = foodData as FoodRow;
+    let servingGrams: number | null = null;
+    if (input.foodServingId) {
+      const { data: servingData, error: servingErr } = await supabase
+        .from("food_servings")
+        .select("*")
+        .eq("id", input.foodServingId)
+        .maybeSingle();
+      if (servingErr) {
+        throw servingErr;
+      }
+      servingGrams = servingData ? Number((servingData as FoodServingRow).grams) : null;
+    }
+    const grams = resolveGrams(input.amount, input.unit, servingGrams, food.default_serving_g);
+    const snap = per100gScaled(foodMacrosPer100(food), grams);
+    const { data, error } = await supabase
+      .from("food_entries")
+      .insert({
+        user_id: userId,
+        food_id: input.foodId,
+        meal_type_id: input.mealTypeId,
+        eaten_on: input.eatenOn,
+        amount: input.amount,
+        unit: input.unit,
+        food_serving_id: input.foodServingId ?? null,
+        grams,
+        protein_g: snap.proteinG,
+        carbs_g: snap.carbsG,
+        fat_g: snap.fatG,
+        kcal: snap.kcal,
+      })
+      .select()
+      .single();
+    if (error) {
+      throw error;
+    }
+    await supabase
+      .from("foods")
+      .update({ last_used_at: new Date().toISOString() })
+      .eq("id", input.foodId);
+    cacheRemove(cacheKeys.foodEntriesDay(userId, input.eatenOn));
+    cacheRemove(cacheKeys.foodsList(userId));
+    return { kind: "ok", data: data as FoodEntryRow };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Add entry failed" };
+  }
+}
+
+export async function deleteFoodEntry(
+  userId: string,
+  eatenOn: string,
+  id: string,
+): Promise<WriteOutcome<null>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  try {
+    const { error } = await supabase.from("food_entries").delete().eq("id", id).eq("user_id", userId);
+    if (error) {
+      throw error;
+    }
+    cacheRemove(cacheKeys.foodEntriesDay(userId, eatenOn));
+    return { kind: "ok", data: null };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Delete failed" };
+  }
+}
+
+export function entryRowMacros(row: FoodEntryRow): Macros {
+  return macros(Number(row.protein_g), Number(row.carbs_g), Number(row.fat_g), Number(row.kcal));
+}
+
+export function sumEntryMacros(rows: FoodEntryRow[]): Macros {
+  return rows.reduce((acc, r) => addMacros(acc, entryRowMacros(r)), macros(0, 0, 0, 0));
 }

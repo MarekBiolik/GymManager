@@ -6,8 +6,7 @@ import { AuthPanel } from "./components/AuthPanel";
 
 export default function App() {
   return (
-    <main className="app-shell app-shell--settings">
-      <h1 className="app-title">GymManager web</h1>
+    <main className="app-shell app-shell--nutrition">
       <AuthPanel />
     </main>
   );
