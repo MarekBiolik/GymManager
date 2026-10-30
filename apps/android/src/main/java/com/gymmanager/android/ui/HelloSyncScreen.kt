@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -27,6 +25,8 @@ fun HelloSyncScreen(viewModel: HelloSyncViewModel) {
     var metric by remember { mutableStateOf("weight") }
     var value by remember { mutableStateOf("70") }
 
+    // Plain Column (not LazyColumn): parent AuthScreen already uses verticalScroll;
+    // nesting LazyColumn there crashes with infinite max-height constraints.
     Column(
         modifier = Modifier.fillMaxWidth().padding(top = GymTokens.Space4),
         verticalArrangement = Arrangement.spacedBy(GymTokens.Space3),
@@ -43,11 +43,11 @@ fun HelloSyncScreen(viewModel: HelloSyncViewModel) {
         if (state.measurements.isEmpty()) {
             Text(text = "No measurements yet.", color = GymTokens.ColorTextSecondary)
         } else {
-            LazyColumn(
+            Column(
                 verticalArrangement = Arrangement.spacedBy(GymTokens.Space2),
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                items(state.measurements, key = { it.id }) { row ->
+                state.measurements.forEach { row ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
