@@ -63,7 +63,7 @@ Scope:
 
 **Data source:** own `foods` as diary SoT; **hybrid** OFF search/import + barcode in phase 3 ([ADR 0011](decisions/0011-food-data-hybrid-in-phase-3.md), supersedes ADR 0009 phase boundary). Contract: [nutrition-module](specs/nutrition-module.md); OFF detail: [openfoodfacts-import-hybrid](specs/openfoodfacts-import-hybrid.md). Starter catalog empty unless [OQ-10](open-questions.md) seed is needed.
 
-**Status:** in progress — docs/ADR first, then vertical slices (settings → foods → diary → OFF → barcode → recipes → charts → water/copy).
+**Status:** done — feature epics under [#91](https://github.com/MarekBiolik/GymManager/issues/91) shipped (settings → foods → diary → OFF → barcode via paste/lookup → recipes → charts → water/copy). CameraX/camera barcode scan deferred out of Phase 3 MVP.
 
 ---
 
