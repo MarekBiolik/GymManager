@@ -10,4 +10,6 @@ object CacheKeys {
     fun nutritionSettings(userId: String): String = "nutrition_settings:$userId"
 
     fun mealTypesList(userId: String): String = "meal_types:list:$userId"
+
+    fun foodsList(userId: String): String = "foods:list:$userId"
 }
