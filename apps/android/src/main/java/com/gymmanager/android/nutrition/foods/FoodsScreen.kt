@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.gymmanager.android.nutrition.NutritionStatusBanner
 import com.gymmanager.android.theme.GymTokens
+import com.gymmanager.core.data.off.OffProductCandidate
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodServing
 import kotlin.math.roundToInt
@@ -69,6 +70,7 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
                 FoodEditor(
                     food = editing,
                     servings = state.servings,
+                    offResults = state.offResults,
                     busy = state.busy,
                     online = state.banner.online,
                     onSave = { existing, name, p, c, f, serving ->
@@ -77,6 +79,12 @@ fun FoodsScreen(viewModel: FoodsViewModel) {
                     },
                     onServing = viewModel::upsertServing,
                     onDeleteServing = viewModel::deleteServing,
+                    onSearchOff = viewModel::searchOff,
+                    onBarcode = viewModel::lookupBarcode,
+                    onImportOff = { candidate ->
+                        viewModel.importOff(candidate)
+                        mode = FoodsMode.List
+                    },
                 )
         }
     }
@@ -137,11 +145,15 @@ private fun FoodList(
 private fun FoodEditor(
     food: Food?,
     servings: List<FoodServing>,
+    offResults: List<OffProductCandidate>,
     busy: Boolean,
     online: Boolean,
     onSave: (Food?, String, Double, Double, Double, Double?) -> Unit,
     onServing: (String, FoodServing?, String, Double, Int) -> Unit,
     onDeleteServing: (String, String) -> Unit,
+    onSearchOff: (String) -> Unit,
+    onBarcode: (String) -> Unit,
+    onImportOff: (OffProductCandidate) -> Unit,
 ) {
     var name by remember(food?.id) { mutableStateOf(food?.name.orEmpty()) }
     var protein by remember(food?.id) { mutableStateOf(food?.macrosPer100g?.proteinG?.toString() ?: "0") }
@@ -150,6 +162,8 @@ private fun FoodEditor(
     var serving by remember(food?.id) { mutableStateOf(food?.defaultServingG?.toString() ?: "100") }
     var servingLabel by remember { mutableStateOf("Serving") }
     var servingGrams by remember { mutableStateOf("100") }
+    var offQuery by remember { mutableStateOf("") }
+    var barcode by remember { mutableStateOf("") }
 
     Column(verticalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
         OutlinedTextField(
@@ -238,6 +252,48 @@ private fun FoodEditor(
                 enabled = !busy && online && servingLabel.isNotBlank(),
             ) {
                 Text("Add serving")
+            }
+        }
+        Text("Import from Open Food Facts", color = GymTokens.ColorTextPrimary, fontWeight = FontWeight.SemiBold)
+        Text(
+            "Data from Open Food Facts — saved as your private food copy.",
+            color = GymTokens.ColorTextSecondary,
+        )
+        OutlinedTextField(
+            value = offQuery,
+            onValueChange = {
+                offQuery = it
+                onSearchOff(it)
+            },
+            label = { Text("Search OFF") },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !busy,
+        )
+        OutlinedTextField(
+            value = barcode,
+            onValueChange = { barcode = it },
+            label = { Text("Barcode (paste)") },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !busy,
+        )
+        Button(onClick = { onBarcode(barcode) }, enabled = !busy) { Text("Lookup barcode") }
+        offResults.forEach { off ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(off.name, color = GymTokens.ColorTextPrimary)
+                    Text(
+                        "P ${off.macrosPer100g.proteinG.roundToInt()} · " +
+                            "C ${off.macrosPer100g.carbsG.roundToInt()} · " +
+                            "F ${off.macrosPer100g.fatG.roundToInt()} / 100g",
+                        color = GymTokens.ColorTextSecondary,
+                    )
+                }
+                Button(onClick = { onImportOff(off) }, enabled = !busy && online) {
+                    Text("Import")
+                }
             }
         }
     }

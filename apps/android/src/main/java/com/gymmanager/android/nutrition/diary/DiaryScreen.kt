@@ -28,6 +28,7 @@ import com.gymmanager.android.nutrition.NutritionStatusBanner
 import com.gymmanager.android.nutrition.dayLabel
 import com.gymmanager.android.nutrition.parseIsoDay
 import com.gymmanager.android.theme.GymTokens
+import com.gymmanager.core.data.off.OffProductCandidate
 import com.gymmanager.core.domain.AmountUnit
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodEntry
@@ -105,11 +106,22 @@ fun DiaryScreen(viewModel: DiaryViewModel) {
         AddEntryDialog(
             mealTypes = state.mealTypes,
             searchFoods = viewModel::searchFoods,
+            offResults = state.offResults,
             busy = state.busy,
-            onDismiss = { showAdd = false },
-            onAdd = { foodId, mealId, amount, unit ->
+            onDismiss = {
+                showAdd = false
+                viewModel.clearOffResults()
+            },
+            onSearchOff = viewModel::searchOff,
+            onBarcode = viewModel::lookupBarcode,
+            onAddOwn = { foodId, mealId, amount, unit ->
                 viewModel.addEntry(foodId, mealId, amount, unit, null)
                 showAdd = false
+            },
+            onImportOff = { candidate, mealId, amount, unit ->
+                viewModel.importOffAndAddEntry(candidate, mealId, amount, unit)
+                showAdd = false
+                viewModel.clearOffResults()
             },
         )
     }
@@ -165,15 +177,22 @@ private fun MealSection(
 private fun AddEntryDialog(
     mealTypes: List<MealType>,
     searchFoods: (String) -> List<Food>,
+    offResults: List<OffProductCandidate>,
     busy: Boolean,
     onDismiss: () -> Unit,
-    onAdd: (String, String, Double, AmountUnit) -> Unit,
+    onSearchOff: (String) -> Unit,
+    onBarcode: (String) -> Unit,
+    onAddOwn: (String, String, Double, AmountUnit) -> Unit,
+    onImportOff: (OffProductCandidate, String, Double, AmountUnit) -> Unit,
 ) {
     var mealId by remember { mutableStateOf(mealTypes.firstOrNull()?.id.orEmpty()) }
     var query by remember { mutableStateOf("") }
     var selectedFood by remember { mutableStateOf<Food?>(null) }
+    var selectedOff by remember { mutableStateOf<OffProductCandidate?>(null) }
     var amount by remember { mutableStateOf("100") }
     var unit by remember { mutableStateOf(AmountUnit.G) }
+    var barcode by remember { mutableStateOf("") }
+    var tab by remember { mutableStateOf("mine") }
     val ownResults = remember(query, searchFoods) { searchFoods(query) }
 
     Column(
@@ -190,6 +209,14 @@ private fun AddEntryDialog(
             Button(onClick = onDismiss) { Text("Close") }
             return
         }
+        Row(horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
+            FilterChip(selected = tab == "mine", onClick = { tab = "mine" }, label = { Text("My foods") })
+            FilterChip(
+                selected = tab == "off",
+                onClick = { tab = "off" },
+                label = { Text("Open Food Facts") },
+            )
+        }
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2),
@@ -202,30 +229,69 @@ private fun AddEntryDialog(
                 )
             }
         }
+        if (tab == "off") {
+            Text(
+                "Data from Open Food Facts — import creates your private food copy.",
+                color = GymTokens.ColorTextSecondary,
+            )
+        }
         OutlinedTextField(
             value = query,
             onValueChange = {
                 query = it
                 selectedFood = null
+                selectedOff = null
+                if (tab == "off") onSearchOff(it)
             },
-            label = { Text("Search my foods") },
+            label = { Text(if (tab == "mine") "Search my foods" else "Search Open Food Facts") },
             modifier = Modifier.fillMaxWidth(),
             enabled = !busy,
         )
-        ownResults.take(8).forEach { food ->
-            Text(
-                text = food.name,
-                color =
-                    if (selectedFood?.id == food.id) {
-                        GymTokens.ColorActionPrimary
-                    } else {
-                        GymTokens.ColorTextPrimary
-                    },
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .clickable { selectedFood = food },
+        if (tab == "off") {
+            OutlinedTextField(
+                value = barcode,
+                onValueChange = { barcode = it },
+                label = { Text("Barcode (paste)") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy,
             )
+            Button(onClick = { onBarcode(barcode) }, enabled = !busy) { Text("Lookup barcode") }
+        }
+        if (tab == "mine") {
+            ownResults.take(8).forEach { food ->
+                Text(
+                    text = food.name,
+                    color =
+                        if (selectedFood?.id == food.id) {
+                            GymTokens.ColorActionPrimary
+                        } else {
+                            GymTokens.ColorTextPrimary
+                        },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedFood = food },
+                )
+            }
+        } else {
+            offResults.take(8).forEach { off ->
+                Text(
+                    text =
+                        "${off.name} · P ${off.macrosPer100g.proteinG.roundToInt()} / " +
+                            "C ${off.macrosPer100g.carbsG.roundToInt()} / " +
+                            "F ${off.macrosPer100g.fatG.roundToInt()}",
+                    color =
+                        if (selectedOff?.code == off.code) {
+                            GymTokens.ColorActionPrimary
+                        } else {
+                            GymTokens.ColorTextPrimary
+                        },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedOff = off },
+                )
+            }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(GymTokens.Space2)) {
             FilterChip(selected = unit == AmountUnit.G, onClick = { unit = AmountUnit.G }, label = { Text("g") })
@@ -248,12 +314,17 @@ private fun AddEntryDialog(
                 onClick = {
                     val amt = amount.toDoubleOrNull() ?: return@Button
                     if (mealId.isBlank()) return@Button
-                    val food = selectedFood ?: ownResults.firstOrNull() ?: return@Button
-                    onAdd(food.id, mealId, amt, unit)
+                    if (tab == "mine") {
+                        val food = selectedFood ?: ownResults.firstOrNull() ?: return@Button
+                        onAddOwn(food.id, mealId, amt, unit)
+                    } else {
+                        val off = selectedOff ?: offResults.firstOrNull() ?: return@Button
+                        onImportOff(off, mealId, amt, unit)
+                    }
                 },
                 enabled = !busy && mealId.isNotBlank(),
             ) {
-                Text("Save")
+                Text(if (tab == "mine") "Save" else "Import & add")
             }
         }
     }
