@@ -5,12 +5,15 @@ import com.gymmanager.core.application.account.DeleteAccount
 import com.gymmanager.core.application.auth.AuthSession
 import com.gymmanager.core.application.auth.DefaultAuthSession
 import com.gymmanager.core.application.measurements.MeasurementRepository
+import com.gymmanager.core.application.nutrition.FoodRepository
 import com.gymmanager.core.application.nutrition.MealTypeRepository
 import com.gymmanager.core.application.nutrition.NutritionSettingsRepository
 import com.gymmanager.core.application.profiles.ProfileRepository
 import com.gymmanager.core.data.supabase.SupabaseAuthGateway
 import com.gymmanager.core.data.supabase.SupabaseConfig
 import com.gymmanager.core.data.supabase.SupabaseDeleteAccount
+import com.gymmanager.core.data.supabase.SupabaseFoodRemote
+import com.gymmanager.core.data.supabase.SupabaseFoodServingRemote
 import com.gymmanager.core.data.supabase.SupabaseMealTypeRemote
 import com.gymmanager.core.data.supabase.SupabaseMeasurementRemote
 import com.gymmanager.core.data.supabase.SupabaseNutritionSettingsRemote
@@ -22,7 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 
 /**
- * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types.
+ * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods.
  */
 data class GymManagerServices(
     val auth: AuthSession,
@@ -30,6 +33,7 @@ data class GymManagerServices(
     val measurements: MeasurementRepository,
     val nutritionSettings: NutritionSettingsRepository,
     val mealTypes: MealTypeRepository,
+    val foods: FoodRepository,
     val deleteAccount: DeleteAccount,
     val cache: ReadCache,
 )
@@ -42,6 +46,8 @@ fun createGymManagerServices(
     nowEpochMs: () -> Long = { Clock.System.now().toEpochMilliseconds() },
 ): GymManagerServices {
     val client = createGymManagerSupabaseClient(config)
+    val foodRemote = SupabaseFoodRemote(client)
+    val servingRemote = SupabaseFoodServingRemote(client)
     return GymManagerServices(
         auth = DefaultAuthSession(SupabaseAuthGateway(client, scope)),
         profiles =
@@ -68,6 +74,14 @@ fun createGymManagerServices(
         mealTypes =
             MealTypeRepository(
                 remote = SupabaseMealTypeRemote(client),
+                cache = cache,
+                network = network,
+                nowEpochMs = nowEpochMs,
+            ),
+        foods =
+            FoodRepository(
+                remote = foodRemote,
+                servingRemote = servingRemote,
                 cache = cache,
                 network = network,
                 nowEpochMs = nowEpochMs,

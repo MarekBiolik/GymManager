@@ -1,5 +1,8 @@
 package com.gymmanager.core.data.supabase
 
+import com.gymmanager.core.domain.Food
+import com.gymmanager.core.domain.FoodServing
+import com.gymmanager.core.domain.Macros
 import com.gymmanager.core.domain.MealType
 import com.gymmanager.core.domain.NutritionSettings
 import kotlinx.serialization.SerialName
@@ -69,6 +72,94 @@ fun MealType.toDto() =
         id = id.ifBlank { null },
         userId = userId,
         name = name,
+        position = position,
+        createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
+        updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
+    )
+
+@Serializable
+data class FoodDto(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String,
+    val name: String,
+    @SerialName("protein_g") val proteinG: Double,
+    @SerialName("carbs_g") val carbsG: Double,
+    @SerialName("fat_g") val fatG: Double,
+    @SerialName("default_serving_g") val defaultServingG: Double? = null,
+    @SerialName("is_recipe") val isRecipe: Boolean = false,
+    @SerialName("is_favorite") val isFavorite: Boolean = false,
+    @SerialName("last_used_at") val lastUsedAt: String? = null,
+    @SerialName("external_source") val externalSource: String? = null,
+    @SerialName("external_id") val externalId: String? = null,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+fun FoodDto.toDomain() =
+    Food(
+        id = id ?: "",
+        userId = userId,
+        name = name,
+        macrosPer100g = Macros(proteinG, carbsG, fatG),
+        defaultServingG = defaultServingG,
+        isRecipe = isRecipe,
+        isFavorite = isFavorite,
+        lastUsedAtEpochMs = lastUsedAt?.let { parseTimestamptzToEpochMs(it) },
+        externalSource = externalSource,
+        externalId = externalId,
+        createdAtEpochMs = createdAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+        updatedAtEpochMs = updatedAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+    )
+
+fun Food.toDto() =
+    FoodDto(
+        id = id.ifBlank { null },
+        userId = userId,
+        name = name,
+        proteinG = macrosPer100g.proteinG,
+        carbsG = macrosPer100g.carbsG,
+        fatG = macrosPer100g.fatG,
+        defaultServingG = defaultServingG,
+        isRecipe = isRecipe,
+        isFavorite = isFavorite,
+        lastUsedAt = lastUsedAtEpochMs?.let { epochMsToTimestamptz(it) },
+        externalSource = externalSource,
+        externalId = externalId,
+        createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
+        updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
+    )
+
+@Serializable
+data class FoodServingDto(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String,
+    @SerialName("food_id") val foodId: String,
+    val label: String,
+    val grams: Double,
+    val position: Int = 0,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+fun FoodServingDto.toDomain() =
+    FoodServing(
+        id = id ?: "",
+        userId = userId,
+        foodId = foodId,
+        label = label,
+        grams = grams,
+        position = position,
+        createdAtEpochMs = createdAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+        updatedAtEpochMs = updatedAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+    )
+
+fun FoodServing.toDto() =
+    FoodServingDto(
+        id = id.ifBlank { null },
+        userId = userId,
+        foodId = foodId,
+        label = label,
+        grams = grams,
         position = position,
         createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
         updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
