@@ -15,6 +15,9 @@ import com.gymmanager.android.auth.AndroidAuthConfig
 import com.gymmanager.android.auth.AuthViewModel
 import com.gymmanager.android.auth.AuthViewModelFactory
 import com.gymmanager.android.auth.GoogleSignInHelper
+import com.gymmanager.android.nutrition.foods.FoodsScreen
+import com.gymmanager.android.nutrition.foods.FoodsViewModel
+import com.gymmanager.android.nutrition.foods.FoodsViewModelFactory
 import com.gymmanager.android.nutrition.settings.NutritionSettingsScreen
 import com.gymmanager.android.nutrition.settings.NutritionSettingsViewModel
 import com.gymmanager.android.nutrition.settings.NutritionSettingsViewModelFactory
@@ -74,6 +77,16 @@ class MainActivity : ComponentActivity() {
                         signedInExtra = {
                             val signedIn = authUi.authState as? AuthState.SignedIn
                             if (signedIn != null && services != null) {
+                                val foodsVm: FoodsViewModel =
+                                    viewModel(
+                                        key = "foods-${signedIn.userId}",
+                                        factory =
+                                            FoodsViewModelFactory(
+                                                userId = signedIn.userId,
+                                                services = services,
+                                                network = network,
+                                            ),
+                                    )
                                 val nutritionVm: NutritionSettingsViewModel =
                                     viewModel(
                                         key = "nutrition-${signedIn.userId}",
@@ -95,6 +108,7 @@ class MainActivity : ComponentActivity() {
                                                 network = network,
                                             ),
                                     )
+                                FoodsScreen(viewModel = foodsVm)
                                 NutritionSettingsScreen(
                                     viewModel = nutritionVm,
                                     helloSyncViewModel = helloVm,
