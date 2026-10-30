@@ -8,6 +8,7 @@ import com.gymmanager.core.domain.Macros
 import com.gymmanager.core.domain.MealType
 import com.gymmanager.core.domain.NutritionSettings
 import com.gymmanager.core.domain.RecipeIngredient
+import com.gymmanager.core.domain.WaterEntry
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -251,6 +252,36 @@ fun RecipeIngredient.toDto() =
         recipeFoodId = recipeFoodId,
         componentFoodId = componentFoodId,
         grams = grams,
+        createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
+        updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
+    )
+
+@Serializable
+data class WaterEntryDto(
+    val id: String? = null,
+    @SerialName("user_id") val userId: String,
+    @SerialName("drunk_on") val drunkOn: String,
+    @SerialName("amount_ml") val amountMl: Double,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("updated_at") val updatedAt: String? = null,
+)
+
+fun WaterEntryDto.toDomain() =
+    WaterEntry(
+        id = id ?: "",
+        userId = userId,
+        drunkOn = drunkOn,
+        amountMl = amountMl,
+        createdAtEpochMs = createdAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+        updatedAtEpochMs = updatedAt?.let { parseTimestamptzToEpochMs(it) } ?: 0L,
+    )
+
+fun WaterEntry.toDto() =
+    WaterEntryDto(
+        id = id.ifBlank { null },
+        userId = userId,
+        drunkOn = drunkOn,
+        amountMl = amountMl,
         createdAt = if (createdAtEpochMs > 0) epochMsToTimestamptz(createdAtEpochMs) else null,
         updatedAt = if (updatedAtEpochMs > 0) epochMsToTimestamptz(updatedAtEpochMs) else null,
     )

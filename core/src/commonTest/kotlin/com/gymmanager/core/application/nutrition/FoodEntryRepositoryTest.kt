@@ -222,6 +222,66 @@ class FoodEntryRepositoryTest {
         updatedAtEpochMs = 1,
     )
 
+    @Test
+    fun copyDay_duplicatesEntriesToTargetDate() =
+        runTest {
+            val entryRemote =
+                EntryFakeFoodEntryRemote(
+                    mutableListOf(
+                        entry(Macros(10.0, 0.0, 0.0, 40.0), id = "e1").copy(eatenOn = "2026-10-29"),
+                        entry(Macros(0.0, 10.0, 0.0, 40.0), id = "e2").copy(eatenOn = "2026-10-29"),
+                    ),
+                )
+            val repo =
+                repo(
+                    entryRemote,
+                    EntryFakeFoodRemote(),
+                    EntryFakeFoodServingRemote(),
+                    online = true,
+                    now = { 77L },
+                )
+            val copied =
+                assertIs<WriteResult.Success<List<FoodEntry>>>(
+                    repo.copyDay(userId, fromDate = "2026-10-29", toDate = day),
+                )
+            assertEquals(2, copied.data.size)
+            assertEquals(setOf(day), copied.data.map { it.eatenOn }.toSet())
+            assertEquals(4, entryRemote.rows.size)
+        }
+
+    @Test
+    fun copyMeal_filtersByMealType() =
+        runTest {
+            val entryRemote =
+                EntryFakeFoodEntryRemote(
+                    mutableListOf(
+                        entry(Macros(10.0, 0.0, 0.0, 40.0), id = "e1")
+                            .copy(eatenOn = "2026-10-29", mealTypeId = "breakfast"),
+                        entry(Macros(0.0, 10.0, 0.0, 40.0), id = "e2")
+                            .copy(eatenOn = "2026-10-29", mealTypeId = "lunch"),
+                    ),
+                )
+            val repo =
+                repo(
+                    entryRemote,
+                    EntryFakeFoodRemote(),
+                    EntryFakeFoodServingRemote(),
+                    online = true,
+                )
+            val copied =
+                assertIs<WriteResult.Success<List<FoodEntry>>>(
+                    repo.copyMeal(
+                        userId = userId,
+                        fromDate = "2026-10-29",
+                        toDate = day,
+                        mealTypeId = "breakfast",
+                    ),
+                )
+            assertEquals(1, copied.data.size)
+            assertEquals("breakfast", copied.data.single().mealTypeId)
+            assertEquals(day, copied.data.single().eatenOn)
+        }
+
     private fun entry(
         macros: Macros,
         id: String = "e",

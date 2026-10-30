@@ -10,6 +10,7 @@ import com.gymmanager.core.application.nutrition.FoodRepository
 import com.gymmanager.core.application.nutrition.MealTypeRepository
 import com.gymmanager.core.application.nutrition.NutritionSettingsRepository
 import com.gymmanager.core.application.nutrition.RecipeRepository
+import com.gymmanager.core.application.nutrition.WaterRepository
 import com.gymmanager.core.application.profiles.ProfileRepository
 import com.gymmanager.core.data.off.KtorOffProductClient
 import com.gymmanager.core.data.off.OffProductClient
@@ -25,6 +26,7 @@ import com.gymmanager.core.data.supabase.SupabaseMeasurementRemote
 import com.gymmanager.core.data.supabase.SupabaseNutritionSettingsRemote
 import com.gymmanager.core.data.supabase.SupabaseProfileRemote
 import com.gymmanager.core.data.supabase.SupabaseRecipeIngredientRemote
+import com.gymmanager.core.data.supabase.SupabaseWaterEntryRemote
 import com.gymmanager.core.data.supabase.createGymManagerSupabaseClient
 import com.gymmanager.core.sync.InMemoryReadCache
 import com.gymmanager.core.sync.ReadCache
@@ -32,7 +34,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 
 /**
- * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods / entries / recipes / OFF.
+ * Shared mobile wiring: auth + hello-sync + nutrition settings / meal types / foods / entries / recipes / water / OFF.
  */
 data class GymManagerServices(
     val auth: AuthSession,
@@ -43,6 +45,7 @@ data class GymManagerServices(
     val foods: FoodRepository,
     val foodEntries: FoodEntryRepository,
     val recipes: RecipeRepository,
+    val water: WaterRepository,
     val offProducts: OffProductClient,
     val deleteAccount: DeleteAccount,
     val cache: ReadCache,
@@ -110,6 +113,13 @@ fun createGymManagerServices(
             RecipeRepository(
                 foodRemote = foodRemote,
                 ingredientRemote = SupabaseRecipeIngredientRemote(client),
+                network = network,
+                nowEpochMs = nowEpochMs,
+            ),
+        water =
+            WaterRepository(
+                remote = SupabaseWaterEntryRemote(client),
+                cache = cache,
                 network = network,
                 nowEpochMs = nowEpochMs,
             ),

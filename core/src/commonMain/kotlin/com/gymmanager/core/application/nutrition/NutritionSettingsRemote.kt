@@ -79,3 +79,14 @@ interface RecipeIngredientRemote {
 
     suspend fun deleteForRecipe(recipeFoodId: String)
 }
+
+interface WaterEntryRemote {
+    suspend fun listForDay(
+        userId: String,
+        drunkOn: String,
+    ): List<com.gymmanager.core.domain.WaterEntry>
+
+    suspend fun insert(entry: com.gymmanager.core.domain.WaterEntry): com.gymmanager.core.domain.WaterEntry
+
+    suspend fun delete(id: String)
+}
