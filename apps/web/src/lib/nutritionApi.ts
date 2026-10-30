@@ -1,7 +1,15 @@
 /**
  * Thin supabase-js glue for nutrition_settings, meal_types, foods + servings, food_entries (ADR 0006).
  */
-import { addMacros, macros, per100gScaled, resolveGrams, type AmountUnit, type Macros } from "./macros";
+import {
+  addMacros,
+  macros,
+  per100gScaled,
+  recipeMacrosPer100g,
+  resolveGrams,
+  type AmountUnit,
+  type Macros,
+} from "./macros";
 import { cacheGet, cacheKeys, cachePut, cacheRemove } from "./readCache";
 import { supabase } from "./supabaseClient";
 
@@ -78,6 +86,16 @@ export type FoodEntryRow = {
   carbs_g: number;
   fat_g: number;
   kcal: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RecipeIngredientRow = {
+  id: string;
+  user_id: string;
+  recipe_food_id: string;
+  component_food_id: string;
+  grams: number;
   created_at: string;
   updated_at: string;
 };
@@ -529,4 +547,120 @@ export function entryRowMacros(row: FoodEntryRow): Macros {
 
 export function sumEntryMacros(rows: FoodEntryRow[]): Macros {
   return rows.reduce((acc, r) => addMacros(acc, entryRowMacros(r)), macros(0, 0, 0, 0));
+}
+
+export async function readRecipeIngredients(
+  recipeFoodId: string,
+): Promise<ReadOutcome<RecipeIngredientRow[]>> {
+  if (!isOnline() || !supabase) {
+    return { kind: "empty", reason: !supabase ? "error" : "offline" };
+  }
+  try {
+    const { data, error } = await supabase
+      .from("recipe_ingredients")
+      .select("*")
+      .eq("recipe_food_id", recipeFoodId);
+    if (error) {
+      throw error;
+    }
+    return { kind: "fresh", data: (data ?? []) as RecipeIngredientRow[] };
+  } catch {
+    return { kind: "empty", reason: "error" };
+  }
+}
+
+export async function saveRecipe(
+  userId: string,
+  recipe: {
+    id?: string;
+    name: string;
+    defaultServingG?: number | null;
+  },
+  ingredients: { componentFoodId: string; grams: number }[],
+): Promise<WriteOutcome<FoodRow>> {
+  if (!isOnline()) {
+    return { kind: "offline" };
+  }
+  if (!supabase) {
+    return { kind: "error", message: "Supabase is not configured" };
+  }
+  try {
+    let totalMacros = macros(0, 0, 0, 0);
+    let totalGrams = 0;
+    for (const ing of ingredients) {
+      const { data: comp, error: compErr } = await supabase
+        .from("foods")
+        .select("*")
+        .eq("id", ing.componentFoodId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (compErr) {
+        throw compErr;
+      }
+      if (!comp) {
+        return { kind: "error", message: `Component not found: ${ing.componentFoodId}` };
+      }
+      totalMacros = addMacros(totalMacros, per100gScaled(foodMacrosPer100(comp as FoodRow), ing.grams));
+      totalGrams += ing.grams;
+    }
+    const per100 = recipeMacrosPer100g(totalMacros, totalGrams);
+    const defaultServingG = recipe.defaultServingG ?? (totalGrams > 0 ? totalGrams : null);
+    let saved: FoodRow;
+    if (recipe.id) {
+      const { data, error } = await supabase
+        .from("foods")
+        .update({
+          name: recipe.name,
+          protein_g: per100.proteinG,
+          carbs_g: per100.carbsG,
+          fat_g: per100.fatG,
+          default_serving_g: defaultServingG,
+          is_recipe: true,
+        })
+        .eq("id", recipe.id)
+        .eq("user_id", userId)
+        .select()
+        .single();
+      if (error) {
+        throw error;
+      }
+      saved = data as FoodRow;
+      await supabase.from("recipe_ingredients").delete().eq("recipe_food_id", recipe.id);
+    } else {
+      const { data, error } = await supabase
+        .from("foods")
+        .insert({
+          user_id: userId,
+          name: recipe.name,
+          protein_g: per100.proteinG,
+          carbs_g: per100.carbsG,
+          fat_g: per100.fatG,
+          default_serving_g: defaultServingG,
+          is_recipe: true,
+          is_favorite: false,
+        })
+        .select()
+        .single();
+      if (error) {
+        throw error;
+      }
+      saved = data as FoodRow;
+    }
+    if (ingredients.length > 0) {
+      const rows = ingredients.map((ing) => ({
+        user_id: userId,
+        recipe_food_id: saved.id,
+        component_food_id: ing.componentFoodId,
+        grams: ing.grams,
+      }));
+      const { error: riErr } = await supabase.from("recipe_ingredients").insert(rows);
+      if (riErr) {
+        throw riErr;
+      }
+    }
+    cacheRemove(cacheKeys.foodsList(userId));
+    return { kind: "ok", data: saved };
+  } catch (err: unknown) {
+    return { kind: "error", message: err instanceof Error ? err.message : "Save recipe failed" };
+  }
 }

@@ -6,9 +6,12 @@ import {
   insertFoodServing,
   readFoodServings,
   readFoods,
+  readRecipeIngredients,
+  saveRecipe,
   updateFood,
   type FoodRow,
   type FoodServingRow,
+  type RecipeIngredientRow,
 } from "../../lib/nutritionApi";
 import {
   fetchOpenFoodFactsBarcode,
@@ -24,6 +27,7 @@ export function FoodsPanel({ userId }: Props) {
   const [foods, setFoods] = useState<FoodRow[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [servings, setServings] = useState<FoodServingRow[]>([]);
+  const [ingredients, setIngredients] = useState<RecipeIngredientRow[]>([]);
   const [banner, setBanner] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -37,9 +41,16 @@ export function FoodsPanel({ userId }: Props) {
   const [servingLabel, setServingLabel] = useState("");
   const [servingGrams, setServingGrams] = useState("100");
 
+  const [recipeName, setRecipeName] = useState("");
+  const [recipeLines, setRecipeLines] = useState<{ foodId: string; grams: string }[]>([
+    { foodId: "", grams: "100" },
+  ]);
+
   const [offQuery, setOffQuery] = useState("");
   const [offHits, setOffHits] = useState<OffSearchHit[]>([]);
   const [barcode, setBarcode] = useState("");
+
+  const nonRecipeFoods = foods.filter((f) => !f.is_recipe);
 
   const loadFoods = useCallback(async () => {
     setError(null);
@@ -65,8 +76,22 @@ export function FoodsPanel({ userId }: Props) {
   useEffect(() => {
     if (!selectedId) {
       setServings([]);
+      setIngredients([]);
       return;
     }
+    const selectedFood = foods.find((f) => f.id === selectedId);
+    if (selectedFood?.is_recipe) {
+      setServings([]);
+      void readRecipeIngredients(selectedId).then((r) => {
+        if (r.kind === "fresh" || r.kind === "stale") {
+          setIngredients(r.data);
+        } else {
+          setIngredients([]);
+        }
+      });
+      return;
+    }
+    setIngredients([]);
     void readFoodServings(selectedId).then((r) => {
       if (r.kind === "fresh" || r.kind === "stale") {
         setServings(r.data);
@@ -74,7 +99,7 @@ export function FoodsPanel({ userId }: Props) {
         setServings([]);
       }
     });
-  }, [selectedId]);
+  }, [selectedId, foods]);
 
   function selectFood(f: FoodRow) {
     setSelectedId(f.id);
@@ -93,6 +118,7 @@ export function FoodsPanel({ userId }: Props) {
     setFat("0");
     setDefaultServing("");
     setServings([]);
+    setIngredients([]);
   }
 
   async function onSaveFood() {
@@ -259,6 +285,33 @@ export function FoodsPanel({ userId }: Props) {
     }
   }
 
+  async function onSaveRecipe() {
+    setError(null);
+    if (!recipeName.trim()) {
+      setError("Recipe name required.");
+      return;
+    }
+    const parsed = recipeLines
+      .filter((l) => l.foodId && Number(l.grams) > 0)
+      .map((l) => ({ componentFoodId: l.foodId, grams: Number(l.grams) }));
+    if (parsed.length === 0) {
+      setError("Add at least one ingredient.");
+      return;
+    }
+    setBusy(true);
+    const result = await saveRecipe(userId, { name: recipeName.trim() }, parsed);
+    setBusy(false);
+    if (result.kind === "ok") {
+      setRecipeName("");
+      setRecipeLines([{ foodId: "", grams: "100" }]);
+      void loadFoods();
+    } else if (result.kind === "error") {
+      setError(result.message);
+    } else if (result.kind === "offline") {
+      setError("Offline — cannot save recipe.");
+    }
+  }
+
   return (
     <section className="nutrition-panel" aria-label="Foods">
       <h2 className="nutrition-panel-title">Foods</h2>
@@ -280,6 +333,7 @@ export function FoodsPanel({ userId }: Props) {
               >
                 {f.is_favorite ? "★ " : ""}
                 {f.name}
+                {f.is_recipe ? " · recipe" : ""}
               </button>
               <button
                 type="button"
@@ -333,7 +387,12 @@ export function FoodsPanel({ userId }: Props) {
             </label>
           </div>
           <div className="hello-sync-form">
-            <button type="button" className="auth-button auth-button--primary" disabled={busy} onClick={() => void onSaveFood()}>
+            <button
+              type="button"
+              className="auth-button auth-button--primary"
+              disabled={busy || selected?.is_recipe === true}
+              onClick={() => void onSaveFood()}
+            >
               Save
             </button>
             <button type="button" className="auth-button auth-button--secondary" onClick={resetNew}>
@@ -351,7 +410,21 @@ export function FoodsPanel({ userId }: Props) {
             ) : null}
           </div>
 
-          {selected ? (
+          {selected?.is_recipe ? (
+            <>
+              <h4 className="nutrition-meal-title">Recipe ingredients</h4>
+              <ul className="nutrition-list">
+                {ingredients.map((ing) => (
+                  <li key={ing.id}>
+                    {foods.find((f) => f.id === ing.component_food_id)?.name ?? ing.component_food_id} —{" "}
+                    {ing.grams}g
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+
+          {selected && !selected.is_recipe ? (
             <>
               <h4 className="nutrition-meal-title">Servings</h4>
               <ul className="nutrition-list">
@@ -451,6 +524,65 @@ export function FoodsPanel({ userId }: Props) {
               ))}
             </ul>
           ) : null}
+        </div>
+      </div>
+
+      <div className="nutrition-card">
+        <h3 className="nutrition-meal-title">Recipe builder</h3>
+        <label className="hello-sync-label">
+          Recipe name
+          <input
+            className="hello-sync-input"
+            value={recipeName}
+            onChange={(e) => setRecipeName(e.target.value)}
+          />
+        </label>
+        {recipeLines.map((line, idx) => (
+          <div key={idx} className="hello-sync-form">
+            <select
+              className="hello-sync-input"
+              value={line.foodId}
+              onChange={(e) =>
+                setRecipeLines((rows) =>
+                  rows.map((r, i) => (i === idx ? { ...r, foodId: e.target.value } : r)),
+                )
+              }
+            >
+              <option value="">Component…</option>
+              {nonRecipeFoods.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+            <input
+              className="hello-sync-input"
+              value={line.grams}
+              onChange={(e) =>
+                setRecipeLines((rows) =>
+                  rows.map((r, i) => (i === idx ? { ...r, grams: e.target.value } : r)),
+                )
+              }
+              placeholder="g"
+            />
+          </div>
+        ))}
+        <div className="hello-sync-form">
+          <button
+            type="button"
+            className="auth-button auth-button--secondary"
+            onClick={() => setRecipeLines((r) => [...r, { foodId: "", grams: "100" }])}
+          >
+            Add line
+          </button>
+          <button
+            type="button"
+            className="auth-button auth-button--primary"
+            disabled={busy}
+            onClick={() => void onSaveRecipe()}
+          >
+            Save recipe
+          </button>
         </div>
       </div>
     </section>
