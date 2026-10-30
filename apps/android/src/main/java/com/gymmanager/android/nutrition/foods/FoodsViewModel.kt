@@ -13,6 +13,7 @@ import com.gymmanager.core.data.off.toFoodDraft
 import com.gymmanager.core.domain.Food
 import com.gymmanager.core.domain.FoodServing
 import com.gymmanager.core.domain.Macros
+import com.gymmanager.core.domain.RecipeIngredient
 import com.gymmanager.core.sync.WriteResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
 data class FoodsUiState(
     val foods: List<Food> = emptyList(),
     val servings: List<FoodServing> = emptyList(),
+    val recipeIngredients: List<RecipeIngredient> = emptyList(),
     val banner: NutritionBannerState = NutritionBannerState(),
     val busy: Boolean = false,
     val offResults: List<OffProductCandidate> = emptyList(),
@@ -65,6 +67,13 @@ class FoodsViewModel(
         viewModelScope.launch {
             val servings = services.foods.listServings(foodId).unwrap { }.orEmpty()
             _uiState.update { it.copy(servings = servings) }
+        }
+    }
+
+    fun loadRecipeIngredients(recipeFoodId: String) {
+        viewModelScope.launch {
+            val list = services.recipes.listIngredients(recipeFoodId).unwrap { }.orEmpty()
+            _uiState.update { it.copy(recipeIngredients = list) }
         }
     }
 
@@ -231,6 +240,35 @@ class FoodsViewModel(
             _uiState.update { it.copy(busy = true) }
             val now = nowEpochMs()
             when (val result = services.foods.upsertFood(candidate.toFoodDraft(userId, now))) {
+                is WriteResult.Success -> refresh()
+                else -> {
+                    _uiState.update { it.copy(busy = false) }
+                    setError(result.errorMessageOrNull())
+                }
+            }
+        }
+    }
+
+    fun saveRecipe(
+        recipe: Food?,
+        name: String,
+        components: List<Pair<String, Double>>,
+        defaultServingG: Double?,
+    ) {
+        if (!network.isOnline()) {
+            setError("A network connection is required to save.")
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(busy = true) }
+            val now = nowEpochMs()
+            val base =
+                (recipe ?: blankFood(now)).copy(
+                    name = name.trim(),
+                    isRecipe = true,
+                    defaultServingG = defaultServingG,
+                )
+            when (val result = services.recipes.saveRecipe(base, components)) {
                 is WriteResult.Success -> refresh()
                 else -> {
                     _uiState.update { it.copy(busy = false) }
