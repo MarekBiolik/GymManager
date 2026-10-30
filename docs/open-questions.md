@@ -53,15 +53,34 @@ Statuses: `open` | `in progress` | `decided` (with link to ADR/docs).
 
 ## OQ-07 — Food data source
 
-**Status:** decided — [ADR 0009](decisions/0009-food-data-source-own-first.md), [data-model](domain/data-model.md#foods)  
-**Decision:** MVP = **own foods only** (Postgres + RLS); no live OFF in phase 3. Later hybrid: OFF search/import → copy into the user’s `foods` with optional `external_source` / `external_id`. Macro snapshot in `food_entries` independent of any external API.
+**Status:** decided — [ADR 0009](decisions/0009-food-data-source-own-first.md) (own foods SoT); phase-3 hybrid boundary revised by [ADR 0011](decisions/0011-food-data-hybrid-in-phase-3.md)  
+**Decision:** Own `foods` under RLS remain diary SoT; macro snapshot in `food_entries`. Phase 3 includes OFF search/import → copy into `foods` (not live OFF SoT). See ADR 0011.
 
-**Options (considered):**
+**Options (considered under ADR 0009):**
 
 1. Own foods only (no hybrid path).
 2. OFF-only (live API).
 3. Hybrid from day 1.
-4. Own first + hybrid later — **chosen**.
+4. Own first + hybrid later — **chosen in ADR 0009**; **revised** by ADR 0011 to hybrid **in** phase 3.
+
+---
+
+## OQ-10 — Basics food seed
+
+**Status:** open  
+**Context:** Phase 3 starts with an **empty** own `foods` catalog ([ADR 0011](decisions/0011-food-data-hybrid-in-phase-3.md)). OFF import may under-serve Polish staples (vegetables, fruit, bread). Before calling the nutrition module “done”, decide whether to add a small **hardcoded per-user seed** of basics.
+
+**Why it matters:** empty catalog + weak OFF coverage = high friction on first diary day.
+
+**Options (known):**
+
+1. **Stay empty** — rely on manual create + OFF only.
+2. **Per-user seed on first nutrition open** — copy ~30–50 staples into the user’s `foods` (not a shared global table).
+3. **Opt-in “Load basics”** in settings — same data, user-triggered.
+
+**Closing phase:** before end of phase 3 (after OFF search is usable enough to judge coverage).
+
+**Links:** [ADR 0011](decisions/0011-food-data-hybrid-in-phase-3.md), [nutrition-module](specs/nutrition-module.md), [data-model](domain/data-model.md#foods).
 
 ---
 

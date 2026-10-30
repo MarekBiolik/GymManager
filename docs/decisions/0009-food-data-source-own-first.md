@@ -1,6 +1,6 @@
 # ADR 0009 — Food data source: own foods first (MVP)
 
-- **Status:** accepted
+- **Status:** superseded by [ADR 0011](0011-food-data-hybrid-in-phase-3.md) for the phase-3 boundary (hybrid lands in phase 3). Own-foods SoT, macros per 100 g, entry snapshots, and copy-not-link import rules remain in force.
 - **Date:** 2026-10-29
 - **Decision makers:** Marek (+ OQ-07 closing session)
 
