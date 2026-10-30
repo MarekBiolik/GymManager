@@ -1,5 +1,6 @@
 import { NavLink, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { HelloSyncPanel } from "../HelloSyncPanel";
+import { ChartsPanel } from "./ChartsPanel";
 import { DiaryPanel } from "./DiaryPanel";
 import { FoodsPanel } from "./FoodsPanel";
 import { NutritionSettingsPanel } from "./NutritionSettingsPanel";
@@ -33,6 +34,9 @@ function ShellLayout({ onSignOut }: Pick<Props, "onSignOut">) {
         <NavLink to="/foods" className={navClass}>
           Foods
         </NavLink>
+        <NavLink to="/charts" className={navClass}>
+          Charts
+        </NavLink>
         <NavLink to="/settings" className={navClass}>
           Settings
         </NavLink>
@@ -51,6 +55,7 @@ export function NutritionApp({ userId, onSignOut, onAccountDeleted }: Props) {
         <Route index element={<Navigate to="/diary" replace />} />
         <Route path="/diary" element={<DiaryPanel userId={userId} />} />
         <Route path="/foods" element={<FoodsPanel userId={userId} />} />
+        <Route path="/charts" element={<ChartsPanel userId={userId} />} />
         <Route
           path="/settings"
           element={
