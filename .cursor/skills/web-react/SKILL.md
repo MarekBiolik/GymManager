@@ -65,15 +65,17 @@ pnpm install
 pnpm --filter <web> build
 ```
 
-(Exact filter/script names follow root `package.json` / `pnpm-workspace.yaml`.) Lint when ESLint is configured. Browser smoke via browser tools when useful — not a substitute for RLS tests.
+(Exact filter/script names follow root `package.json` / `pnpm-workspace.yaml`.) Lint when ESLint is configured.
 
-**Done when:** production Vite build succeeds for the change.
+For a **UI** change: start the app and **browser-smoke the changed flow** (click/type/navigate — not a screenshot-only check). Build alone is not enough. If the app cannot be opened: **stop and ask**.
+
+**Done when:** production Vite build succeeds **and** the changed flow was exercised in the browser (or the agent stopped and asked).
 
 ### 5. Hand-off
 
-Short status: routes/components touched, supabase calls used, build result. Coordinate with Android/iOS if the product flow must match. PR/merge only if the user asked.
+Short status: routes/components touched, supabase calls used, build + browser-smoke result. Coordinate with Android/iOS if the product flow must match. PR/merge only if the user asked.
 
-**Done when:** web AC for the slice are tickable.
+**Done when:** web AC for the slice are honestly tickable.
 
 ## Guardrails
 

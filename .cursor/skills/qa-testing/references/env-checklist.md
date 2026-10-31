@@ -12,6 +12,6 @@ QA reuses area toolchains — install what the change set needs.
 
 ## Related skills
 
-- `platform-delivery` — skip gate + when to run QA
+- `platform-delivery` — when to run QA (tests required; no skips)
 - `tdd` — authoring tests with the change
 - `code-review` — standards + spec review (not a test runner)

@@ -8,7 +8,7 @@ alwaysApply: true
 When implementing work that touches **both** the shared seam (`core/` and/or `supabase/`) **and** one or more clients (`apps/android`, `apps/web`, `apps/ios`):
 
 1. Follow the project skill `platform-delivery` (core first → parallel platforms → tests).
-2. Honour an explicit user **skip** of a platform or of tests; ask if unclear.
+2. Tests are **required** (core unit, web build + browser smoke, Android emulator smoke). Empty `adb devices` → start the AVD via `android-emulator`. If a gate cannot run: **stop and ask**. No skips.
 3. Overview: [docs/conventions/agent-dev-environment.md](../../docs/conventions/agent-dev-environment.md).
 
 Single-area edits (only core, only one app, or docs-only) do not require the full fan-out.

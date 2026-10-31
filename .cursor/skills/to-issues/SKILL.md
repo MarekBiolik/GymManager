@@ -43,8 +43,8 @@ Read the plan/spec. List feature areas and which surfaces each touches: `supabas
 | Task area | Typical contents | Tests in the same PR |
 |-----------|------------------|----------------------|
 | `schema+core` | Migration/RLS + KMP domain/repos (+ thin web API mirror only if required for contract) | `commonTest` / migration checks |
-| `android` | Compose UI over the merged core seam | Emulator smoke when available (`android-emulator` / `qa-testing`) |
-| `web` | React + supabase-js UI | `pnpm` build / targeted checks |
+| `android` | Compose UI over the merged core seam | Required emulator smoke (`android-emulator` / `qa-testing`) |
+| `web` | React + supabase-js UI | `pnpm` build + browser smoke of the changed flow |
 | `docs` | ADR/spec only | N/A (review) |
 
 **Size budget (split when any is true):**
@@ -73,8 +73,6 @@ Special cases:
 
 - Docs/ADR foundation may block the first `schema+core` of the phase
 - OFF search (no schema) may block barcode (reuses import)
-- Skip a platform only when the user said so (skip gate)
-
 Encode blockers in each task body as `Depends on #N` (and list child tasks on the epic). Prefer GitHub native parent/sub-issue or blocking links when the API allows; body lines are the minimum.
 
 **Done when:** every UI task names its core (or other) dependency; parallel pairs are explicit.

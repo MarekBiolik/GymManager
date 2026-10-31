@@ -3,7 +3,7 @@ name: platform-delivery
 description: >-
   Deliver a GymManager slice core-first then parallel platforms then tests:
   shared KMP/DB contract before Android/web/iOS UI, on-demand subagents,
-  skip-gate, model-budget. Use when implementing a multi-platform feature,
+  tests required (no skips; blocked → stop and ask), model-budget. Use when implementing a multi-platform feature,
   executing an approved plan that spans core and clients, fanning out
   platform work, or the user says core-first / platform delivery.
 ---
@@ -38,8 +38,6 @@ If the work is not yet sliced, run `to-issues` (epic → per-area tasks; size bu
 
 Non-trivial multi-platform features → **per-area tasks** (`schema+core`, then `android` / `web`), not one mega-issue. Phase-2 pattern: separate issues/PRs per area.
 
-**Skip gate (ask if unclear):** user may skip a platform, skip tests, or both. Record skips in the issue/PR; do not invent them.
-
 **Done when:** implementable **task** issue(s) exist with AC (or user pointed at one task). Epics alone are not enough to start coding.
 
 ### 3. Core slice
@@ -69,20 +67,22 @@ Use area skills when they exist; otherwise frame the subagent with the area row 
 
 Android and web tasks run **in parallel** after core; each keeps its own branch/PR.
 
-**Done when:** each non-skipped **platform task** meets its AC (iOS = docs/wiring only unless Mac access is decided).
+**Done when:** each **platform task** meets its AC (iOS = docs/wiring only until Mac access is decided — that is not a skip of Android/web tests).
 
 ### 5. Tests
 
-Unless the user skipped tests — gate **each task’s PR** with the checks that match its area:
+**Required** — run `qa-testing` for **each task’s PR**. No skip gate.
 
 1. Core unit tests for new rules (`schema+core` task)
-2. Web build / targeted checks (`web` task)
-3. Android smoke when emulator runner skill exists and an emulator is available (`android` task)
+2. Web build + **browser smoke** of the changed flow (`web` task)
+3. Android **emulator smoke** via `android-emulator` (`android` task) — that skill starts the AVD if `adb devices` is empty
 4. RLS / migration checks when the slice touched `supabase/`
+
+If a required layer cannot run after a real attempt (no AVD after `emulator -list-avds`, no way to open the web app): **stop and ask**. Do not merge. Do not tick test AC.
 
 Prefer cheap models for running builds/tests; keep the lead on failures that need judgement.
 
-**Done when:** required checks are green for the current task PR, or skips are explicit on that issue.
+**Done when:** required checks actually ran and passed for the current task PR.
 
 ### 6. Hand-off
 
@@ -128,3 +128,4 @@ Keep the lead session on one model; dispatch easy work rather than mid-task mode
 - No PilcrowMD-style NOW/inbox/facts control plane
 - Do not open a PR or merge unless the user asked for that step
 - Do not reorder delivery (core → platforms → tests) when adding skills
+- **Tests required; no skips.** Blocked env → stop and ask.

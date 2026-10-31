@@ -45,7 +45,6 @@ flowchart TD
   android --> test
   web --> test
   test --> prs
-  issues -.->|"user may skip a platform or tests"| prs
 ```
 
 ### Rules
@@ -53,8 +52,8 @@ flowchart TD
 1. **Intake → plan → issues** — New work starts with an intake skill (`research`, `prototype`, and/or `interview`) when needed, then an agreed plan, then `to-issues` (**epic → per-area tasks**; core task blocks UI tasks; android + web parallel after core). Issue AC checkboxes are the agent’s done-list ([workflow rule](../../.cursor/rules/workflow-issue-pr-commit.mdc)). **One task = one focused PR.**
 2. **Core first** — Shared KMP behavior and/or Postgres+RLS contract lands (its own PR) before platform UIs fan out, so Android / web / iOS build on a stable seam.
 3. **Then parallel platforms** — After core is ready, cover platforms in parallel via on-demand subagents when possible — **separate PRs** per platform task.
-4. **Then test** — Per-platform tests and smoke (Android emulator / web) gate **each** task PR unless the user skips tests.
-5. **Skip gate** — The user may explicitly skip a platform, skip tests, or both. Do not invent skips; ask if unclear.
+4. **Then test** — Per-platform tests and smoke **gate each task PR**. Android: `android-emulator` **starts the AVD** if `adb devices` is empty (prefer `Medium_Phone_API_37.0`). Web: build + browser smoke of the changed flow. Core: unit tests.
+5. **Blocked → stop and ask** — Tests are required. No skip gate. If a required layer cannot run after a real attempt, stop and ask the user. Do not tick test AC or merge.
 6. **Issue → PR → commit → merge** — Existing project rules; merge only when the user asks.
 
 ## Orchestration (Cursor-native)
