@@ -66,15 +66,15 @@ Secrets: anon URL/key via local config — never `service_role`.
 
 (Windows: `.\gradlew.bat …`; prefer root scripts when present.)
 
-Compose UI tests — selective later per [testing](../../../docs/conventions/testing.md). Emulator install/launch → android-emulator skill when available.
+Then run `android-emulator` (starts AVD if idle; assemble + install + launch + smoke). Assemble alone is not enough for a UI slice.
 
-**Done when:** assembleDebug (or equivalent) succeeds for the change.
+**Done when:** assembleDebug succeeds **and** emulator smoke from `android-emulator` passed (or the agent stopped and asked because smoke is truly blocked).
 
 ### 5. Hand-off
 
-Short status: screens/modules touched, core API used, build result. PR/merge only if the user asked. Tick issue AC via `gh` when done.
+Short status: screens/modules touched, core API used, build + smoke result. PR/merge only if the user asked. Tick issue AC via `gh` only for checks that ran.
 
-**Done when:** Android AC for the slice are tickable; QA/emulator can smoke if requested.
+**Done when:** Android AC for the slice are honestly tickable.
 
 ## Guardrails
 
